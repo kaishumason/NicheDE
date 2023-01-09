@@ -1,0 +1,105 @@
+---
+title: "Niche_DE_introduction"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Niche_DE_introduction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Here we will analyze a 10X Visium dataset from liver metastasized colorectal cancer. We will perform niche-DE on thsi dataset and perform downstream analysis, forcusing primarily on fibroblasts.
+
+# create our niche-DE object
+To perform niche-DE, we need to create a niche-DE object is a counts matrix, a spatial coordinate matrix, a deconvolution matrix for the dataset, and a average expression profile matrix for each cell type in the sample. We must also specify which kernel bandwidths we wish to analyze. All items except for the expression profile matrix are outputs of standard methods such as RCTD. To generate the average expression matrix, you can input a single cell rna-seq dataset into the function 'CreateLibraryMatrix'.
+```{r setup}
+library(nicheDE)
+library(Seurat)
+#load counts matrix
+data("vignette_counts")
+#load coordinate matrix
+data("vignette_coord")
+#load expression profile matrix
+data("vignette_library_matrix")
+#load deconvolution matrix
+data("vignette_deconv_mat")
+#make Niche-DE object
+NDE_obj = CreateNicheDEObject(vignette_counts,vignette_coord,
+                              vignette_library_matrix,vignette_deconv_mat,
+                              sigma = c(1,400,1000))
+
+```
+
+# Calculate the effective niche
+After the niche-DE object is created, we can then calculate the effective niche for the dataset. 
+```{r}
+NDE_obj = CalculateEffectiveNiche(NDE_obj)
+
+```
+
+# Run Niche-DE
+After calculating the effective niche, we can perform niche-DE.
+```{r,warning = F}
+start.time <- Sys.time()
+NDE_obj = niche_DE(NDE_obj)
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+print(time.taken)
+```
+
+
+# Calculate pvalues from niche-DE
+After performing niche-DE we will now calculate pvalues from our test statistics. We must specify if we want pvalues corresponding to a gene being an $(i,n)+$ gene (positive = T), or an $(i,n)-$ gene (positive = F). We run both for future analyses.
+```{r,warning=FALSE}
+NDE_obj = get_niche_DE_pval(NDE_obj,pos = T)
+NDE_obj = get_niche_DE_pval(NDE_obj,pos = F)
+```
+
+# Observe Niche-DE genes for a specific index,niche pair
+After calculating pvalues, we can find which genes are $(index,niche)$ niche genes at varying resolutions and significance levels. Here we find (fibroblast,tumor)+ genes with an FDR of 0.1.
+```{r,warning=FALSE}
+get_niche_DE_genes(NDE_obj,'interaction',index='stromal',niche = 'tumor_epithelial',pos = T,alpha = 0.05)
+```
+
+# Reactome analysis for niche-DE genes
+The output of the previous section can be used in a pathway enrichment analysis. Here we perform pathway enrichment analysis of (fibroblast,tumor)+ genes.
+```{r}
+library(enrichR)
+#get fibroblast tumor niche genes
+fibro_tum_pos = get_niche_DE_genes(NDE_obj,'interaction',index='stromal',niche = 'tumor_epithelial',pos = T,alpha = 0.05)
+#perform pathway enrichment analysis
+fibro_tum_processes = enrichr(fibro_tum_pos,databases = 'Reactome_2016')
+View(fibro_tum_processes$Reactome_2016)
+```
+
+# Marker Gene Analysis
+We can also find niche marker genes in a specified index cell between two niches. Here we look for marker genes in fibroblasts near tumor cells relative to B cells.
+```{r}
+fibro_tum_markers = niche_DE_markers(NDE_obj,index = 'stromal',niche1='tumor_epithelial',niche2='B_plasma',0.05)
+```
+
+# Niche-LR (Ligand-Receptor Analysis)
+We now perform ligand-receptor analysis to infer what interactions are driving niche signals in our data
+```{r}
+data("niche_net_ligand_target_matrix")
+data("ramilowski_ligand_receptor_list")
+fibro_tumor_LR = niche_LR_spot(NDE_obj,ligand_cell = 'tumor_epithelial',receptor_cell = 'stromal',
+ligand_target_matrix = niche_net_ligand_target_matrix,
+lr_mat = ramilowski_ligand_receptor_list,K = 25,M = 50,alpha = 0.05,truncation_value = 3)
+```
+
+
+
+
+
+
+
+
+
+
