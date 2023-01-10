@@ -1,8 +1,10 @@
 # NicheDE
 NicheDE is a method that detects context dependent changes in gene expression in spatial transcriptomic data.
-In particular, nicheDE characterizes a cell's neighborhood into a vector called the effective niche. 
-By regressing gene expression on the effective niche, nicheDE can determine if a gene is up or down regulated
-in a specified cell type in the context of specific spatial niches.\
+In particular, given an index and a niche cell type, we define an (index,niche) niche gene as a gene as a gene that is up or down-regulated in 
+the index cell type when in the presence of the niche cell type.\
+NicheDE identifies (index,niche)+ genes by first characterizing a cell's neighborhood into a vector called the effective niche. 
+Then, by regressing gene expression on the effective niche,testing if certain coefficients are equal to 0 is equivalent to 
+determining if the gene is an (index,niche) niche gene. \
 For more information about this method please check out [the manuscript](https://www.biorxiv.org/content/10.1101/2023.01.03.522646v1?rss=1)
 
 # Installation
