@@ -296,6 +296,7 @@ get_niche_DE_genes = function(object,resolution,index,niche,pos,alpha){
     pval = object@niche_DE_pval_pos$gene_level[gene_ind]
     result = data.frame(genes,pval)
     colnames(result) = c('Genes','Adj.Gene level Pvalues')
+    rownames(result) = c(1:nrow(result))
     return(result)
   }
   
@@ -307,6 +308,7 @@ get_niche_DE_genes = function(object,resolution,index,niche,pos,alpha){
     pval = object@niche_DE_pval_neg$gene_level[gene_ind]
     result = data.frame(genes,pval)
     colnames(result) = c('Genes','Adj.Gene level Pvalues')
+    rownames(result) = c(1:nrow(result))
     return(result)
   }
   
@@ -332,6 +334,7 @@ get_niche_DE_genes = function(object,resolution,index,niche,pos,alpha){
     #save results
     result = data.frame(genes,pval)
     colnames(result) = c('Genes','Adj.Cell Type level Pvalues')
+    rownames(result) = c(1:nrow(result))
     return(result)
   }
   
@@ -346,6 +349,7 @@ get_niche_DE_genes = function(object,resolution,index,niche,pos,alpha){
     #save results
     result = data.frame(genes,pval)
     colnames(result) = c('Genes','Adj.Cell Type level Pvalues')
+    rownames(result) = c(1:nrow(result))
     return(result)
   }
   
@@ -363,6 +367,7 @@ get_niche_DE_genes = function(object,resolution,index,niche,pos,alpha){
     #save results
     result = data.frame(genes,pval)
     colnames(result) = c('Genes','Adj.Interaction level Pvalues')
+    rownames(result) = c(1:nrow(result))
     return(result)
   }
   if(resolution=='interaction' & pos==F){
@@ -377,6 +382,7 @@ get_niche_DE_genes = function(object,resolution,index,niche,pos,alpha){
     #save results
     result = data.frame(genes,pval)
     colnames(result) = c('Genes','Adj.Interaction level Pvalues')
+    rownames(result) = c(1:nrow(result))
     return(result)
   }
 }
@@ -452,6 +458,7 @@ niche_DE_markers = function(object,index,niche1,niche2,alpha){
   #filter to only those that reject
   gene_pval = gene_pval[which(gene_pval[,2]<(alpha/2)),]
   colnames(gene_pval) = c('Genes','Adj.Pvalues')
+  rownames(gene_pval) = c(1:nrow(gene_pval))
   return(gene_pval)
   
 }
@@ -659,6 +666,9 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
     stop('no ligand-receptor pairs to report')
   }
   LR_pairs = LR_pairs[which(as.numeric(LR_pairs[,3])<alpha),c(1:2)]
+  if(length(LR_pairs)>2){
+    rownames(LR_pairs) = c(1:nrow(LR_pairs))
+  }
   return(LR_pairs)
   
 }
