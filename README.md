@@ -7,8 +7,10 @@ For more information about this method please check out [the manuscript](https:/
 
 # Installation
 
+```
 Sys.setenv(R_REMOTES_NO_ERRORS_FROM_WARNINGS="true")
 install.packages("devtools")
 options(timeout=9999999)
 devtools::install_github("seasoncloud/Clonalscope") # install
 library(Clonalscope)
+```
