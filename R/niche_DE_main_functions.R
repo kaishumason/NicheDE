@@ -9,9 +9,10 @@
 #' @param gamma Percentile a gene needs to be with respect to expression in the
 #'  index cell type in order for the model to investigate niche patterns for 
 #'  that gene in the index cell
+#' @param print Logical if function should print progress report (kernel, gene #)
 #' @return A niche-DE object with niche-DE analysis performed
 #' @export
-niche_DE = function(object,C = 150,M = 10,gamma = 0.8){
+niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
   #intialize list output
   object@niche_DE = vector(mode = "list", length = length(object@sigma))
   names(object@niche_DE) = object@sigma
@@ -30,7 +31,7 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8){
     betas = array(NA,c(n_type,n_type,ngene),dimnames = dimnames)
     liks = rep(NA,ngene)
     for(j in c(1:ngene)){
-      if(j%%1000 == 0){
+      if(j%%1000 == 0 & print == T){
         print(paste0('kernel bandwidth:', sig, " Gene #",j, ' out of ',ncol(object@counts)))
       }
       #do if  gene is rejected and gene-type has at least 1 rejection

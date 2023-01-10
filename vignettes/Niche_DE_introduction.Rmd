@@ -14,13 +14,17 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Here we will analyze a 10X Visium dataset from liver metastasized colorectal cancer. We will perform niche-DE on thsi dataset and perform downstream analysis, forcusing primarily on fibroblasts.
+# Purpose of this Vignette
+Here we will demonstrate how to use the nicheDE function by analyzing a 10X Visium dataset from liver metastasized colorectal cancer. We will perform niche-DE on this dataset and perform downstream analysis, demonstrating how to interpret each function's output.
 
 # create our niche-DE object
-To perform niche-DE, we need to create a niche-DE object is a counts matrix, a spatial coordinate matrix, a deconvolution matrix for the dataset, and a average expression profile matrix for each cell type in the sample. We must also specify which kernel bandwidths we wish to analyze. All items except for the expression profile matrix are outputs of standard methods such as RCTD. To generate the average expression matrix, you can input a single cell rna-seq dataset into the function 'CreateLibraryMatrix'.
+To perform niche-DE, we need to create a niche-DE object is a counts matrix, a spatial coordinate matrix, a deconvolution matrix for the dataset, and a average expression profile matrix for each cell type in the sample. We must also specify which kernel bandwidths we wish to analyze. All items except for the expression profile matrix are outputs of standard methods such as RCTD. To generate the average expression matrix, you can input a counts matrix and a corresponding cell type classification matrix into the function 'CreateLibraryMatrixFromSeurat'.\
+For those that wish to use seurat, you can input your reference scrna-seq dataset into the function 'CreateLibraryMatrixFromSeurat' to create an average expression vector. Afterwards, you can input you spatial seurat object into the function 'CreateNicheDEObjectFrom Seurat' to create a niche-DE object.
 ```{r setup}
 library(nicheDE)
 library(Seurat)
+```
+```{r}
 #load counts matrix
 data("vignette_counts")
 #load coordinate matrix
@@ -33,8 +37,29 @@ data("vignette_deconv_mat")
 NDE_obj = CreateNicheDEObject(vignette_counts,vignette_coord,
                               vignette_library_matrix,vignette_deconv_mat,
                               sigma = c(1,400,1000))
-
+slotNames(NDE_obj)
 ```
+We see that their are 14 slots, 10 of which are populated when making the nicheDE object. Here we will explain what each slot should contain
++ counts: The RNA count data of the spatial transcriptomics dataset. The dimension will be #cells/spots by #genes.Genes are filtered out if they do not exist within the scrna-seq reference dataset.
++ coord: The spatial coordinates matrix of the spatial transcriptomics dataset.
++ sigma: The kernel bandwidth(s) chosen for calculating the effective niche. Recommended values will be discussed shortly.
++ num_cells: A #cells/spots by #cell types matrix indicating the estimated number of cells of each cell type in each spot. 
++ effective_niche: A list whose length is equal to the length of sigma. Each element of the list is a matrix of dimension #cells/spots by #cell types that measures how many of each cell type is in a given cell/spot's neighborhood. For more information, please read the manuscript.
++ ref_expr: The average expression profile matrix. The dimension is #cell types by #genes. Each row gives the average expression of each gene for a given cell type based on the reference dataset supplied.
++ null_expected_expression: The expected expression profile for each cell/spot given its cell type deconvolution and library size. It is of dimension #cells/spots by #genes.
++ cell_names: The name of each cell. This will be used if the use wants to filter cells via the function 'Filter'
++ gene_names: The gene names.
++ batch_ID: The batch ID for each cell/spot. This will be used when merging objects.
++ spot_distance: The mean distance between a cell/spot and its nearest neighbor.This value can be used to inform the choice of sigma.
++ niche_DE: The niche-DE result. This is a list with length equal to the length of sigma. Each item of the list contains a sublist with 4 items.\
+The first item, T-stat, is an array of dimension #cell types by #cell types by #genes. Index (i,j,k) represents the T_statistic corresponding to the hypothesis test of testing whether gene k is an (index cell type i, niche cell type j) niche gene. \
+The second item, beta, is an array of dimension #cell types by #cell types by #genes. Index (i,j,k) represents the beta coefficient corresponding to the niche effect of niche cell type j on index cell type i for gene k.\
+The third item, var-cov, is an array of dimension (#cell types) squared by (#cell types) squared by #genes. The matrix corresponding to indices (:,:,k) gives the variance covariance matrix of the beta coefficients of the nicheDE model for gene k.\
+The fourth item, log-lik, is a vector of length #genes. Index k gives the log-likelihood of the nicheDE model for gene k.\
+Note that each item in the niche-DE list is named based on an element of sigma and the T-stat,beta,var-cov,log-lik items for that list are based on an effective niche calculated using a kernel bandwidth equal to that element of sigma.
++ Niche-DE-pval-pos: Pvalues for testing if a gene is an (index,niche)+ niche gene. This is a list with length equal to the length of sigma. The first element, gene-level, is a list of gene level pvalues. The second element, cell-type-level, is a matrix of dimension #genes by #cell types which gives cell type level pvalues.Index (i,j) gives a pvalue corresponding to whether gene i is a niche gene for index cell type j. Finally, the third element, interaction-level, is an array of dimension #cell types by #cell types by #genes which gives interaction level pvalues. Index (i,j,k) gives a pvalue corresponding to whether gene k is an (index cell type i, niche cell type j)+ niche gene.
++ Niche-DE-pval-neg: Pvalues for testing if a gene is an (index,niche)- niche gene. This is a list with length equal to the length of sigma. The first element, gene-level, is a list of gene level pvalues. The second element, cell-type-level, is a matrix of dimension #genes by #cell types which gives cell type level pvalues.Index (i,j) gives a pvalue corresponding to whether gene i is a niche gene for index cell type j. Finally, the third element, interaction-level, is an array of dimension #cell types by #cell types by #genes which gives interaction level pvalues. Index (i,j,k) gives a pvalue corresponding to whether gene k is an (index cell type i, niche cell type j)- niche gene.
+
 
 # Calculate the effective niche
 After the niche-DE object is created, we can then calculate the effective niche for the dataset. 
@@ -43,7 +68,60 @@ NDE_obj = CalculateEffectiveNiche(NDE_obj)
 
 ```
 
-# Run Niche-DE
+# Choice of sigma/kernel bandwidth
+Choosing a reasonable sigma vector is critical to generating robust and interpretable results.Sigma essentially determines what range of neighboring spots contribute towards the effective niche. Small values of sigma ensure that only close neighboring spots are considered while large values of sigma result in effective niches that are smooth across large regions of the tissue.\
+To see what this looks like, I will generate a grid of values and show what spots contribute to the effective niche of the middle spot. The size of the spot corresponds to its relative importance. 
+
+```{r}
+#generate coordiantes
+coord = expand.grid(c(1:20),c(1:20))
+colnames(coord) = c('x','y')
+#get distance matrix
+D = as.matrix(dist(coord,method = 'euclidean',diag = T))
+#extract center distances
+D = D[190,]
+coord = data.frame(coord,D)
+```
+We first see what happens if the kernel bandwidth is very small. We see that the only spot that contributes to the effective niche is the middle spot itself. This may be appropriate if the spot can contain many cells like in Visium data.
+
+```{r}
+#input your own sigma value
+sigma = 0.001
+coord_sigma_small = coord
+coord_sigma_small$D = exp(-coord_sigma_small$D^2/sigma^2)
+coord_sigma_small$D[coord_sigma_small$D<0.05] = 0
+library(ggplot2)
+ggplot(coord_sigma_small,aes(x,y,size=ifelse(D==0, NA, D)))+geom_point()+ theme(legend.position="none")
+```
+We now see what happens if the kernel bandwidth is equivalent to the distance between neighboring spots. We see that neighboring spots now also contribute to the effective niche. This value may be appropriate if we believe that niche patterns only depend on the closest neighbors of a spot. 
+
+```{r}
+#input your own sigma value
+sigma = 1
+coord_sigma_small = coord
+coord_sigma_small$D = exp(-coord_sigma_small$D^2/sigma^2)
+coord_sigma_small$D[coord_sigma_small$D<0.05] = 0
+library(ggplot2)
+ggplot(coord_sigma_small,aes(x,y,size=ifelse(D==0, NA, D)))+geom_point()+ theme(legend.position="none")
+```
+
+We now see what happens if the kernel bandwidth is large, say 1/4th of the length of the tissue. Many spots now contribute to the effective niche. Additionally,it looks as though there is nearly equal contribution for many cells near the center. This value may be appropriate if we believe that niche patterns only depend on tissue level patterns in niche.
+
+
+```{r}
+#input your own sigma value
+sigma = 5
+coord_sigma_small = coord
+coord_sigma_small$D = exp(-coord_sigma_small$D^2/sigma^2)
+coord_sigma_small$D[coord_sigma_small$D<0.05] = 0
+library(ggplot2)
+ggplot(coord_sigma_small,aes(x,y,size=ifelse(D==0, NA, D)))+geom_point()+ theme(legend.position="none")
+```
+
+
+Clearly the choice of sigma can affect what niche patterns you will find. For spot data which can contain many cells like Visium, we recommend using a sigma vector that contains a small value, a value equal to the distance between neighboring spots, and a value somewhat larger, say 2-3 times the distance between neighboring spots.
+
+# Running Niche-DE
 After calculating the effective niche, we can perform niche-DE.
 ```{r,warning = F}
 start.time <- Sys.time()
@@ -53,16 +131,17 @@ time.taken <- end.time - start.time
 print(time.taken)
 ```
 
+The output of the function is a niche-DE object with the nicheDE slot filled.\
 
 # Calculate pvalues from niche-DE
-After performing niche-DE we will now calculate pvalues from our test statistics. We must specify if we want pvalues corresponding to a gene being an $(i,n)+$ gene (positive = T), or an $(i,n)-$ gene (positive = F). We run both for future analyses.
+After performing niche-DE we will now calculate pvalues from our test statistics. We must specify if we want pvalues corresponding to a gene being an $(i,n)+$ gene (pos = T), or an $(i,n)-$ gene (pos = F). We run both for future analyses.
 ```{r,warning=FALSE}
 NDE_obj = get_niche_DE_pval(NDE_obj,pos = T)
 NDE_obj = get_niche_DE_pval(NDE_obj,pos = F)
 ```
 
 # Observe Niche-DE genes for a specific index,niche pair
-After calculating pvalues, we can find which genes are $(index,niche)$ niche genes at varying resolutions and significance levels. Here we find (fibroblast,tumor)+ genes with an FDR of 0.1.
+After calculating pvalues, we can find which genes are $(index,niche)$ niche genes at varying resolutions and significance levels. Here we find (fibroblast,tumor)+ genes with an FDR of 0.05. We see that the output is a list of genes adn their corresponding pvalues at the resolution specified.
 ```{r,warning=FALSE}
 get_niche_DE_genes(NDE_obj,'interaction',index='stromal',niche = 'tumor_epithelial',pos = T,alpha = 0.05)
 ```
@@ -73,25 +152,38 @@ The output of the previous section can be used in a pathway enrichment analysis.
 library(enrichR)
 #get fibroblast tumor niche genes
 fibro_tum_pos = get_niche_DE_genes(NDE_obj,'interaction',index='stromal',niche = 'tumor_epithelial',pos = T,alpha = 0.05)
+#preview output
+head(fibro_tum_pos)
+```
+
+```{r}
 #perform pathway enrichment analysis
-fibro_tum_processes = enrichr(fibro_tum_pos,databases = 'Reactome_2016')
-View(fibro_tum_processes$Reactome_2016)
+fibro_tum_processes = enrichr(fibro_tum_pos[,1],databases = 'Reactome_2016')
+```
+
+```{r}
+#Preview output
+head(fibro_tum_processes$Reactome_2016)
 ```
 
 # Marker Gene Analysis
-We can also find niche marker genes in a specified index cell between two niches. Here we look for marker genes in fibroblasts near tumor cells relative to B cells.
+We can also find niche marker genes in a specified index cell between two niches. Here we look for marker genes in fibroblasts near tumor cells relative to B cells. The output will be a list of marker genes with their corresponding adjusted pvalues.
 ```{r}
 fibro_tum_markers = niche_DE_markers(NDE_obj,index = 'stromal',niche1='tumor_epithelial',niche2='B_plasma',0.05)
+#preview output
+head(fibro_tum_markers)
 ```
 
 # Niche-LR (Ligand-Receptor Analysis)
-We now perform ligand-receptor analysis to infer what interactions are driving niche signals in our data
+We now perform ligand-receptor analysis to infer what interactions are driving niche signals in our data. The output will be a list of ligands and their corresponding receptors
 ```{r}
 data("niche_net_ligand_target_matrix")
 data("ramilowski_ligand_receptor_list")
 fibro_tumor_LR = niche_LR_spot(NDE_obj,ligand_cell = 'tumor_epithelial',receptor_cell = 'stromal',
 ligand_target_matrix = niche_net_ligand_target_matrix,
 lr_mat = ramilowski_ligand_receptor_list,K = 25,M = 50,alpha = 0.05,truncation_value = 3)
+#preview output
+head(fibro_tumor_LR)
 ```
 
 

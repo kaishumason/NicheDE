@@ -31,7 +31,7 @@ Assay <- setClass(
 #' @return A library matrix with the average expression profile per cell type
 #' @export
 CreateLibraryMatrix = function(data,cell_type){
-  if(rownames(data)!=cell_type[,1]){
+  if( mean(rownames(data)==cell_type[,1])!=1){
     stop('Data rownames and Cell type matrix names do not match')
   }
   #get unique cell types
@@ -43,11 +43,48 @@ CreateLibraryMatrix = function(data,cell_type){
   #iterate over cell types
   for (j in c(1:n_CT)){
     #get cells that belong to this cell type
-    cells = data[which(cell_type[,1]==CT[j]),2]
-    L[j,] = colMeans(cells)
+    cells = data[which(cell_type[,1]==CT[j]),]
+    L[j,] = colMeans(as.matrix(cells))
   }
   return(L)
 }
+
+#' CreateLibraryMatrixFromSeurat
+#'
+#' This function creates a expression profile matrix for single cell data
+#' from a Seurat object
+#'
+#' @param seurat_object A seurat object
+#' @param assay The assay from which we want to extract the counts matrix to
+#' calculate the average expression profile.
+#' @return A library matrix with the average expression profile per cell type
+#' @export
+CreateLibraryMatrixFromSeurat = function(seurat_object,assay){
+  #get desired assay from seurat object
+  sobj_assay = Seurat::GetAssay(seurat_object,assay)
+  #get counts matrix
+  data = Matrix::t(sobj_assay@counts)
+  #get cell type vector
+  cell_type = Seurat::Idents(seurat_object)
+  if(mean(rownames(data)== names(cell_type))!=1){
+    stop('Data rownames and Cell type matrix names do not match')
+  }
+  #get unique cell types
+  CT = unique(cell_type)
+  n_CT = length(CT)
+  L = matrix(NA,n_CT,ncol(data))
+  rownames(L) = CT
+  colnames(L) = colnames(data)
+  #iterate over cell types
+  for (j in c(1:n_CT)){
+    #get cells that belong to this cell type
+    cells = data[which(cell_type==CT[j]),]
+    L[j,] = colMeans(as.matrix(cells))
+  }
+  return(L)
+}
+
+
 
 
 #' CreateNicheDEObject
@@ -165,21 +202,23 @@ CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,
 #'
 #' This function creates a niche-DE object from a seurat object
 #'
-#' @param seurat_object A spatial seurat object. We will extract the raw counts data from 
-#' object[at]assays$Spatial[at]counts and the coordinate matrix from the seurat
-#' object 'GetTissueCoordinates'
+#' @param seurat_object A spatial seurat object.Coordinate matrix will be extracted via the
+#' seurat function 'GetTissueCoordinates'
+#' @param assay The assay from which to extract the counts matrix from. The counts matrix 
+#' will be extracted from the counts slot.
 #' @param library_mat Matrix indicating average expression profile for each cell type in the sample
 #' @param deconv_mat Deconvolution or cell type assignment matrix of data
 #' @param sigma List of kernel bandwidths to use in calculating the effective niche
 #' @return A niche-DE object
 #' @export
-CreateNicheDEObjectFromSeurat = function(seurat_object,library_mat,deconv_mat,sigma){
+CreateNicheDEObjectFromSeurat = function(seurat_object,assay,library_mat,deconv_mat,sigma){
   #make sure that counts matrix is provided
   if (missing(x = seurat_object)) {
     stop("Must provide seurat object matrix")
   }
   #extract raw counts matrix from seurat object
-  counts_mat = Matrix::t(seurat_object@assays$Spatial@counts)
+  sobj_assay = Seurat::GetAssay(seurat_object,assay)
+  counts_mat = Matrix::t(sobj_assay@counts)
   #extract coordinate matrix from seurat object
   coordinate_mat = Seurat::GetTissueCoordinates(seurat_object)
   
@@ -434,3 +473,7 @@ Filter = function(object,cell_names){
   object@cell_names = object@cell_names[which(object@cell_names%in% cell_names)]
   return(object)
 }
+
+
+
+
