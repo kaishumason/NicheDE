@@ -18,4 +18,4 @@ library(NicheDE)
 ```
 # Vignette
 Click the link below for a tutorial on using nicheDE\
-[NicheDE applied to Visium data of liver metastasized colorectal carcinoma](https://www.biorxiv.org/content/10.1101/2023.01.03.522646v1?rss=1)
+[NicheDE applied to Visium data of liver metastasized colorectal carcinoma](https://github.com/Kmason23/NicheDE/blob/master/vignettes/Niche_DE_introduction.Rmd)
