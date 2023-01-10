@@ -131,7 +131,7 @@ time.taken <- end.time - start.time
 print(time.taken)
 ```
 
-The output of the function is a niche-DE object with the nicheDE slot filled.\
+The output of the function is a niche-DE object with the nicheDE slot filled. If you see an error that says 'error some number', then for some reason niche-DE was unable to run on that gene number.\
 
 # Calculate pvalues from niche-DE
 After performing niche-DE we will now calculate pvalues from our test statistics. We must specify if we want pvalues corresponding to a gene being an $(i,n)+$ gene (pos = T), or an $(i,n)-$ gene (pos = F). We run both for future analyses.
