@@ -21,4 +21,4 @@ Click the link below for a tutorial on using nicheDE\
 [NicheDE applied to Visium data of liver metastasized colorectal carcinoma](https://github.com/Kmason23/NicheDE/blob/master/vignettes/Niche_DE_introduction.Rmd)
 
 # citation
-Kaishu Mason, Anuja Sathe, Paul Hess, Jiazhen Rong, Chi-Yun Wu, Emma Furth, Hanlee P. Ji, Nancy Zhang Niche differential gene expression analysis in spatial transcriptomics data identifies context-dependent cell-cell interactions (Biorxiv 2023:  https://doi.org/10.1101/2023.01.03.522646
+Kaishu Mason, Anuja Sathe, Paul Hess, Jiazhen Rong, Chi-Yun Wu, Emma Furth, Hanlee P. Ji, Nancy Zhang Niche differential gene expression analysis in spatial transcriptomics data identifies context-dependent cell-cell interactions (Biorxiv 2023:  https://doi.org/10.1101/2023.01.03.522646)
