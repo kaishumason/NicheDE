@@ -85,8 +85,6 @@ CreateLibraryMatrixFromSeurat = function(seurat_object,assay){
 }
 
 
-
-
 #' CreateNicheDEObject
 #'
 #' This function creates a niche-DE object

@@ -1,7 +1,7 @@
 #' Niche_DE
 #'
 #' This function performs niche-DE
-#'
+#' @param object A niche-DE object
 #' @param C Minimum total expression of a gene needed for the model to run
 #' @param M Minimum number of spots containing the index cell type with the 
 #' niche cell type in its effective niche for (index,niche) niche patterns
@@ -688,8 +688,8 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
 #' @param K The number of downstream target genes to use when calculating the
 #' ligand potential score
 #' @param M The maximum number of ligands that can pass initial filtering
-#' @param alpha The null quantile to compare observed epression to
-#' @param alpha_2 The level at which to perform the Benjamini Hochberg correction
+#' @param alpha The level at which to perform the Benjamini Hochberg correction
+#' @param alpha_2 The null quantile to compare observed expression to
 #' @param truncation_value The value at which to truncate T statistics
 #' @return A list of ligand-receptor pairs that are found to be expressed by the
 #' specified cell type
@@ -803,7 +803,7 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
       #print(niche)
       #print(lambda_niche)
       #get alpha quantile of niche cell type
-      lambda_rest = quantile(object@ref_expr[niche,],alpha)
+      lambda_rest = quantile(object@ref_expr[niche,],alpha_2)
       #print(lambda_rest)
       #get test statistic
       Test_stat = lambda_niche-lambda_rest
@@ -819,7 +819,7 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
   }
   #adjust pvalues and get confirmed ligands
   pvalues = p.adjust(pvalues,method = 'BH')
-  ligands = top_genes[which(pvalues<alpha_2)]
+  ligands = top_genes[which(pvalues<alpha)]
   #print(ligands)
   #get candidate receptor
   rec_ind = which(lr_mat[,1]%in% ligands & lr_mat[,2]%in% colnames(L))
@@ -853,7 +853,7 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
       nst[,which(L[,index_lig] < CT_filter)] = 0
       #run regression 
       lambda_niche = mean(Y[nst[,index]==1])
-      lambda_rest = quantile(object@ref_expr[index,],alpha)
+      lambda_rest = quantile(object@ref_expr[index,],alpha_2)
       Test_stat = lambda_niche-lambda_rest
       Test_stat = Test_stat/sqrt(lambda_niche/sum(nst[,index]==1))
       pvalues = c(pvalues,1-pnorm(Test_stat))
@@ -874,7 +874,7 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
   if(length(LR_pairs)==0){
     stop('no ligand-receptor pairs to report')
   }
-  LR_pairs = LR_pairs[which(as.numeric(LR_pairs[,3])<alpha_2),c(1:2)]
+  LR_pairs = LR_pairs[which(as.numeric(LR_pairs[,3])<alpha),c(1:2)]
   return(LR_pairs)
   
 }               
