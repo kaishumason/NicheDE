@@ -10,6 +10,9 @@ For more information about this method please check out [the manuscript](https:/
 # Installation
 You can install NicheDE with the following code
 ```
+#make sure that you have the Matrix and abind packages 
+library(Matrix)
+library(abind)
 Sys.setenv(R_REMOTES_NO_ERRORS_FROM_WARNINGS="true")
 install.packages("devtools")
 options(timeout=9999999)
