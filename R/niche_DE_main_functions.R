@@ -13,7 +13,7 @@
 #' @return A niche-DE object with niche-DE analysis performed
 #' @export
 niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
-  #intialize list output
+  #initialize list output
   object@niche_DE = vector(mode = "list", length = length(object@sigma))
   names(object@niche_DE) = object@sigma
   counter = 1
@@ -144,6 +144,14 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
     #save object
     object@niche_DE[[counter]] = list(T_stat = T_stat,beta = betas,var_cov = var_cov,log_lik = liks)
     counter = counter + 1
+  }
+  #get column sums of counts matrix to see how many genes pass filtering
+  A = colSums(as.matrix(object@counts))
+  #get number of genes that pass filtering
+  num_pass = sum(A>=C,na.rm = T)
+  print(paste0('Number of Genes that pass filtering equal to ',num_pass))
+  if(num_pass < 1000){
+    warning('Less than 1000 genes pass filtering. Consider chaning choice of C parameter')
   }
   return(object)
 }
@@ -321,8 +329,18 @@ get_niche_DE_genes = function(object,resolution,index,niche,pos,alpha){
   if((niche %in% colnames(object@num_cells))==F){
     stop('Niche cell type not found')
   }
-  
-  
+  #get index and nice indices
+  ct_index = which(colnames(object@num_cells)==index)
+  niche_index = which(colnames(object@num_cells)==niche)
+  #check to see if they have enough overlap
+  colloc = check_colloc(object,ct_index,niche_index)
+  for(alpha in c(1:length(colloc))){
+    if(colloc[alpha]<30){
+      warning('Less than 30 observations containing collocalization of ',index,
+              ' and ',niche,' at kernel bandwidth ',names(colloc)[alpha],
+              '. Results may be unreliable.')
+    }
+  }
   #if resolution if cell type level
   if(resolution=='cell type' & pos == T){
     #get index of index cell type
@@ -422,6 +440,32 @@ niche_DE_markers = function(object,index,niche1,niche2,alpha){
   index_index = which(colnames(object@num_cells)==index)
   niche1_index = which(colnames(object@num_cells)==niche1)
   niche2_index = which(colnames(object@num_cells)==niche2)
+  
+  #make sure that collocalization occurs
+  #check to see if they have enough overlap
+  colloc = check_colloc(object,index_index,niche1_index)
+  for(alpha in c(1:length(colloc))){
+    if(colloc[alpha]<30){
+      warning('Less than 30 observations containing collocalization of ',index,
+              ' and ',niche1,' at kernel bandwidth ',names(colloc)[alpha],
+              '. Results may be unreliable.')
+    }
+  }
+  
+  #make sure that collocalization occurs
+  #check to see if they have enough overlap
+  colloc = check_colloc(object,index_index,niche2_index)
+  for(alpha in c(1:length(colloc))){
+    if(colloc[alpha]<30){
+      warning('Less than 30 observations containing collocalization of ',index,
+              ' and ',niche2,' at kernel bandwidth ',names(colloc)[alpha],
+              '. Results may be unreliable.')
+    }
+  }
+
+  
+  
+  
   #get marker pvals
   pval = contrast_post(betas_all,v_cov_all,index_index,c(niche1_index,niche2_index))
   #if multiple kernels do this for all kernels
@@ -444,8 +488,16 @@ niche_DE_markers = function(object,index,niche1,niche2,alpha){
       log_liks = cbind(log_liks,object@niche_DE[[j]]$log_lik)
     }
   }
-  log_liks[is.infinite(log_liks)] = 0
-  suppressWarnings({ W = t(apply(log_liks,1,function(x){exp(x-min(x,na.rm = T))}))})
+  if(length(object@niche_DE)>=2){
+    log_liks[is.infinite(log_liks)] = 0
+    suppressWarnings({ W = t(apply(log_liks,1,function(x){exp(x-min(x,na.rm = T))}))})
+  }
+  
+  if(length(object@niche_DE)==1){
+    log_liks[is.infinite(log_liks)] = 0
+    suppressWarnings({ W = rep(1,length(log_liks))})
+  }
+  
   #W = apply(W,1,function(x){x/sum(x)})
   W[is.infinite(W)] = 10e160
   #bind pvalues and weights
@@ -491,14 +543,35 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
   #The receptor expressing cell should be the index cell
   index = which(colnames(object@num_cells)==receptor_cell)
   
+  #make sure that collocalization occurs
+  #check to see if they have enough overlap
+  colloc = check_colloc(object,index,niche)
+  for(alpha in c(1:length(colloc))){
+    if(colloc[alpha]<30){
+      warning('Less than 30 observations containing collocalization of ',receptor_cell,
+              ' and ',ligand_cell,' at kernel bandwidth ',names(colloc)[alpha],
+              '. Results may be unreliable.')
+    }
+  }
+  
+  
   log_liks = object@niche_DE[[1]]$log_lik
   if(length(object@niche_DE)>=2){
     for(j in c(2:length(object@niche_DE))){
       log_liks = cbind(log_liks,object@niche_DE[[j]]$log_lik)
     }
   }
-  #get best kernel for each gene
-  top_kernel = apply(log_liks,1,function(x){order(x,decreasing = T)[1]})
+  
+  if(length(object@niche_DE)>=2){
+    #get best kernel for each gene
+    top_kernel = apply(log_liks,1,function(x){order(x,decreasing = T)[1]})
+  }
+  
+  if(length(object@niche_DE)==1){
+    #get best kernel for each gene
+    top_kernel = rep(1,length(log_liks))
+  }
+  
   #get T_statistic list
   T_vector = vector(mode = "list", length = length(object@sigma))
   for(j in c(1:length(object@sigma))){
@@ -699,14 +772,35 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
   niche = which(colnames(object@num_cells)==ligand_cell)
   index = which(colnames(object@num_cells)==receptor_cell)
   
+  
+  #make sure that collocalization occurs
+  #check to see if they have enough overlap
+  colloc = check_colloc(object,index,niche)
+  for(alpha in c(1:length(colloc))){
+    if(colloc[alpha]<30){
+      warning('Less than 30 observations containing collocalization of ',receptor_cell,
+              ' and ',ligand_cell,' at kernel bandwidth ',names(colloc)[alpha],
+              '. Results may be unreliable.')
+    }
+  }
+  
+  
   log_liks = object@niche_DE[[1]]$log_lik
   if(length(object@niche_DE)>=2){
     for(j in c(2:length(object@niche_DE))){
       log_liks = cbind(log_liks,object@niche_DE[[j]]$log_lik)
     }
   }
-  #get best kernel for each gene
-  top_kernel = apply(log_liks,1,function(x){order(x,decreasing = T)[1]})
+  if(length(object@niche_DE)>=2){
+    #get best kernel for each gene
+    top_kernel = apply(log_liks,1,function(x){order(x,decreasing = T)[1]})
+  }
+  
+  if(length(object@niche_DE)==1){
+    #get best kernel for each gene
+    top_kernel = rep(1,length(log_liks))
+  }
+  
   #get T_statistic list
   T_vector = vector(mode = "list", length = length(object@sigma))
   for(j in c(1:length(object@sigma))){

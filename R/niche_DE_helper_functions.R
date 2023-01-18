@@ -72,3 +72,23 @@ contrast_post = function(betas_all,V_cov_all,index,niche){
   }
   return(p)
 }
+
+
+
+check_colloc = function(object,index,niche){
+  #initialize list
+  colloc = rep(NA, length = length(object@sigma))
+  names(colloc) = object@sigma
+  #get indices where index is present
+  index_ind = which(object@num_cells[,index]>0)
+  counter = 1
+  for(sig in object@sigma){
+    #get indices such that niche is in effective niche
+    niche_ind = which(object@effective_niche[[counter]][,niche] > min(object@effective_niche[[counter]][,niche]))
+    #get length of overlap
+    colloc[counter] = length(niche_ind %in% index_ind)
+    counter = counter + 1
+  }
+  #return lengths of overlap
+  return(colloc)
+}
