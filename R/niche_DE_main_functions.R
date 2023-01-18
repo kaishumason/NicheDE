@@ -334,10 +334,10 @@ get_niche_DE_genes = function(object,resolution,index,niche,pos,alpha){
   niche_index = which(colnames(object@num_cells)==niche)
   #check to see if they have enough overlap
   colloc = check_colloc(object,ct_index,niche_index)
-  for(alpha in c(1:length(colloc))){
-    if(colloc[alpha]<30){
+  for(value in c(1:length(colloc))){
+    if(colloc[value]<30){
       warning('Less than 30 observations containing collocalization of ',index,
-              ' and ',niche,' at kernel bandwidth ',names(colloc)[alpha],
+              ' and ',niche,' at kernel bandwidth ',names(colloc)[value],
               '. Results may be unreliable.')
     }
   }
@@ -444,10 +444,10 @@ niche_DE_markers = function(object,index,niche1,niche2,alpha){
   #make sure that collocalization occurs
   #check to see if they have enough overlap
   colloc = check_colloc(object,index_index,niche1_index)
-  for(alpha in c(1:length(colloc))){
-    if(colloc[alpha]<30){
+  for(value in c(1:length(colloc))){
+    if(colloc[value]<30){
       warning('Less than 30 observations containing collocalization of ',index,
-              ' and ',niche1,' at kernel bandwidth ',names(colloc)[alpha],
+              ' and ',niche1,' at kernel bandwidth ',names(colloc)[value],
               '. Results may be unreliable.')
     }
   }
@@ -455,10 +455,10 @@ niche_DE_markers = function(object,index,niche1,niche2,alpha){
   #make sure that collocalization occurs
   #check to see if they have enough overlap
   colloc = check_colloc(object,index_index,niche2_index)
-  for(alpha in c(1:length(colloc))){
-    if(colloc[alpha]<30){
+  for(value in c(1:length(colloc))){
+    if(colloc[value]<30){
       warning('Less than 30 observations containing collocalization of ',index,
-              ' and ',niche2,' at kernel bandwidth ',names(colloc)[alpha],
+              ' and ',niche2,' at kernel bandwidth ',names(colloc)[value],
               '. Results may be unreliable.')
     }
   }
@@ -546,10 +546,10 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
   #make sure that collocalization occurs
   #check to see if they have enough overlap
   colloc = check_colloc(object,index,niche)
-  for(alpha in c(1:length(colloc))){
-    if(colloc[alpha]<30){
+  for(value in c(1:length(colloc))){
+    if(colloc[value]<30){
       warning('Less than 30 observations containing collocalization of ',receptor_cell,
-              ' and ',ligand_cell,' at kernel bandwidth ',names(colloc)[alpha],
+              ' and ',ligand_cell,' at kernel bandwidth ',names(colloc)[value],
               '. Results may be unreliable.')
     }
   }
@@ -777,10 +777,10 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
   #make sure that collocalization occurs
   #check to see if they have enough overlap
   colloc = check_colloc(object,index,niche)
-  for(alpha in c(1:length(colloc))){
-    if(colloc[alpha]<30){
+  for(value in c(1:length(colloc))){
+    if(colloc[value]<30){
       warning('Less than 30 observations containing collocalization of ',receptor_cell,
-              ' and ',ligand_cell,' at kernel bandwidth ',names(colloc)[alpha],
+              ' and ',ligand_cell,' at kernel bandwidth ',names(colloc)[value],
               '. Results may be unreliable.')
     }
   }
