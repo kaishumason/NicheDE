@@ -156,7 +156,7 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
   return(object)
 }
 
-#' get_niche_DE_pval
+#' Get Niche-DE Pvalues
 #'
 #' This function calculates pvalues from a niche-DE analysis
 #'
@@ -276,7 +276,7 @@ get_niche_DE_pval = function(object,pos = T){
 }
 
 
-#' get_niche_DE_genes
+#' Get niche genes for the given index and niche cell types at the desired resolution 
 #'
 #' This function returns genes that show niche patterns at the desired resolution
 #'
@@ -406,9 +406,9 @@ get_niche_DE_genes = function(object,resolution,index,niche,pos,alpha){
   }
 }
 
-#' get_niche_DE_genes
+#' Get Niche-DE marker genes
 #'
-#' This function returns genes that show niche patterns at the desired resolution
+#' This function returns genes marker genes in the index cell type when near the first niche cell type realtive to the second one
 #'
 #' @param object A niche-DE object
 #' @param index The index cell type which we want to find marker genes for
@@ -517,9 +517,9 @@ niche_DE_markers = function(object,index,niche1,niche2,alpha){
 }
 
 
-#' get_niche_DE_genes
+#' Perform Niche-LR (Ligand receptor analysis) on spot level data
 #'
-#' This function returns genes that show niche patterns at the desired resolution
+#' This function returns ligands and receptors inferred to be expressed by the given cell types
 #'
 #' @param object A niche-DE object
 #' @param ligand_cell The cell type that expresses the ligand
@@ -746,9 +746,10 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
   return(LR_pairs)
   
 }
-#' get_niche_DE_genes
+
+#' Perform Niche-LR (Ligand receptor analysis) on single cell level data
 #'
-#' This function returns genes that show niche patterns at the desired resolution
+#' This function returns ligands and receptors inferred to be expressed by the given cell types
 #'
 #' @param object A niche-DE object
 #' @param ligand_cell The cell type that expresses the ligand
