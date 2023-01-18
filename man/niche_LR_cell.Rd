@@ -2,7 +2,7 @@
 % Please edit documentation in R/niche_DE_main_functions.R
 \name{niche_LR_cell}
 \alias{niche_LR_cell}
-\title{get_niche_DE_genes}
+\title{Perform Niche-LR (Ligand receptor analysis) on single cell level data}
 \usage{
 niche_LR_cell(
   object,
@@ -36,9 +36,9 @@ ligand potential score}
 
 \item{M}{The maximum number of ligands that can pass initial filtering}
 
-\item{alpha}{The null quantile to compare observed epression to}
+\item{alpha}{The level at which to perform the Benjamini Hochberg correction}
 
-\item{alpha_2}{The level at which to perform the Benjamini Hochberg correction}
+\item{alpha_2}{The null quantile to compare observed expression to}
 
 \item{truncation_value}{The value at which to truncate T statistics}
 }
@@ -47,5 +47,5 @@ A list of ligand-receptor pairs that are found to be expressed by the
 specified cell type
 }
 \description{
-This function returns genes that show niche patterns at the desired resolution
+This function returns ligands and receptors inferred to be expressed by the given cell types
 }

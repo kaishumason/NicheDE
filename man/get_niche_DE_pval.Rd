@@ -2,7 +2,7 @@
 % Please edit documentation in R/niche_DE_main_functions.R
 \name{get_niche_DE_pval}
 \alias{get_niche_DE_pval}
-\title{get_niche_DE_pval}
+\title{Get Niche-DE Pvalues}
 \usage{
 get_niche_DE_pval(object, pos = T)
 }

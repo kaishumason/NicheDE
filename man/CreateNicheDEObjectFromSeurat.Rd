@@ -4,12 +4,20 @@
 \alias{CreateNicheDEObjectFromSeurat}
 \title{CreateNicheDEObjectFromSeurat}
 \usage{
-CreateNicheDEObjectFromSeurat(seurat_object, library_mat, deconv_mat, sigma)
+CreateNicheDEObjectFromSeurat(
+  seurat_object,
+  assay,
+  library_mat,
+  deconv_mat,
+  sigma
+)
 }
 \arguments{
-\item{seurat_object}{A spatial seurat object. We will extract the raw counts data from
-object\link{at}assays$Spatial\link{at}counts and the coordinate matrix from the seurat
-object 'GetTissueCoordinates'}
+\item{seurat_object}{A spatial seurat object.Coordinate matrix will be extracted via the
+seurat function 'GetTissueCoordinates'}
+
+\item{assay}{The assay from which to extract the counts matrix from. The counts matrix
+will be extracted from the counts slot.}
 
 \item{library_mat}{Matrix indicating average expression profile for each cell type in the sample}
 

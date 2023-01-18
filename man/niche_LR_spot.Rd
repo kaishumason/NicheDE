@@ -2,7 +2,7 @@
 % Please edit documentation in R/niche_DE_main_functions.R
 \name{niche_LR_spot}
 \alias{niche_LR_spot}
-\title{get_niche_DE_genes}
+\title{Perform Niche-LR (Ligand receptor analysis) on spot level data}
 \usage{
 niche_LR_spot(
   object,
@@ -44,5 +44,5 @@ A list of ligand-receptor pairs that are found to be expressed by the
 specified cell type
 }
 \description{
-This function returns genes that show niche patterns at the desired resolution
+This function returns ligands and receptors inferred to be expressed by the given cell types
 }

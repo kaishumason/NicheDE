@@ -2,7 +2,7 @@
 % Please edit documentation in R/niche_DE_main_functions.R
 \name{niche_DE_markers}
 \alias{niche_DE_markers}
-\title{get_niche_DE_genes}
+\title{Get Niche-DE marker genes}
 \usage{
 niche_DE_markers(object, index, niche1, niche2, alpha)
 }
@@ -25,5 +25,5 @@ A vector of genes that are niche marker genes for the index cell type
 near the niche1 cell type relative to the niche2 cell type
 }
 \description{
-This function returns genes that show niche patterns at the desired resolution
+This function returns genes marker genes in the index cell type when near the first niche cell type realtive to the second one
 }

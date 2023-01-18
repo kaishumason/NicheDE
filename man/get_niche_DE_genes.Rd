@@ -2,7 +2,7 @@
 % Please edit documentation in R/niche_DE_main_functions.R
 \name{get_niche_DE_genes}
 \alias{get_niche_DE_genes}
-\title{get_niche_DE_genes}
+\title{Get niche genes for the given index and niche cell types at the desired resolution}
 \usage{
 get_niche_DE_genes(object, resolution, index, niche, pos, alpha)
 }
