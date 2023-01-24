@@ -258,7 +258,8 @@ library(Seurat)
 #devtools::install_github(&quot;dmcable/spacexr&quot;, build_vignettes = FALSE)
 ###STEP 1: Read in reference dataset
 #Read in reference
-refr = readRDS(&quot;liver_met_ref.rds&quot;)
+data(&quot;liver_met_ref&quot;)
+refr = liver_met_ref
 #get cell types of reference dataset
 cell_types = Idents(refr)
 #drop levels 
@@ -275,7 +276,8 @@ Step 2: Reading in Spatial Data
 </summary>
 <pre><code>###STEP 2: Read in spatial data
 #Read in seurat data. In practice, use seurat function to read in data
-seurat_object = readRDS(&quot;liver_met_seurat.rds&quot;)
+data(&quot;liver_met_seurat_object&quot;)
+seurat_object = liver_met_seurat_object
 #get counts matrix 
 counts = seurat_object@assays$Spatial@counts
 #save gene and cell names for later
