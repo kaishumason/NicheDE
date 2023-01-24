@@ -1,3 +1,37 @@
 url: https://kmason23.github.io/NicheDE/
 template:
   bootstrap: 5
+articles:
+- title: Yeeeeee
+  navbar: ~
+  contents:
+  - Installation
+  - Deconvolution
+  - Average_Expression_Profile_Calculation
+  - Object_Creation
+  - Object_Creation_Seurat
+  - Effective_Niche_Calculation
+  - Performing_Niche_DE
+  - Getting_Niche_DE_Genes
+  - Marker_Genes
+  - Ligand_Receptor_Analysis
+
+navbar:
+  title: "sparklyr"
+  type: inverse
+  left:
+    - text: "Home"
+      href: index.html
+    - text: "dplyr"
+      href: articles/dplyr.html
+    - text: "ML"
+      href: articles/ML.html
+    - text: "Extensions"
+      href: articles/extensions.html
+    - text: "Deployment"
+      href: articles/deployment.html
+    - text: "Reference"
+      href: "reference/"
+  right:
+    - icon: fa-github
+      href: https://github.com/rstudio/sparklyr
