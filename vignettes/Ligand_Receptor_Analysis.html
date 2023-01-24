@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Ligand Receptor Analysis</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Ligand Receptor Analysis</h1>
+
+
+
+<p>To see what ligand-receptor channels are driving niche signals in our
+data, we developed niche-LR. Niche-LR uses the <a href="https://www.nature.com/articles/s41592-019-0667-5">niche-net</a>
+ligand-target potential matrix to find the top <span class="math inline">\(K\)</span> downstream targets for each ligand. The
+niche-DE T-statistics of these downstream genes are used to calculate
+ligand activity scores. The top <span class="math inline">\(M\)</span>
+ligands by ligand activity score and their corresponding receptors are
+then tested to confirm expression in the tissue. Niche-LR can be
+performed on spot resolution data using the function ‘niche_LR_spot’ and
+on single cell resolution data using the function ‘niche_LR_cell’.
+‘niche_LR_spot’ takes in 9 arguments while ‘niche_LR_cell’ has one
+additional argument.</p>
+<details>
+<summary>
+Arguments
+</summary>
+<ul>
+<li>object: Niche-DE object</li>
+<li>ligand cell: The cell type that expresses the ligand</li>
+<li>receptor cell: The cell type that expresses the receptor</li>
+<li>ligand_target_matrix: A matrix that measures the association between
+ligands and their downstream target genes. The dimension should be
+#target genes by #ligands</li>
+<li>lr-mat: A matrix that matches ligands with their corresponding
+receptors. This matrix should have two columns. The first will be
+ligands and the second will be the corresponding receptors</li>
+<li>K: The number of downstream target genes to use when calculating the
+ligand activity score</li>
+<li>M: The maximum number of ligands that can pass initial
+filtering</li>
+<li>alpha: The level at which to perform the Benjamini Hochberg
+correction</li>
+<li>truncation value: The value at which to truncate T statistics.</li>
+</ul>
+For ‘niche_LR_cell’, their is an additional parameter ‘alpha_2’ which
+refers to the null quantile to compare observed epression to. That is
+that we compare expression of the ligand and receptor to see if it is
+greater than the ‘alpha_2’ percentile of gene expression over all genes
+expressed in the ligand expressing or reeptor expressing cell.
+</details>
+<p>We now perform ligand-receptor analysis to infer ligand-receptor
+interactions between tumor cells (ligand expressing cell) and
+fibroblasts (receptor expressing cell) on spot level data. The output
+will be a list of ligands and their corresponding receptors. Note that
+the ligand-target potential matrix refers to human genes.</p>
+<pre><code>data(&quot;niche_net_ligand_target_matrix&quot;)
+data(&quot;ramilowski_ligand_receptor_list&quot;)
+fibro_tumor_LR = niche_LR_spot(NDE_obj,ligand_cell = &#39;tumor_epithelial&#39;,receptor_cell = &#39;stromal&#39;,
+ligand_target_matrix = niche_net_ligand_target_matrix,
+lr_mat = ramilowski_ligand_receptor_list,K = 25,M = 50,alpha = 0.05,truncation_value = 3)
+#preview output
+head(fibro_tumor_LR)</code></pre>
+<p>The output should resemble a 2 column table of ligands and their
+corresponding receptors.</p>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

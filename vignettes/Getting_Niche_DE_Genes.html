@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Getting Niche-DE Genes</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Getting Niche-DE Genes</h1>
+
+
+
+<div id="calculating-niche-de-pvalues" class="section level1">
+<h1>Calculating Niche-DE Pvalues</h1>
+<p>After performing niche-DE we will now calculate pvalues. The function
+to calculate pvalues is called ‘get_niche_DE_pval’ and contains two
+arguments.</p>
+<details>
+<summary>
+Arguments
+</summary>
+<ul>
+<li><p>object: A niche-DE object</p></li>
+<li><p>pos: A logical indicating if one wants to compute interaction
+level pvalues corresponding to a gene being an <span class="math inline">\((index,niche)+\)</span> gene (pos = T), or an
+<span class="math inline">\((index,niche)-\)</span> gene (pos = F)</p>
+</details></li>
+</ul>
+<p>In general, the user should run this function twice, one for each
+value of ‘pos’</p>
+<pre><code>NDE_obj = get_niche_DE_pval(NDE_obj,pos = T)
+NDE_obj = get_niche_DE_pval(NDE_obj,pos = F)</code></pre>
+<details>
+<summary>
+Output Specifics
+</summary>
+<p>Running the above function will populate 2 fields in your niche-DE
+object</p>
+<ul>
+<li>Niche-DE-pval-pos: Pvalues for testing if a gene is an
+(index,niche)+ niche gene. This is a list with length equal to the
+length of sigma. Each sublist contains 3 items.
+<ul>
+<li>gene-level: A list of gene level pvalues. It is a vector with length
+equal to the number of genes.</li>
+<li>cell-type-level: A matrix of dimension #genes by #cell types which
+gives cell type level pvalues.Index (i,j) gives a pvalue corresponding
+to whether gene i is a niche gene for index cell type j.</li>
+<li>interaction-level: An array of dimension #cell types by #cell types
+by #genes which gives interaction level pvalues. Index (i,j,k) gives a
+pvalue corresponding to whether gene k is an (index cell type i, niche
+cell type j)+ niche gene.</li>
+</ul></li>
+<li>Niche-DE-pval-neg: Pvalues for testing if a gene is an
+(index,niche)- niche gene. This is a list with length equal to the
+length of sigma. Each sublist contains 3 items.
+<ul>
+<li>gene-level: A list of gene level pvalues. It is a vector with length
+equal to the number of genes.</li>
+<li>cell-type-level: A matrix of dimension #genes by #cell types which
+gives cell type level pvalues.Index (i,j) gives a pvalue corresponding
+to whether gene i is a niche gene for index cell type j.</li>
+<li>interaction-level: An array of dimension #cell types by #cell types
+by #genes which gives interaction level pvalues. Index (i,j,k) gives a
+pvalue corresponding to whether gene k is an (index cell type i, niche
+cell type j)- niche gene.</li>
+</ul></li>
+</ul>
+</details>
+</div>
+<div id="extract-niche-de-genes-for-a-specific-indexniche-pair" class="section level1">
+<h1>Extract Niche-DE Genes For a Specific (Index,Niche) Pair</h1>
+<p>After calculating pvalues, we can find which genes are <span class="math inline">\((index,niche)\)</span> niche genes at varying
+resolutions and FDR control levels. The function to do so is called
+‘get_niche_DE_genes’ and contains 6 arguments</p>
+<details>
+<summary>
+Arguments
+</summary>
+<ul>
+<li>object: A niche-DE object</li>
+<li>resolution: The resolution at which to return genes. There are three
+choices for resolution;gene level, cell type level, and interaction
+level.</li>
+<li>index: The index cell type of interest</li>
+<li>niche: The niche cell type of interest</li>
+<li>pos: A logical indicating if one wants to find interaction level
+<span class="math inline">\((index,niche)+\)</span> niche genes (pos =
+T), or <span class="math inline">\((index,niche)-\)</span> niche genes
+(pos = F)</li>
+<li>alpha: The level at which to perform the benjamini-hochberg
+procedure at each resolution level<br />
+</li>
+</ul>
+</details>
+<p>Below, we find interaction level (fibroblast,tumor)+ niche genes.</p>
+<pre><code>get_niche_DE_genes(NDE_obj,&#39;interaction&#39;,index=&#39;stromal&#39;,niche = &#39;tumor_epithelial&#39;,pos = T,alpha = 0.05)</code></pre>
+<p>The output is a list of genes and their corresponding pvalues at the
+resolution specified.</p>
+<details>
+<summary>
+Interpretting Your Results
+</summary>
+<p>Assume that the ‘pos’ parameter is set to ‘True’. The interpretation
+of your output will differ based on the resolution chosen.</p>
+<ul>
+<li><p>Resolution = gene: Genes outputted show some sign of being a
+niche gene for some <span class="math inline">\((index,niche)\)</span>
+pair.</p></li>
+<li><p>Resolution = cell type: Genes outputted are significantly niche
+up or down regulated in the index cell. The niche cell type is
+unknown.</p></li>
+<li><p>Resolution = interaction: Genes outputted are significantly
+upregulated in the index cell type when in the presence of the niche
+cell type. If ‘pos’ = ‘False’ then Genes outputted are significantly
+downregulated in the index cell type when in the presence of the niche
+cell type.</p>
+</details>
+<h1 id="pathway-enrichement-analysis-with-your-niche-genes">Pathway
+Enrichement Analysis With Your Niche Genes</h1>
+<p>Interaction level <span class="math inline">\((index,niche)+\)</span>
+and <span class="math inline">\((index,niche)-\)</span> genes can be
+input into a pathway enrichment analysis to determine what processes are
+being up and downregulated in the index cell type when in the presence
+of the niche cell type. Here we perform pathway enrichment analysis of
+(fibroblast,tumor)+ genes.</p>
+<pre><code>#Load enichr package
+library(enrichR)
+#get fibroblast tumor niche genes
+fibro_tum_pos = get_niche_DE_genes(NDE_obj,&#39;interaction&#39;,index=&#39;stromal&#39;,niche = &#39;tumor_epithelial&#39;,pos = T,alpha = 0.05)
+#run pathway enrichment analysis
+fibro_tum_processes = enrichr(fibro_tum_pos[,1],databases = &#39;Reactome_2016&#39;)</code></pre></li>
+</ul>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

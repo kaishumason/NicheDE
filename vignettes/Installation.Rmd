@@ -1,0 +1,24 @@
+---
+title: "Installation"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Installation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+# Installation 
+You can install NicheDE with the follwoing code
+```
+Sys.setenv(R_REMOTES_NO_ERRORS_FROM_WARNINGS="true")
+install.packages("devtools")
+options(timeout=9999999)
+devtools::install_github("Kmason23/NicheDE") # install
+library(NicheDE)
+```
