@@ -2,6 +2,7 @@
 
 export(CalculateEffectiveNiche)
 export(CreateLibraryMatrix)
+export(CreateLibraryMatrixFromSeurat)
 export(CreateNicheDEObject)
 export(CreateNicheDEObjectFromSeurat)
 export(Filter)
