@@ -1,0 +1,19 @@
+pandoc: 2.19.2
+pkgdown: 2.0.7
+pkgdown_sha: ~
+articles:
+  Average_Expression_Profile_Calculation: Average_Expression_Profile_Calculation.html
+  Deconvolution: Deconvolution.html
+  Effective_Niche_Calculation: Effective_Niche_Calculation.html
+  Getting_Niche_DE_Genes: Getting_Niche_DE_Genes.html
+  Installation: Installation.html
+  Ligand_Receptor_Analysis: Ligand_Receptor_Analysis.html
+  Marker_Genes: Marker_Genes.html
+  Object_Creation: Object_Creation.html
+  Object_Creation_Seurat: Object_Creation_Seurat.html
+  Performing_Niche_DE: Performing_Niche_DE.html
+last_built: 2023-01-24T20:17Z
+urls:
+  reference: https://kmason23.github.io/NicheDE/reference
+  article: https://kmason23.github.io/NicheDE/articles
+
