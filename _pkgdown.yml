@@ -15,6 +15,7 @@ articles:
   - Getting_Niche_DE_Genes
   - Marker_Genes
   - Ligand_Receptor_Analysis
+  - Tutorial
 
 navbar:
   title: "sparklyr"
@@ -22,16 +23,8 @@ navbar:
   left:
     - text: "Home"
       href: index.html
-    - text: "dplyr"
-      href: articles/dplyr.html
-    - text: "ML"
-      href: articles/ML.html
-    - text: "Extensions"
-      href: articles/extensions.html
-    - text: "Deployment"
-      href: articles/deployment.html
-    - text: "Reference"
-      href: "reference/"
+    - text: "Tutorial"
+      href: articles/Tutorial.html
   right:
     - icon: fa-github
-      href: https://github.com/rstudio/sparklyr
+      href: https://github.com/Kmason23/NicheDE

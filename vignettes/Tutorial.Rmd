@@ -14,20 +14,23 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
-library(nicheDE)
-```
+# Niche-DE Tutorial
+This page contains tutorials for using the nicheDE package in R. Each step in the niche-DE process is described in detail; from the initial deconvolution step to downstream processes such as niche ligand-receptor analysis. Click the links below to visit a specific step in the pipeline.
 
+## Installing Niche-DE and Required Data Analysis Before Performing Niche-DE 
 
-# Niche-DE-Tutorial
-This repository contains a tutorial for using the nicheDE package in R. Each step in the nicheDE process is described in detail; from the initial deconvolution step to downstream processes such as niche ligand-receptor analysis. Click the links below to visit a specific step in the pipeline.
++ [Installation](Average_Expression_Profile_Calculation.html): How to download Niche-DE  using devtools.
++ [Deconvolution](Deconvolution.html): A step by step guide for performing cell type deconvolution of your spatial transcriptomic data using RCTD.
++ [Average Expression Profile](Average_Expression_Profile_Calculation.html): A guide on how to calculate the average expression profile matrix from your reference dataset.
++ Object Creation: A guide on how to create your own niche-DE object starting from a [spatial seurat object](Object_Creation_Seurat.html) or [raw data matrices](Object_Creation.html).
 
-+ [Installation](articles/Installation): How to download Niche-DE  using devtools.
-+ [Deconvolution](articles/Deconvolution): A step by step guide for performing cell type deconvolution of your spatial transcriptomic data using RCTD.
-+ [Average Expression Profile Calculation](articles/AverageExpressionProfile): A guide on how to calculate the average expression profile matrix from your reference dataset.
-+ [Object Creation](articles/ObjectCreation): A guide on how to create your own niche-DE object starting from a [spatial seurat object](https://github.com/Kmason23/Niche-DE-Tutorial/tree/main/ObjectCreation/FromSeurat) or [raw data matrices](https://github.com/Kmason23/Niche-DE-Tutorial/tree/main/ObjectCreation/FromRaw).
-+ [Effective Niche Calculation](https://github.com/Kmason23/Niche-DE-Tutorial/tree/main/EffectiveNicheCalculation): A guide on how to calculate the effective niche as well as suggested guidelines on how to choose the kernel bandwidth.
-+ [Performing Niche-DE](https://github.com/Kmason23/Niche-DE-Tutorial/tree/main/PerformingNicheDE): A guide on how to run niche-DE once you have your niche-DE object.
-+ [Getting Niche-DE Genes](https://github.com/Kmason23/Niche-DE-Tutorial/tree/main/GettingNicheDEGenes): A guide on how to get niche-DE genes between a given index and niche cell type as well as how to perform pathway enrichment analysis given these niche-DE genes.
-+ [Marker Genes](https://github.com/Kmason23/Niche-DE-Tutorial/tree/main/MarkerGenes): A guide on performing marker gene analysis using niche-DE
-+ [Ligand Receptor Analysis](https://github.com/Kmason23/Niche-DE-Tutorial/tree/main/LigandReceptorAnalysis): A guide on performing ligand-receptor analysis using niche-DE.
+## Creating an Object and Performing Niche-DE 
+
++ [Effective Niche Calculation](Effective_Niche_Calculation.html): A guide on how to calculate the effective niche as well as suggested guidelines on how to choose the kernel bandwidth.
++ [Performing Niche-DE](Performing_Niche_DE.html): A guide on how to run niche-DE once you have your niche-DE object.
+
+## Post Analysis
+
++ [Getting Niche-DE Genes](Getting_Niche_DE_Genes.html): A guide on how to get niche-DE genes between a given index and niche cell type as well as how to perform pathway enrichment analysis given these niche-DE genes.
++ [Marker Genes](Marker_Genes.html): A guide on performing marker gene analysis using niche-DE
++ [Ligand Receptor Analysis](Ligand_Receptor_Analysis.html): A guide on performing ligand-receptor analysis using niche-DE.
