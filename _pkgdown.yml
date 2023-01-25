@@ -1,9 +1,12 @@
 url: https://kmason23.github.io/NicheDE/
 template:
   bootstrap: 5
+
+
+
 articles:
-- title: Yeeeeee
-  navbar: ~
+- title: Vignettes
+  navbar: Yee
   contents:
   - Installation
   - Deconvolution
@@ -17,6 +20,43 @@ articles:
   - Ligand_Receptor_Analysis
   - Tutorial
 
+
+reference:
+- title: "Creating an Average Expression Matrix"
+  desc: >
+    Functions for Creating the Average Expression Matrix
+  contents:
+  - CreateLibraryMatrix
+  - CreateLibraryMatrixFromSeurat
+
+- title: "Creating a Niche-DE Object"
+  desc: >
+    Functions for Creating a Niche-DE Object
+  contents:
+  - CreateNicheDEObject
+  - CreateNicheDEObjectFromSeurat
+  - Filter
+  - MergeObjects
+
+- title: "Calculating the Effective Niche and Performing Niche-DE"
+  desc: >
+    Functions for Calculating the Effective Niche and Performing Niche-DE
+  contents:
+  - CalculateEffectiveNiche
+  - niche_DE
+  - get_niche_DE_pval
+
+- title: "Downstream Analysis"
+  desc: >
+    Functions for Performing Downstream Analysis
+  contents:
+  - get_niche_DE_genes
+  - niche_DE_markers
+  - niche_LR_cell
+  - niche_LR_spot
+
+
+
 navbar:
   title: "sparklyr"
   type: inverse
@@ -25,6 +65,12 @@ navbar:
       href: index.html
     - text: "Tutorial"
       href: articles/Tutorial.html
+    - text: 'Documentation'
+      href: reference/index.html
+
   right:
     - icon: fa-github
       href: https://github.com/Kmason23/NicheDE
+
+
+
