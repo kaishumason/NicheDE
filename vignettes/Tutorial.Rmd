@@ -19,7 +19,7 @@ This page contains tutorials for using the nicheDE package in R. Each step in th
 
 ## Installing Niche-DE and Required Data Analysis Before Performing Niche-DE 
 
-+ [Installation](Average_Expression_Profile_Calculation.html): How to download Niche-DE  using devtools.
++ [Installation](Installation.html): How to download Niche-DE  using devtools.
 + [Deconvolution](Deconvolution.html): A step by step guide for performing cell type deconvolution of your spatial transcriptomic data using RCTD.
 + [Average Expression Profile](Average_Expression_Profile_Calculation.html): A guide on how to calculate the average expression profile matrix from your reference dataset.
 + Object Creation: A guide on how to create your own niche-DE object starting from a [spatial seurat object](Object_Creation_Seurat.html) or [raw data matrices](Object_Creation.html).
