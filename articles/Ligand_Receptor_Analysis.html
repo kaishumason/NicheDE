@@ -126,8 +126,9 @@ the ligand-target potential matrix refers to human genes.</p>
 <span>lr_mat <span class="op">=</span> <span class="va">ramilowski_ligand_receptor_list</span>,K <span class="op">=</span> <span class="fl">25</span>,M <span class="op">=</span> <span class="fl">50</span>,alpha <span class="op">=</span> <span class="fl">0.05</span>,truncation_value <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#preview output</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">fibro_tumor_LR</span><span class="op">)</span></span></code></pre>
-<p>The output should resemble a 2 column table of ligands and their
-corresponding receptors.</p>
+<p>The output should resemble a 3 column table of ligands,their
+corresponding receptors, and a list of the top 5 downstream niche-DE
+genes that drive the ligand potential scoring.</p>
   </main>
 </div>
 
