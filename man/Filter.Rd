@@ -16,5 +16,5 @@ A niche-DE object that only includes the specified cells.
 We recommend using this function after calculating the effective niche on the whole dataset
 }
 \description{
-This function filters a seurat object to only include specific observations
+This function filters a niche-DE object to only include specific observations
 }
