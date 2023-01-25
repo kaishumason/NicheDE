@@ -566,7 +566,7 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
       weight = ligand_vec[top_cors,j]/mean(ligand_vec[top_cors,j])
       ##calculate ligand potential scores
       pear_cor[j] = sum(sig[top_cors]*weight)
-      top_DE[[j]] = (rownames(ligand_vec)[top_cor])[order(sig[top_cors]*weight,decreasing = T)[1:5]]
+      top_DE[[j]] = (rownames(ligand_vec)[top_cors])[order(sig[top_cors]*weight,decreasing = T)[1:5]]
       #get normalizing constant
       score_norm[j] = sum(weight^2)
     }
@@ -819,7 +819,7 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
       ##calculate ligand potential scores
       pear_cor[j] = sum(sig[top_cors]*weight)
       #save top niche-DE genes of the ligand
-      top_DE[[j]] = (rownames(ligand_vec)[top_cor])[order(sig[top_cors]*weight,decreasing = T)[1:5]]
+      top_DE[[j]] = (rownames(ligand_vec)[top_cors])[order(sig[top_cors]*weight,decreasing = T)[1:5]]
       #get normalizing constant
       score_norm[j] = sum(weight^2)
     }
