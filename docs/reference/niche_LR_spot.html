@@ -60,9 +60,9 @@
 <span>  <span class="va">receptor_cell</span>,</span>
 <span>  <span class="va">ligand_target_matrix</span>,</span>
 <span>  <span class="va">lr_mat</span>,</span>
-<span>  <span class="va">K</span>,</span>
-<span>  <span class="va">M</span>,</span>
-<span>  <span class="va">alpha</span>,</span>
+<span>  K <span class="op">=</span> <span class="fl">25</span>,</span>
+<span>  M <span class="op">=</span> <span class="fl">50</span>,</span>
+<span>  alpha <span class="op">=</span> <span class="fl">0.05</span>,</span>
 <span>  truncation_value <span class="op">=</span> <span class="fl">3</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -94,19 +94,19 @@ will be the corresponding receptors</p></dd>
 
 <dt>K</dt>
 <dd><p>The number of downstream target genes to use when calculating the
-ligand potential score</p></dd>
+ligand potential score. Default value is 25.</p></dd>
 
 
 <dt>M</dt>
-<dd><p>The maximum number of ligands that can pass initial filtering</p></dd>
+<dd><p>The maximum number of ligands that can pass initial filtering. Default value is 50.</p></dd>
 
 
 <dt>alpha</dt>
-<dd><p>The level at which to perform the Benjamini Hochberg correction</p></dd>
+<dd><p>The level at which to perform the Benjamini Hochberg correction. Default value is 0.05.</p></dd>
 
 
 <dt>truncation_value</dt>
-<dd><p>The value at which to truncate T statistics</p></dd>
+<dd><p>The value at which to truncate T statistics. Default value is 3.</p></dd>
 
 </dl></div>
     <div class="section level2">

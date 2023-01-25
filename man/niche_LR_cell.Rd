@@ -10,10 +10,10 @@ niche_LR_cell(
   receptor_cell,
   ligand_target_matrix,
   lr_mat,
-  K,
-  M,
-  alpha,
-  alpha_2,
+  K = 25,
+  M = 50,
+  alpha = 0.05,
+  alpha_2 = 0.5,
   truncation_value = 3
 )
 }
@@ -32,15 +32,15 @@ This matrix should have two columns. The first will be ligands and the second
 will be the corresponding receptors}
 
 \item{K}{The number of downstream target genes to use when calculating the
-ligand potential score}
+ligand potential score. Default value is 25.}
 
-\item{M}{The maximum number of ligands that can pass initial filtering}
+\item{M}{The maximum number of ligands that can pass initial filtering. Default value is 50.}
 
-\item{alpha}{The level at which to perform the Benjamini Hochberg correction}
+\item{alpha}{The level at which to perform the Benjamini Hochberg correction. Default value is 0.05.}
 
-\item{alpha_2}{The null quantile to compare observed expression to}
+\item{alpha_2}{The null quantile to compare observed expression to. Default value is 0.5 (50th percentile).}
 
-\item{truncation_value}{The value at which to truncate T statistics}
+\item{truncation_value}{The value at which to truncate T statistics. Default value is 3.}
 }
 \value{
 A list of ligand-receptor pairs that are found to be expressed by the

@@ -2,29 +2,36 @@
 % Please edit documentation in R/niche_DE_main_functions.R
 \name{get_niche_DE_genes}
 \alias{get_niche_DE_genes}
-\title{Get niche genes for the given index and niche cell types at the desired resolution}
+\title{Get niche genes for the given index and niche cell types at the desired test.level}
 \usage{
-get_niche_DE_genes(object, resolution, index, niche, pos, alpha)
+get_niche_DE_genes(
+  object,
+  test.level,
+  index,
+  niche,
+  direction = "positive",
+  alpha = 0.05
+)
 }
 \arguments{
 \item{object}{A niche-DE object}
 
-\item{resolution}{At which resolution to return genes
+\item{test.level}{At which test.level to return genes
 (gene level, cell type level, interaction level)}
 
 \item{index}{The index cell type}
 
 \item{niche}{The niche cell type}
 
-\item{pos}{Logical indicating whether to return genes that are (index,niche)+
-patterns (pos = T) or (index,niche)- (pos = F)}
+\item{direction}{Character indicating whether to return genes that are (index,niche)+
+patterns (direction = 'positive') or (index,niche)- (direction = 'negative'). Default value is 'positive'.}
 
-\item{alpha}{The level at which to perform the Benjamini Hochberg correction}
+\item{alpha}{The level at which to perform the Benjamini Hochberg correction. Default value = 0.05}
 }
 \value{
 A vector of genes that are niche significant at the desired FDR,
-resolution, index cell type, and niche cell type
+test.level, index cell type, and niche cell type
 }
 \description{
-This function returns genes that show niche patterns at the desired resolution
+This function returns genes that show niche patterns at the desired test.level
 }

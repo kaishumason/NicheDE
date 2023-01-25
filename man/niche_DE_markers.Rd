@@ -4,7 +4,7 @@
 \alias{niche_DE_markers}
 \title{Get Niche-DE marker genes}
 \usage{
-niche_DE_markers(object, index, niche1, niche2, alpha)
+niche_DE_markers(object, index, niche1, niche2, alpha = 0.05)
 }
 \arguments{
 \item{object}{A niche-DE object}
@@ -15,7 +15,7 @@ niche_DE_markers(object, index, niche1, niche2, alpha)
 
 \item{niche2}{The niche we wish to compare (index,niche1) patterns to}
 
-\item{alpha}{The level at which to perform the Benjamini Hochberg correction}
+\item{alpha}{The level at which to perform the Benjamini Hochberg correction. Default value is 0.05.}
 
 \item{pos}{Logical indicating whether to return genes that are (index,niche)+
 patterns (pos = T) or (index,niche)- (pos = F)}

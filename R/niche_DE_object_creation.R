@@ -40,6 +40,7 @@ CreateLibraryMatrix = function(data,cell_type){
   if( mean(rownames(data)==cell_type[,1])!=1){
     stop('Data rownames and Cell type matrix names do not match')
   }
+  print('Computing average expression profile matrix')
   #get unique cell types
   CT = unique(cell_type[,1])
   n_CT = length(CT)
@@ -52,6 +53,7 @@ CreateLibraryMatrix = function(data,cell_type){
     cells = data[which(cell_type[,1]==CT[j]),]
     L[j,] = colMeans(as.matrix(cells))
   }
+  print('Average expression matrix computed')
   return(L)
 }
 
@@ -75,6 +77,7 @@ CreateLibraryMatrixFromSeurat = function(seurat_object,assay){
   if(mean(rownames(data)== names(cell_type))!=1){
     stop('Data rownames and Cell type matrix names do not match')
   }
+  print('Computing average expression profile matrix')
   #get unique cell types
   CT = unique(cell_type)
   n_CT = length(CT)
@@ -87,6 +90,7 @@ CreateLibraryMatrixFromSeurat = function(seurat_object,assay){
     cells = data[which(cell_type==CT[j]),]
     L[j,] = colMeans(as.matrix(cells))
   }
+  print('Average expression profile matrix computed.')
   return(L)
 }
 
@@ -103,6 +107,7 @@ CreateLibraryMatrixFromSeurat = function(seurat_object,assay){
 #' @return A niche-DE object
 #' @export
 CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,sigma){
+  print('Creating Niche-DE object')
   #make sure that counts matrix is provided
   if (missing(x = counts_mat)) {
     stop("Must provide counts matrix")
@@ -140,16 +145,20 @@ CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,
   }
 
   #make sure that sigma is a vector
-  if((is.vector(sigma) && is.atomic(sigma))==F){
-    stop('Sigma must be a vector')
+  if(length(sigma)>0){
+    if((is.vector(sigma) && is.atomic(sigma))==F){
+      stop('Sigma must be a vector')
+    }
+    #make sure that sigma is numeric
+    if(is.numeric(sigma)==F){
+      stop('sigma must be numeric')
+    }
   }
   #make sure that sigma has positive length
   if(length(sigma)==0){
-    stop('sigma must be of length > 0')
-  }
-  #make sure that sigma is numeric
-  if(is.numeric(sigma)==F){
-    stop('sigma must be numeric')
+    warning('No sigma(kernel bandwidth) values selected. Default values will be used.
+            These default values are only appropriate for data that has a similar resolution to 10X VISIUM
+            (55 micrometers in diameter).')
   }
 
   #calculate number of cells per spot and expected expression
@@ -189,6 +198,10 @@ CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,
   D = as.matrix(dist(coordinate_mat),diag = T)
   min_dist = mean(apply(D,2,function(x){sort(x,decreasing = F)[3]}))
 
+  if(length(sigma)==0){
+    sigma = c(min_dist*0.001,min_dist,min_dist*2,min_dist*3)
+  }
+
   #make sure that counts_mat and library_mat have the same gene names in the same order
   if(mean(colnames(countsM)==colnames(library_mat))!=1){
     stop('gene names (colnames) of counts matrix and library expression matrix do not match')
@@ -199,7 +212,9 @@ CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,
                null_expected_expression = EEX,cell_names = rownames(countsM), cell_types = colnames(nst),
                gene_names = colnames(countsM),batch_ID = rep(1,nrow(countsM)),
                spot_distance = min_dist)
-  #make sure that counts_mat and
+  A = paste0('Niche-DE object created with ',nrow(object@counts),' observations, ', ncol(object@counts),' genes, ',
+             length(unique(object@batch_ID)), ' batches, and ', length(object@cell_types), ' cell types.')
+  return(A)
 }
 
 #' CreateNicheDEObjectFromSeurat
@@ -259,17 +274,22 @@ CreateNicheDEObjectFromSeurat = function(seurat_object,assay,library_mat,deconv_
   }
 
   #make sure that sigma is a vector
-  if((is.vector(sigma) && is.atomic(sigma))==F){
-    stop('Sigma must be a vector')
+  if(length(sigma)>0){
+    if((is.vector(sigma) && is.atomic(sigma))==F){
+      stop('Sigma must be a vector')
+    }
+    #make sure that sigma is numeric
+    if(is.numeric(sigma)==F){
+      stop('sigma must be numeric')
+    }
   }
   #make sure that sigma has positive length
   if(length(sigma)==0){
-    stop('sigma must be of length > 0')
+    warning('No sigma(kernel bandwidth) values selected. Default values will be used.
+            These default values are only appropriate for data that has a similar resolution to 10X VISIUM
+            (55 micrometers in diameter).')
   }
-  #make sure that sigma is numeric
-  if(is.numeric(sigma)==F){
-    stop('sigma must be numeric')
-  }
+
 
   #calculate number of cells per spot and expected expression
   #get genes that are shared between data and reference expression
@@ -414,6 +434,8 @@ CalculateEffectiveNiche = function(object,cutoff = 0.05){
   names(object@effective_niche) = object@sigma
   counter_sig = 1
   for(sig in object@sigma){
+    print(paste0('Calculating effective niche for kernel bandwith ', sig,
+                 '(',counter_sig,' out of ',length(object@sigma),' values).'))
     #calculate effective niche for each individual dataset
     counter = 0
     for(ID in c(1:length(unique(object@batch_ID)))){
@@ -449,6 +471,7 @@ CalculateEffectiveNiche = function(object,cutoff = 0.05){
     object@effective_niche[[counter_sig]] = EN
     counter_sig = counter_sig + 1
   }
+  print('Effective niche calculated')
   return(object)
 }
 

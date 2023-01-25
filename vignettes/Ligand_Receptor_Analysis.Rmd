@@ -23,12 +23,12 @@ To see what ligand-receptor channels are driving niche signals in our data, we d
 + receptor cell: The cell type that expresses the receptor
 + ligand_target_matrix: A matrix that measures the association between ligands and their downstream target genes. The dimension should be #target genes by #ligands
 + lr-mat: A matrix that matches ligands with their corresponding receptors. This matrix should have two columns. The first will be ligands and the second will be the corresponding receptors
-+ K: The number of downstream target genes to use when calculating the ligand activity score
-+ M: The maximum number of ligands that can pass initial filtering
-+ alpha: The level at which to perform the Benjamini Hochberg correction
++ K: The number of downstream target genes to use when calculating the ligand activity score. Default value is 25.
++ M: The maximum number of ligands that can pass initial filtering. Default value is 50.
++ alpha: The level at which to perform the Benjamini Hochberg correction. Default value is 0.05.
 + truncation value: The value at which to truncate T statistics.
 
-For 'niche_LR_cell', their is an additional parameter 'alpha_2' which refers to the null quantile to compare observed epression to. That is that we compare expression of the ligand and receptor to see if it is greater than the 'alpha_2' percentile of gene expression over all genes expressed in the ligand expressing or reeptor expressing cell.
+For 'niche_LR_cell', their is an additional parameter 'alpha_2' which refers to the null quantile to compare observed epression to. That is that we compare expression of the ligand and receptor to see if it is greater than the 'alpha_2' percentile of gene expression over all genes expressed in the ligand expressing or receptor expressing cell.The Default value is 0.5 (50th percentile).
 </details>
 
   

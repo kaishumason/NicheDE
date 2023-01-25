@@ -3,40 +3,44 @@
 #' This function performs niche-DE
 #' @param object A niche-DE object
 #' @param C Minimum total expression of a gene needed for the model to run
-#' @param M Minimum number of spots containing the index cell type with the 
+#' @param M Minimum number of spots containing the index cell type with the
 #' niche cell type in its effective niche for (index,niche) niche patterns
 #' to be investigated
 #' @param gamma Percentile a gene needs to be with respect to expression in the
-#'  index cell type in order for the model to investigate niche patterns for 
+#'  index cell type in order for the model to investigate niche patterns for
 #'  that gene in the index cell
 #' @param print Logical if function should print progress report (kernel, gene #)
 #' @return A niche-DE object with niche-DE analysis performed
 #' @export
 niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
+  #starting Message
+  print(paste0('Starting Niche-DE analysis with parameters C = ',C,', M = ',M,', gamma = ', gamma,'.'))
   #initialize list output
   object@niche_DE = vector(mode = "list", length = length(object@sigma))
   names(object@niche_DE) = object@sigma
   counter = 1
   #iterate over each sigma value
   for(sig in object@sigma){
+    print(paste0('Performing Niche-DE analysis with kernel bandwidth ',sig,'(',counter,' out of ',length(object@sigma),' values)'))
     #get expression filter (gamma)
     CT_filter = apply(object@ref_expr,1,function(x){quantile(x,gamma)})
-    #initialize p value array 
+    #initialize p value array
     ngene = ncol(object@counts)
     n_type = ncol(object@num_cells)
     dimnames = list(A = colnames(object@num_cells),B  = colnames(object@num_cells), C = colnames(object@counts))
-    #pgt is index type by niche type by gene 
+    #pgt is index type by niche type by gene
     T_stat = array(NA,c(n_type,n_type,ngene),dimnames = dimnames)
     var_cov = array(NA,c(n_type^2,n_type^2,ngene))
     betas = array(NA,c(n_type,n_type,ngene),dimnames = dimnames)
     liks = rep(NA,ngene)
     for(j in c(1:ngene)){
       if(j%%1000 == 0 & print == T){
-        print(paste0('kernel bandwidth:', sig, " Gene #",j, ' out of ',ncol(object@counts)))
+        print(paste0('kernel bandwidth:', sig,'(',counter,' out of ',length(object@sigma),' values), ', "Processing Gene #",j,
+                     ' out of ',ncol(object@counts)))
       }
       #do if  gene is rejected and gene-type has at least 1 rejection
       if((sum(object@counts[,j])>C)&(mean(object@ref_expr[,j]<CT_filter)!=1)){
-        #get pstg matrix 
+        #get pstg matrix
         pstg = object@num_cells%*%as.matrix(diag(object@ref_expr[,j]))/object@null_expected_expression[,j]
         pstg[,object@ref_expr[,j]<CT_filter] = 0
         pstg[pstg<0.05]=0
@@ -48,10 +52,10 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
           ps = as.matrix(pstg[k,])
           EN_j = round(object@effective_niche[[counter]][k,],2)
           cov_j = ps%*%t(EN_j)
-          #make into a vector 
+          #make into a vector
           X[k,] = as.vector(t(cov_j))#important to take the transpose
         }
-        #get index, niche pairs that are non existent 
+        #get index, niche pairs that are non existent
         null = which(apply(X,2,function(x){sum(x>0)})<M)
         X_partial = X
         rest = c(1:ncol(X))
@@ -62,7 +66,7 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
         #continue if at least one index,niche pair is viable
         if(length(null)!=n_type^2){
           tryCatch({
-            #if expected expression for a spot is 0, remove it 
+            #if expected expression for a spot is 0, remove it
             bad_ind  = which(object@null_expected_expression[,j]==0)
             #print('Running GLM')
             #run neg binom regression
@@ -79,7 +83,7 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
             disp = A$minimum
             #save likelihood
             liks[j] = -A$objective
-            #calculate W matrix for distribution of beta hat 
+            #calculate W matrix for distribution of beta hat
             W =as.vector(mu_hat/(1 + mu_hat/disp))#get W matrix
             #print(3)
             #perform cholesky decomp for finding inverse of X^TWX
@@ -91,7 +95,7 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
             }
             #get variance matrix
             var_mat = Matrix::t(X_partial*W)%*%X_partial
-            #if there are degenerate columns, remove them 
+            #if there are degenerate columns, remove them
             new_null = c()
             if(length(bad_ind)>0){
               new_null = which(diag(as.matrix(var_mat))==0)
@@ -111,7 +115,7 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
               V_ = matrix(tau,n_type,n_type)
             }else{
               V_[c(1:n_type^2)[-null]] = tau}
-            #for full var_cov matrix. 
+            #for full var_cov matrix.
             v_cov = matrix(NA,n_type^2,n_type^2)
             if(length(null)==0){
               v_cov = matrix(V,n_type^2,n_type^2)
@@ -119,11 +123,11 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
               v_cov[-null,-null] = as.matrix(V)}
             #print('getting beta')
             beta = matrix(NA,n_type,n_type)
-            
+
             if(length(new_null)>0){
               beta[c(1:n_type^2)[-null]] = full_glm$coefficients[-c(1,new_null+1)]
             }
-            
+
             if(length(new_null)==0){
               if(length(null)==0){
                 beta = matrix(full_glm$coefficients[-c(1)],n_type,n_type)
@@ -135,9 +139,9 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
             T_stat[,,j] = T_
             betas[,,j] = Matrix::t(beta)
             var_cov[,,j] = v_cov}, #get pval
-              error = function(e) { 
+              error = function(e) {
               print(paste0("error",j))
-              skip_to_next <<- TRUE}) 
+              skip_to_next <<- TRUE})
         }
       }
     }
@@ -153,176 +157,83 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
   if(num_pass < 1000){
     warning('Less than 1000 genes pass filtering. Consider chaning choice of C parameter')
   }
-  return(object)
-}
-
-#' Get Niche-DE Pvalues
-#'
-#' This function calculates pvalues from a niche-DE analysis
-#'
-#' @param object A niche-DE object
-#' @param pos Logical indicating whether to calculate pvalues for(index,niche)+
-#' patterns (pos = T) or (index,niche)- patterns (pos = F)
-#' @return A niche-DE object with niche-DE pvalues
-#' @export
-get_niche_DE_pval = function(object,pos = T){
-  
-  #get lok likelihood matrix
-  log_liks = object@niche_DE[[1]]$log_lik
-  if(length(object@niche_DE)>=2){
-    for(j in c(2:length(object@niche_DE))){
-      log_liks = cbind(log_liks,object@niche_DE[[j]]$log_lik)
-    }
-  }
-  #get T_statistic list
-  T_stat_list = vector(mode = "list", length = length(object@sigma))
-  for(j in c(1:length(object@sigma))){
-    T_stat_list[[j]] = object@niche_DE[[j]]$T_stat
-  }
-  
-  if(length(T_stat_list)==1){
-    T_stat_list[[2]] = T_stat_list[[1]]
-    log_liks = cbind(as.vector(log_liks),as.vector(log_liks))
-  }
-  #T_stat_list is a list of T_stats from niche-DE
-  #log_liks is a matrix with #gene rows and #kernels columns
-  #alpha is the desired FDR (we test at level alpha/2 for postive values)
-  #convert T_stat to pvalue
-  if(pos ==T){
-    T_stat_list_sign = lapply(T_stat_list,function(x){T_to_p(x,alternative = 'positive')})
-  }
-  if(pos==F){
-    T_stat_list_sign = lapply(T_stat_list,function(x){T_to_p(x,alternative = 'negative')})
-  }
-  T_stat_list = lapply(T_stat_list,function(x){T_to_p(x,alternative = 'two.sided')})
-  #apply cauchy rule to get gene pvalues and make into a dataframe
-  gene_p = lapply(T_stat_list,function(x){apply(x,3,function(y){gene_level(y)})})
-  n <- length(gene_p[[1]])
-  gene_p = as.matrix(structure(gene_p, row.names = c(NA, -n), class = "data.frame"))
-  #get weights for cauchy rule
-  suppressWarnings({W = t(apply(log_liks,1,function(x){exp(x-min(x,na.rm = T))}))})
-  #W = apply(W,1,function(x){x/sum(x)})
-  W[is.infinite(W)] = 10e160
-  #bind pvalues and weights
-  gene_p = cbind(gene_p,W)
-  #apply cauchy rule
-  gene_p = apply(gene_p,1,function(x){gene_level(x[1:(length(x)/2)],x[(length(x)/2+1):length(x)])})
-  #apply BH
-  gene_phoch = p.adjust(gene_p,method = "BH")
-  
-  
-  #CT level
-  CT_p = lapply(T_stat_list,function(x){t(apply(x,3,function(y){celltype_level(y)}))})
-  #merge cell type pvalue matrices into an array
-  CT_merge = CT_p[[1]]
-  if(length(CT_p)>1){
-    for(sample in c(2:length(CT_p))){
-      CT_merge <- abind::abind(CT_merge,CT_p[[sample]],along=3)
-    }
-  }
-  CT_cauchy = CT_merge[,,1]
-  #apply cauchy rule over these
-  for(i in c(1:dim(CT_merge)[1])){
-    for(j in c(1:dim(CT_merge)[2])){
-      CT_cauchy[i,j] = gene_level(p = CT_merge[i,j,],w = W[i,])
-    }
-  }
-  #remove genes that didn't reject before
-  CT_hoch = CT_cauchy
-  for(j in c(1:nrow(CT_hoch))){
-    CT_hoch[j,] = p.adjust(CT_cauchy[j,],method = "BH")
-  }
-  
-  #interaction Level
-  pgt_merge = 0*T_stat_list_sign[[1]]
-  valid = 0*T_stat_list_sign[[1]]
-  #merge pvalues over all experiemnts 
-  for(sample in c(1:length(T_stat_list_sign))){
-    pgt = tan((0.5-T_stat_list_sign[[sample]])*pi)
-    for(j in c(1:dim(pgt)[3])){
-      pgt[,,j] = pgt[,,j]*W[j,sample]
-      valid[,,j] = valid[,,j] + W[j,sample]*(1-is.na(pgt[,,j]))
-    }
-    pgt[is.na(pgt)] = 0
-    pgt_merge = pgt_merge + pgt
-  }
-  
-  
-  pgt_merge = pgt_merge/valid
-  pgt_cauchy = 1-pcauchy(pgt_merge)
-  
-  #do BH on each gene interaction level
-  pgt_hoch = pgt_cauchy
-  for(j in c(1:dim(pgt_cauchy)[3])){
-    for(k in c(1:dim(pgt_cauchy)[1])){
-      pgt_hoch[k,,j] = p.adjust(pgt_cauchy[k,,j],method = "BH")
-    }
-  }
-  
-  
-  if(pos==T){
-    object@niche_DE_pval_pos = list(gene_level = gene_phoch,
-                                    cell_type_level = CT_hoch,
-                                    interaction_level = pgt_hoch)
-  }
-  
-  if(pos==F){
-    object@niche_DE_pval_neg = list(gene_level = gene_phoch,
-                                    cell_type_level = CT_hoch,
-                                    interaction_level = pgt_hoch)
-  }
-  
+  print('Computing Niche-DE Pvalues')
+  object = get_niche_DE_pval(object,pos = T)
+  object = get_niche_DE_pval(object,pos = F)
   return(object)
 }
 
 
-#' Get niche genes for the given index and niche cell types at the desired resolution 
+
+#' Get niche genes for the given index and niche cell types at the desired test.level
 #'
-#' This function returns genes that show niche patterns at the desired resolution
+#' This function returns genes that show niche patterns at the desired test.level
 #'
 #' @param object A niche-DE object
-#' @param resolution At which resolution to return genes 
+#' @param test.level At which test.level to return genes
 #' (gene level, cell type level, interaction level)
-#' @param index The index cell type 
-#' @param niche The niche cell type 
-#' @param pos Logical indicating whether to return genes that are (index,niche)+
-#' patterns (pos = T) or (index,niche)- (pos = F)
-#' @param alpha The level at which to perform the Benjamini Hochberg correction
-#' @return A vector of genes that are niche significant at the desired FDR, 
-#' resolution, index cell type, and niche cell type 
+#' @param index The index cell type
+#' @param niche The niche cell type
+#' @param direction Character indicating whether to return genes that are (index,niche)+
+#' patterns (direction = 'positive') or (index,niche)- (direction = 'negative'). Default value is 'positive'.
+#' @param alpha The level at which to perform the Benjamini Hochberg correction. Default value = 0.05
+#' @return A vector of genes that are niche significant at the desired FDR,
+#' test.level, index cell type, and niche cell type
 #' @export
-get_niche_DE_genes = function(object,resolution,index,niche,pos,alpha){
-  if((resolution %in% c('gene','cell type','interaction'))==F){
-    stop('resolution must be one of gene, cell type, or interaction')
+get_niche_DE_genes = function(object,test.level,index,niche,direction = 'positive',alpha = 0.05){
+  if((test.level %in% c('gene','cell type','interaction'))==F){
+    stop('test.level must be one of gene, cell type, or interaction')
   }
-  
-  #if resolution if gene level
-  if(resolution=='gene' & pos == T){
+
+  if((direction %in% c('positive','negative'))==F){
+    stop('direction must be one of positive or negative')
+  }
+
+  if(direction == 'positive'){
+    S = '+'
+  }else{
+    S = '-'
+  }
+  if(test.level == 'interaction'){
+    paste0('Finding Niche-DE',S,' genes at the interaction level between index cell type ',index,' and niche cell type '
+           ,niche,'. Performing BH procedure at level ',alpha,'.')
+  }
+  if(test.level == 'cell type'){
+    paste0('Finding Niche-DE',' genes at the cell type level in index cell type ',index,'. Performing BH procedure at level ',alpha,'.')
+  }
+  if(test.level == 'gene'){
+    paste0('Finding Niche-DE',' genes at the gene level','. Performing BH procedure at level ',alpha,'.')
+  }
+
+  #if test.level if gene level
+  if(test.level=='gene' & direction == T){
     #get genes that reject at gene level
     gene_ind = which(object@niche_DE_pval_pos$gene_level<(alpha))
     genes = object@gene_names[gene_ind]
     #get associated pvalues
     pval = object@niche_DE_pval_pos$gene_level[gene_ind]
     result = data.frame(genes,pval)
-    colnames(result) = c('Genes','Adj.Gene level Pvalues')
+    colnames(result) = c('Genes','Pvalues.Gene')
     rownames(result) = c(1:nrow(result))
+    print('Returning Niche-DE Genes')
     return(result)
   }
-  
-  if(resolution=='gene' & pos == F){
+
+  if(test.level=='gene' & direction == F){
     #get genes that reject at gene level
     gene_ind = which(object@niche_DE_pval_neg$gene_level<(alpha))
     genes = object@gene_names[gene_ind]
     #get associated pvalues
     pval = object@niche_DE_pval_neg$gene_level[gene_ind]
     result = data.frame(genes,pval)
-    colnames(result) = c('Genes','Adj.Gene level Pvalues')
+    colnames(result) = c('Genes','Pvalues.Gene')
     rownames(result) = c(1:nrow(result))
+    print('Returning Niche-DE Genes')
     return(result)
   }
-  
-  
-  
+
+
+
   if((index %in% colnames(object@num_cells))==F){
     stop('Index cell type not found')
   }
@@ -341,8 +252,8 @@ get_niche_DE_genes = function(object,resolution,index,niche,pos,alpha){
               '. Results may be unreliable.')
     }
   }
-  #if resolution if cell type level
-  if(resolution=='cell type' & pos == T){
+  #if test.level if cell type level
+  if(test.level=='cell type' & direction == T){
     #get index of index cell type
     ct_index = which(colnames(object@num_cells)==index)
     #get genes that reject at the gene and CT level
@@ -352,12 +263,13 @@ get_niche_DE_genes = function(object,resolution,index,niche,pos,alpha){
     pval = object@niche_DE_pval_pos$cell_type_level[gene_index,ct_index]
     #save results
     result = data.frame(genes,pval)
-    colnames(result) = c('Genes','Adj.Cell Type level Pvalues')
+    colnames(result) = c('Genes','Pvalues.Cell.Type')
     rownames(result) = c(1:nrow(result))
+    print('Returning Niche-DE Genes')
     return(result)
   }
-  
-  if(resolution=='cell type' & pos == F){
+
+  if(test.level=='cell type' & direction == F){
     #get index of index cell type
     ct_index = which(colnames(object@num_cells)==index)
     #get genes that reject at the gene and CT level
@@ -367,14 +279,15 @@ get_niche_DE_genes = function(object,resolution,index,niche,pos,alpha){
     pval = object@niche_DE_pval_neg$cell_type_level[gene_index,ct_index]
     #save results
     result = data.frame(genes,pval)
-    colnames(result) = c('Genes','Adj.Cell Type level Pvalues')
+    colnames(result) = c('Genes','Pvalues.Cell.Type')
     rownames(result) = c(1:nrow(result))
+    print('Returning Niche-DE Genes')
     return(result)
   }
-  
-  
-  #if resolution if interaction level
-  if(resolution =='interaction' & pos==T){
+
+
+  #if test.level if interaction level
+  if(test.level =='interaction' & direction==T){
     ct_index = which(colnames(object@num_cells)==index)
     niche_index = which(colnames(object@num_cells)==niche)
     gene_index = which((object@niche_DE_pval_pos$gene_level<(alpha)) &
@@ -385,14 +298,15 @@ get_niche_DE_genes = function(object,resolution,index,niche,pos,alpha){
     pval = object@niche_DE_pval_pos$interaction_level[ct_index,niche_index,gene_index]
     #save results
     result = data.frame(genes,pval)
-    colnames(result) = c('Genes','Adj.Interaction level Pvalues')
+    colnames(result) = c('Genes','Pvalues.Interaction')
     rownames(result) = c(1:nrow(result))
+    print('Returning Niche-DE Genes')
     return(result)
   }
-  if(resolution=='interaction' & pos==F){
+  if(test.level=='interaction' & direction==F){
     ct_index = which(colnames(object@num_cells)==index)
     niche_index = which(colnames(object@num_cells)==niche)
-    gene_index = which((object@niche_DE_pval_pos$gene_level<(alpha)) &
+    gene_index = which((object@niche_DE_pval_neg$gene_level<(alpha)) &
                          (object@niche_DE_pval_neg$cell_type_level[,ct_index]<(alpha)) &
                          (object@niche_DE_pval_neg$interaction_level[ct_index,niche_index,]<(alpha/2)))
     genes = object@gene_names[gene_index]
@@ -400,8 +314,9 @@ get_niche_DE_genes = function(object,resolution,index,niche,pos,alpha){
     pval = object@niche_DE_pval_neg$interaction_level[ct_index,niche_index,gene_index]
     #save results
     result = data.frame(genes,pval)
-    colnames(result) = c('Genes','Adj.Interaction level Pvalues')
+    colnames(result) = c('Genes','Pvalues.Interaction')
     rownames(result) = c(1:nrow(result))
+    print('Returning Niche-DE Genes')
     return(result)
   }
 }
@@ -416,12 +331,13 @@ get_niche_DE_genes = function(object,resolution,index,niche,pos,alpha){
 #' @param niche2 The niche we wish to compare (index,niche1) patterns to
 #' @param pos Logical indicating whether to return genes that are (index,niche)+
 #' patterns (pos = T) or (index,niche)- (pos = F)
-#' @param alpha The level at which to perform the Benjamini Hochberg correction
+#' @param alpha The level at which to perform the Benjamini Hochberg correction. Default value is 0.05.
 #' @return A vector of genes that are niche marker genes for the index cell type
-#'  near the niche1 cell type relative to the niche2 cell type 
+#'  near the niche1 cell type relative to the niche2 cell type
 #' @export
-niche_DE_markers = function(object,index,niche1,niche2,alpha){
-  
+niche_DE_markers = function(object,index,niche1,niche2,alpha = 0.05){
+
+
   if((index %in% colnames(object@num_cells))==F){
     stop('Index cell type not found')
   }
@@ -431,8 +347,11 @@ niche_DE_markers = function(object,index,niche1,niche2,alpha){
   if((niche2 %in% colnames(object@num_cells))==F){
     stop('Niche2 cell type not found')
   }
-  
-  #get beta array 
+
+  print(paste0('Finding Niche-DE marker genes in index cell type ',index,' with niche cell type ',niche1,
+               ' relative to niche cell type ',niche2,'. BH procedure performed at level ',alpha,'.'))
+
+  #get beta array
   betas_all = object@niche_DE[[1]]$beta
   #get variance covariance array
   v_cov_all = object@niche_DE[[1]]$var_cov
@@ -440,7 +359,7 @@ niche_DE_markers = function(object,index,niche1,niche2,alpha){
   index_index = which(colnames(object@num_cells)==index)
   niche1_index = which(colnames(object@num_cells)==niche1)
   niche2_index = which(colnames(object@num_cells)==niche2)
-  
+
   #make sure that collocalization occurs
   #check to see if they have enough overlap
   colloc = check_colloc(object,index_index,niche1_index)
@@ -451,7 +370,7 @@ niche_DE_markers = function(object,index,niche1,niche2,alpha){
               '. Results may be unreliable.')
     }
   }
-  
+
   #make sure that collocalization occurs
   #check to see if they have enough overlap
   colloc = check_colloc(object,index_index,niche2_index)
@@ -463,9 +382,9 @@ niche_DE_markers = function(object,index,niche1,niche2,alpha){
     }
   }
 
-  
-  
-  
+
+
+
   #get marker pvals
   pval = contrast_post(betas_all,v_cov_all,index_index,c(niche1_index,niche2_index))
   #if multiple kernels do this for all kernels
@@ -492,12 +411,12 @@ niche_DE_markers = function(object,index,niche1,niche2,alpha){
     log_liks[is.infinite(log_liks)] = 0
     suppressWarnings({ W = t(apply(log_liks,1,function(x){exp(x-min(x,na.rm = T))}))})
   }
-  
+
   if(length(object@niche_DE)==1){
     log_liks[is.infinite(log_liks)] = 0
     suppressWarnings({ W = rep(1,length(log_liks))})
   }
-  
+
   #W = apply(W,1,function(x){x/sum(x)})
   W[is.infinite(W)] = 10e160
   #bind pvalues and weights
@@ -512,8 +431,9 @@ niche_DE_markers = function(object,index,niche1,niche2,alpha){
   gene_pval = gene_pval[which(gene_pval[,2]<(alpha/2)),]
   colnames(gene_pval) = c('Genes','Adj.Pvalues')
   rownames(gene_pval) = c(1:nrow(gene_pval))
+  print('Returning Marker Genes')
   return(gene_pval)
-  
+
 }
 
 
@@ -530,19 +450,21 @@ niche_DE_markers = function(object,index,niche1,niche2,alpha){
 #' This matrix should have two columns. The first will be ligands and the second
 #' will be the corresponding receptors
 #' @param K The number of downstream target genes to use when calculating the
-#' ligand potential score
-#' @param M The maximum number of ligands that can pass initial filtering
-#' @param alpha The level at which to perform the Benjamini Hochberg correction
-#' @param truncation_value The value at which to truncate T statistics
+#' ligand potential score. Default value is 25.
+#' @param M The maximum number of ligands that can pass initial filtering. Default value is 50.
+#' @param alpha The level at which to perform the Benjamini Hochberg correction. Default value is 0.05.
+#' @param truncation_value The value at which to truncate T statistics. Default value is 3.
 #' @return A list of ligand-receptor pairs that are found to be expressed by the
 #' specified cell type
 #' @export
-niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,lr_mat,K,M,alpha,truncation_value = 3){
+niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,lr_mat,K = 25,M = 50,alpha = 0.05,truncation_value = 3){
   #The ligand expressing cell should be the niche cell
   niche = which(colnames(object@num_cells)==ligand_cell)
   #The receptor expressing cell should be the index cell
   index = which(colnames(object@num_cells)==receptor_cell)
-  
+
+  print(paste0('Performing niche-LR with hyperparameters K = ',K,', M = ',M,', alpha = ',alpha,
+               ', truncation value = ',truncation_value,'.'))
   #make sure that collocalization occurs
   #check to see if they have enough overlap
   colloc = check_colloc(object,index,niche)
@@ -553,31 +475,31 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
               '. Results may be unreliable.')
     }
   }
-  
-  
+
+
   log_liks = object@niche_DE[[1]]$log_lik
   if(length(object@niche_DE)>=2){
     for(j in c(2:length(object@niche_DE))){
       log_liks = cbind(log_liks,object@niche_DE[[j]]$log_lik)
     }
   }
-  
+
   if(length(object@niche_DE)>=2){
     #get best kernel for each gene
     top_kernel = apply(log_liks,1,function(x){order(x,decreasing = T)[1]})
   }
-  
+
   if(length(object@niche_DE)==1){
     #get best kernel for each gene
     top_kernel = rep(1,length(log_liks))
   }
-  
+
   #get T_statistic list
   T_vector = vector(mode = "list", length = length(object@sigma))
   for(j in c(1:length(object@sigma))){
     T_vector[[j]] = object@niche_DE[[j]]$T_stat[index,niche,]
   }
-  #truncate niche_DE t-statistic 
+  #truncate niche_DE t-statistic
   for(j in c(1:length(T_vector))){
     T_vector[[j]] = pmin(T_vector[[j]],abs(truncation_value))
     T_vector[[j]] = pmax(T_vector[[j]],-abs(truncation_value))
@@ -590,7 +512,8 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
   cand_lig = colnames(L)[which(L[niche,]>CT_filter[niche])]
   filter = which(colnames(ligand_target_matrix)%in% cand_lig)
   ligand_target_matrix = ligand_target_matrix[,filter]
-  
+
+  print('Calculating ligand potential scores')
   #get ligand potential scores
   pear_cor = rep(NA,ncol(ligand_target_matrix))
   score_norm = rep(NA,ncol(ligand_target_matrix))
@@ -640,13 +563,14 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
     stop('No candidate ligands')
   }
   #################### test candidate ligands
+  print('Testing candidate ligands for sufficient expression')
   pvalues = c()
   beta = c()
   for(j in c(1:length(top_genes))){
     tryCatch({
       #get candidate ligand
       gene = top_genes[j]
-      #get what index it belongs to 
+      #get what index it belongs to
       index_gene = which(colnames(L)==gene)
       #get best kernel
       top_index = top_kernel[index_gene]
@@ -673,16 +597,16 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
         beta = c(beta,coef(check)[niche+1])
         pvalues = c(pvalues,summary(check)$coefficients[(niche+1-num_bad),4])
       }
-      
+
     } #get pval
-    , error = function(e) { 
+    , error = function(e) {
       print(paste0("error",j))
-      skip_to_next <<- TRUE}) 
+      skip_to_next <<- TRUE})
   }
   #adjust pvalues and get confirmed ligands
   pvalues = p.adjust(pvalues,method = 'BH')
   ligands = top_genes[which(pvalues<alpha &beta>0)]
-  
+
   #get candidate receptor
   rec_ind = which(lr_mat[,1]%in% ligands & lr_mat[,2]%in% colnames(L))
   lr_mat = lr_mat[rec_ind,]
@@ -692,6 +616,7 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
   beta = c()
   gene_name = c()
   #iterate over all receptors
+  print('Testing candidate receptors for sufficient expression')
   for(j in c(1:length(receptors))){
     tryCatch({
       #get receptor
@@ -711,7 +636,7 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
       Y = Y[niche_index]
       nst = object@num_cells[niche_index,]
       nst[,which(L[,index_lig] < CT_filter)] = 0
-      #run regression 
+      #run regression
       if(L[index,index_lig] < CT_filter[index]){
         beta = c(beta,NA)
         pvalues = c(pvalues,NA)
@@ -723,9 +648,9 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
         pvalues = c(pvalues,summary(check)$coefficients[(index+1-num_bad),4])
       }
     }
-    , error = function(e) { 
+    , error = function(e) {
       print(paste0("error",j))
-      skip_to_next <<- TRUE}) 
+      skip_to_next <<- TRUE})
   }
   #adjust pvalues
   pvalues = p.adjust(pvalues,method = "BH")
@@ -744,7 +669,7 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
     rownames(LR_pairs) = c(1:nrow(LR_pairs))
   }
   return(LR_pairs)
-  
+
 }
 
 #' Perform Niche-LR (Ligand receptor analysis) on single cell level data
@@ -760,20 +685,21 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
 #' This matrix should have two columns. The first will be ligands and the second
 #' will be the corresponding receptors
 #' @param K The number of downstream target genes to use when calculating the
-#' ligand potential score
-#' @param M The maximum number of ligands that can pass initial filtering
-#' @param alpha The level at which to perform the Benjamini Hochberg correction
-#' @param alpha_2 The null quantile to compare observed expression to
-#' @param truncation_value The value at which to truncate T statistics
+#' ligand potential score. Default value is 25.
+#' @param M The maximum number of ligands that can pass initial filtering. Default value is 50.
+#' @param alpha The level at which to perform the Benjamini Hochberg correction. Default value is 0.05.
+#' @param alpha_2 The null quantile to compare observed expression to. Default value is 0.5 (50th percentile).
+#' @param truncation_value The value at which to truncate T statistics. Default value is 3.
 #' @return A list of ligand-receptor pairs that are found to be expressed by the
 #' specified cell type
 #' @export
 niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
-                         lr_mat,K,M,alpha,alpha_2,truncation_value = 3){
+                         lr_mat,K = 25,M = 50,alpha = 0.05,alpha_2 = 0.5,truncation_value = 3){
   niche = which(colnames(object@num_cells)==ligand_cell)
   index = which(colnames(object@num_cells)==receptor_cell)
-  
-  
+  print(paste0('Performing niche-LR with hyperparameters K = ',K,', M = ',M,', alpha = ',alpha,', alpha_2 = ',alpha_2,
+               ', truncation value = ',truncation_value,'.'))
+
   #make sure that collocalization occurs
   #check to see if they have enough overlap
   colloc = check_colloc(object,index,niche)
@@ -784,8 +710,8 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
               '. Results may be unreliable.')
     }
   }
-  
-  
+
+
   log_liks = object@niche_DE[[1]]$log_lik
   if(length(object@niche_DE)>=2){
     for(j in c(2:length(object@niche_DE))){
@@ -796,18 +722,18 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
     #get best kernel for each gene
     top_kernel = apply(log_liks,1,function(x){order(x,decreasing = T)[1]})
   }
-  
+
   if(length(object@niche_DE)==1){
     #get best kernel for each gene
     top_kernel = rep(1,length(log_liks))
   }
-  
+
   #get T_statistic list
   T_vector = vector(mode = "list", length = length(object@sigma))
   for(j in c(1:length(object@sigma))){
     T_vector[[j]] = object@niche_DE[[j]]$T_stat[index,niche,]
   }
-  #truncate niche_DE t-statistic 
+  #truncate niche_DE t-statistic
   for(j in c(1:length(T_vector))){
     T_vector[[j]] = pmin(T_vector[[j]],abs(truncation_value))
     T_vector[[j]] = pmax(T_vector[[j]],-abs(truncation_value))
@@ -820,7 +746,8 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
   cand_lig = colnames(L)[which(L[niche,]>CT_filter[niche])]
   filter = which(colnames(ligand_target_matrix)%in% cand_lig)
   ligand_target_matrix = ligand_target_matrix[,filter]
-  
+
+  print('Calculating ligand potential scores')
   #get ligand potential scores
   pear_cor = rep(NA,ncol(ligand_target_matrix))
   score_norm = rep(NA,ncol(ligand_target_matrix))
@@ -867,15 +794,16 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
   #get top candidate ligands
   top_genes = colnames(ligand_target_matrix)[top_index]
   #print(top_genes)
-  
+
   #################### test candidate ligands
+  print('Testing candidate ligands for sufficient expression')
   pvalues = c()
   beta = c()
   for(j in c(1:length(top_genes))){
     tryCatch({
       #get candidate ligand
       gene = top_genes[j]
-      #get what index it belongs to 
+      #get what index it belongs to
       index_gene = which(colnames(L)==gene)
       #get best kernel
       top_index = top_kernel[index_gene]
@@ -906,11 +834,11 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
       Test_stat = Test_stat/sqrt(lambda_niche/sum(nst[,niche]==1))
       #append pvalues
       pvalues = c(pvalues,1-pnorm(Test_stat))
-      
+
     } #get pval
-    , error = function(e) { 
+    , error = function(e) {
       #print(paste0("error",j))
-      skip_to_next <<- TRUE}) 
+      skip_to_next <<- TRUE})
   }
   #adjust pvalues and get confirmed ligands
   pvalues = p.adjust(pvalues,method = 'BH')
@@ -925,6 +853,7 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
   beta = c()
   gene_name = c()
   #iterate over all receptors
+  print('Testing candidate receptors for sufficient expression')
   for(j in c(1:length(receptors))){
     tryCatch({
       #get receptor
@@ -946,16 +875,16 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
       nst = object@num_cells
       nst = nst[niche_index,]
       nst[,which(L[,index_lig] < CT_filter)] = 0
-      #run regression 
+      #run regression
       lambda_niche = mean(Y[nst[,index]==1])
       lambda_rest = quantile(object@ref_expr[index,],alpha_2)
       Test_stat = lambda_niche-lambda_rest
       Test_stat = Test_stat/sqrt(lambda_niche/sum(nst[,index]==1))
       pvalues = c(pvalues,1-pnorm(Test_stat))
     }
-    , error = function(e) { 
+    , error = function(e) {
       print(paste0("error",j))
-      skip_to_next <<- TRUE}) 
+      skip_to_next <<- TRUE})
   }
   #adjust pvalues
   pvalues = p.adjust(pvalues,method = "BH")
@@ -971,7 +900,6 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
   }
   LR_pairs = LR_pairs[which(as.numeric(LR_pairs[,3])<alpha),c(1:2)]
   return(LR_pairs)
-  
-}               
-                         
-                      
+
+}
+

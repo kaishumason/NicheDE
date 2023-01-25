@@ -44,7 +44,6 @@ reference:
   contents:
   - CalculateEffectiveNiche
   - niche_DE
-  - get_niche_DE_pval
 
 - title: "Downstream Analysis"
   desc: >

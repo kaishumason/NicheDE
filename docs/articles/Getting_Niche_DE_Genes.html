@@ -78,62 +78,6 @@
     
     
 <div class="section level2">
-<h2 id="calculating-niche-de-pvalues">Calculating Niche-DE Pvalues<a class="anchor" aria-label="anchor" href="#calculating-niche-de-pvalues"></a>
-</h2>
-<p>After performing niche-DE we will now calculate pvalues. The function
-to calculate pvalues is called ‘get_niche_DE_pval’ and contains two
-arguments.</p>
-<details><summary>
-Arguments
-</summary><ul>
-<li><p>object: A niche-DE object</p></li>
-<li>
-<p>pos: A logical indicating if one wants to compute interaction
-level pvalues corresponding to a gene being an <span class="math inline">\((index,niche)+\)</span> gene (pos = T), or an
-<span class="math inline">\((index,niche)-\)</span> gene (pos = F)</p>
-</li>
-</ul></details><p>In general, the user should run this function twice, one for each
-value of ‘pos’</p>
-<pre><code><span><span class="va">NDE_obj</span> <span class="op">=</span> <span class="fu"><a href="../reference/get_niche_DE_pval.html">get_niche_DE_pval</a></span><span class="op">(</span><span class="va">NDE_obj</span>,pos <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span>
-<span><span class="va">NDE_obj</span> <span class="op">=</span> <span class="fu"><a href="../reference/get_niche_DE_pval.html">get_niche_DE_pval</a></span><span class="op">(</span><span class="va">NDE_obj</span>,pos <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></span></code></pre>
-<details><summary>
-Output Specifics
-</summary><p>Running the above function will populate 2 fields in your niche-DE
-object</p>
-<ul>
-<li>Niche-DE-pval-pos: Pvalues for testing if a gene is an
-(index,niche)+ niche gene. This is a list with length equal to the
-length of sigma. Each sublist contains 3 items.
-<ul>
-<li>gene-level: A list of gene level pvalues. It is a vector with length
-equal to the number of genes.</li>
-<li>cell-type-level: A matrix of dimension #genes by #cell types which
-gives cell type level pvalues.Index (i,j) gives a pvalue corresponding
-to whether gene i is a niche gene for index cell type j.</li>
-<li>interaction-level: An array of dimension #cell types by #cell types
-by #genes which gives interaction level pvalues. Index (i,j,k) gives a
-pvalue corresponding to whether gene k is an (index cell type i, niche
-cell type j)+ niche gene.</li>
-</ul>
-</li>
-<li>Niche-DE-pval-neg: Pvalues for testing if a gene is an
-(index,niche)- niche gene. This is a list with length equal to the
-length of sigma. Each sublist contains 3 items.
-<ul>
-<li>gene-level: A list of gene level pvalues. It is a vector with length
-equal to the number of genes.</li>
-<li>cell-type-level: A matrix of dimension #genes by #cell types which
-gives cell type level pvalues.Index (i,j) gives a pvalue corresponding
-to whether gene i is a niche gene for index cell type j.</li>
-<li>interaction-level: An array of dimension #cell types by #cell types
-by #genes which gives interaction level pvalues. Index (i,j,k) gives a
-pvalue corresponding to whether gene k is an (index cell type i, niche
-cell type j)- niche gene.</li>
-</ul>
-</li>
-</ul></details>
-</div>
-<div class="section level2">
 <h2 id="extract-niche-de-genes-for-a-specific-indexniche-pair">Extract Niche-DE Genes For a Specific (Index,Niche) Pair<a class="anchor" aria-label="anchor" href="#extract-niche-de-genes-for-a-specific-indexniche-pair"></a>
 </h2>
 <p>After calculating pvalues, we can find which genes are <span class="math inline">\((index,niche)\)</span> niche genes at varying
@@ -143,35 +87,35 @@ resolutions and FDR control levels. The function to do so is called
 Arguments
 </summary><ul>
 <li>object: A niche-DE object</li>
-<li>resolution: The resolution at which to return genes. There are three
-choices for resolution;gene level, cell type level, and interaction
+<li>test.level: The resolution at which to return genes. There are three
+choices for test.level;gene level, cell type level, and interaction
 level.</li>
 <li>index: The index cell type of interest</li>
 <li>niche: The niche cell type of interest</li>
-<li>pos: A logical indicating if one wants to find interaction level
-<span class="math inline">\((index,niche)+\)</span> niche genes (pos =
-T), or <span class="math inline">\((index,niche)-\)</span> niche genes
-(pos = F)</li>
+<li>direction: Character indicating whether to return genes that are
+(index,niche)+ patterns (direction = ‘positive’) or (index,niche)-
+(direction = ‘negative’). Default value is ‘positive’.</li>
 <li>alpha: The level at which to perform the benjamini-hochberg
-procedure at each resolution level<br>
+procedure at each resolution level. Default value is 0.05.<br>
 </li>
 </ul></details><p>Below, we find interaction level (fibroblast,tumor)+ niche genes.</p>
-<pre><code><span><span class="fu"><a href="../reference/get_niche_DE_genes.html">get_niche_DE_genes</a></span><span class="op">(</span><span class="va">NDE_obj</span>,<span class="st">'interaction'</span>,index<span class="op">=</span><span class="st">'stromal'</span>,niche <span class="op">=</span> <span class="st">'tumor_epithelial'</span>,pos <span class="op">=</span> <span class="cn">T</span>,alpha <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span></code></pre>
+<pre><code><span><span class="fu"><a href="../reference/get_niche_DE_genes.html">get_niche_DE_genes</a></span><span class="op">(</span><span class="va">NDE_obj</span>,<span class="st">'interaction'</span>,index<span class="op">=</span><span class="st">'stromal'</span>,niche <span class="op">=</span> <span class="st">'tumor_epithelial'</span>,direction <span class="op">=</span> <span class="st">'positive'</span>,alpha <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span></code></pre>
 <p>The output is a list of genes and their corresponding pvalues at the
 resolution specified.</p>
 <details><summary>
 Interpretting Your Results
-</summary><p>Assume that the ‘pos’ parameter is set to ‘True’. The interpretation
-of your output will differ based on the resolution chosen.</p>
+</summary><p>Assume that the direction parameter is set to ‘positive’. The
+interpretation of your output will differ based on the resolution
+chosen.</p>
 <ul>
-<li><p>Resolution = gene: Genes outputted show some sign of being a
+<li><p>Test.level = gene: Genes outputted show some sign of being a
 niche gene for some <span class="math inline">\((index,niche)\)</span>
 pair.</p></li>
-<li><p>Resolution = cell type: Genes outputted are significantly niche
+<li><p>Test.level = cell type: Genes outputted are significantly niche
 up or down regulated in the index cell. The niche cell type is
 unknown.</p></li>
 <li>
-<p>Resolution = interaction: Genes outputted are significantly
+<p>Test.level = interaction: Genes outputted are significantly
 upregulated in the index cell type when in the presence of the niche
 cell type. If ‘pos’ = ‘False’ then Genes outputted are significantly
 downregulated in the index cell type when in the presence of the niche
@@ -185,13 +129,15 @@ and <span class="math inline">\((index,niche)-\)</span> genes can be
 input into a pathway enrichment analysis to determine what processes are
 being up and downregulated in the index cell type when in the presence
 of the niche cell type. Here we perform pathway enrichment analysis of
-(fibroblast,tumor)+ genes.</p>
+(fibroblast,tumor)+ genes using the enrichR package.</p>
 <pre><code><span><span class="co">#Load enichr package</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">enrichR</span><span class="op">)</span></span>
 <span><span class="co">#get fibroblast tumor niche genes</span></span>
 <span><span class="va">fibro_tum_pos</span> <span class="op">=</span> <span class="fu"><a href="../reference/get_niche_DE_genes.html">get_niche_DE_genes</a></span><span class="op">(</span><span class="va">NDE_obj</span>,<span class="st">'interaction'</span>,index<span class="op">=</span><span class="st">'stromal'</span>,niche <span class="op">=</span> <span class="st">'tumor_epithelial'</span>,pos <span class="op">=</span> <span class="cn">T</span>,alpha <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span>
 <span><span class="co">#run pathway enrichment analysis</span></span>
-<span><span class="va">fibro_tum_processes</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/enrichR/man/enrichr.html" class="external-link">enrichr</a></span><span class="op">(</span><span class="va">fibro_tum_pos</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span>,databases <span class="op">=</span> <span class="st">'Reactome_2016'</span><span class="op">)</span></span></code></pre>
+<span><span class="va">fibro_tum_processes</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/enrichR/man/enrichr.html" class="external-link">enrichr</a></span><span class="op">(</span><span class="va">fibro_tum_pos</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span>,databases <span class="op">=</span> <span class="st">'Reactome_2016'</span><span class="op">)</span></span>
+<span><span class="co">#View processes in a table</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">fibro_tum_processes</span><span class="op">$</span><span class="va">Reactome_2016</span><span class="op">)</span></span></code></pre>
 
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
