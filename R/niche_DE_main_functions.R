@@ -692,8 +692,8 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
     LR_pairs[which(LR_pairs[,1]==j),3] = top_DE[[ID]]
   }
 
-  colnames(rec_mat) = c('ligand','receptor','top_downstream_niche_DE_genes')
-  rownames(rec_mat) = c(1:nrow(rec_mat))
+  colnames(LR_pairs) = c('ligand','receptor','top_downstream_niche_DE_genes')
+  rownames(LR_pairs) = c(1:nrow(LR_pairs))
 
   print(paste0('Returning ligand receptor table between ligand expressing cell type ',ligand_cell,
                ' and receptor expressing cell type ',receptor_cell,'.'))
@@ -944,8 +944,8 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
     LR_pairs[which(LR_pairs[,1]==j),3] = top_DE[[ID]]
   }
 
-  colnames(rec_mat) = c('ligand','receptor','top_downstream_niche_DE_genes')
-  rownames(rec_mat) = c(1:nrow(rec_mat))
+  colnames(LR_pairs) = c('ligand','receptor','top_downstream_niche_DE_genes')
+  rownames(LR_pairs) = c(1:nrow(LR_pairs))
   print(paste0('Returning ligand receptor table between ligand expressing cell type ',ligand_cell,
                ' and receptor expressing cell type ',receptor_cell,'.'))
 
