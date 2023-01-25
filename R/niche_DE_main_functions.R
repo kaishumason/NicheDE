@@ -531,6 +531,10 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
   #get ligand potential scores
   pear_cor = rep(NA,ncol(ligand_target_matrix))
   score_norm = rep(NA,ncol(ligand_target_matrix))
+
+  #save top niche-DE genes
+  top_DE = vector(mode = "list", length = ncol(ligand_target_matrix))
+  names(top_DE) = colnames(ligand_target_matrix)
   #iterate over potential ligands
   for(j in c(1:ncol(ligand_target_matrix))){
     ligand = colnames(ligand_target_matrix)[j]
@@ -556,12 +560,13 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
       genes = genes[filter]
       ligand_vec = ligand_vec[genes,]
       ligand_vec[,j] = scale(ligand_vec[,j])
-      #get top K downstreamm genes
+      #get top K downstream genes
       top_cors = order(ligand_vec[,j],decreasing = T)[1:K]
       #get weights based on scaled niche-net scores
       weight = ligand_vec[top_cors,j]/mean(ligand_vec[top_cors,j])
       ##calculate ligand potential scores
       pear_cor[j] = sum(sig[top_cors]*weight)
+      top_DE[[j]] = (rownames(ligand_vec)[top_cor])[order(sig[top_cors]*weight,decreasing = T)[1:5]]
       #get normalizing constant
       score_norm[j] = sum(weight^2)
     }
@@ -577,7 +582,7 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
     stop('No candidate ligands')
   }
   #################### test candidate ligands
-  print('Testing candidate ligands for sufficient expression')
+  print(paste0('Testing candidate ligands for sufficient expression in cell type ',ligand_cell))
   pvalues = c()
   beta = c()
   for(j in c(1:length(top_genes))){
@@ -614,7 +619,6 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
 
     } #get pval
     , error = function(e) {
-      print(paste0("error",j))
       skip_to_next <<- TRUE})
   }
   #adjust pvalues and get confirmed ligands
@@ -630,7 +634,7 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
   beta = c()
   gene_name = c()
   #iterate over all receptors
-  print('Testing candidate receptors for sufficient expression')
+  print(paste0('Testing candidate receptors for sufficient expression in cell type ',receptor_cell))
   for(j in c(1:length(receptors))){
     tryCatch({
       #get receptor
@@ -678,10 +682,18 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
   if(length(LR_pairs)==0){
     stop('no ligand-receptor pairs to report')
   }
-  LR_pairs = LR_pairs[which(as.numeric(LR_pairs[,3])<alpha),c(1:2)]
-  if(length(LR_pairs)>2){
-    rownames(LR_pairs) = c(1:nrow(LR_pairs))
+  LR_pairs = LR_pairs[which(as.numeric(LR_pairs[,3])<alpha),c(1:3)]
+  for(j in unique(LR_pairs[,1])){
+    #get gene/ligand name
+    gene_name = unique(LR_pairs)[j]
+    #match to top_DE list
+    ID = which(names(top_DE)==gene_name)
+    #get downstream genes
+    LR_pairs[which(LR_pairs[,1]==gene_name),3] = top_DE[[ID]]
   }
+
+  colnames(rec_mat) = c('ligand','receptor','top_downstream_niche_DE_genes')
+  rownames(rec_mat) = c(1:nrow(rec_mat))
 
   print(paste0('Returning ligand receptor table between ligand expressing cell type ',ligand_cell,
                ' and receptor expressing cell type ',receptor_cell,'.'))
@@ -770,6 +782,11 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
   #get ligand potential scores
   pear_cor = rep(NA,ncol(ligand_target_matrix))
   score_norm = rep(NA,ncol(ligand_target_matrix))
+
+  #save top niche-DE genes
+  top_DE = vector(mode = "list", length = ncol(ligand_target_matrix))
+  names(top_DE) = colnames(ligand_target_matrix)
+
   #iterate over potential ligands
   for(j in c(1:ncol(ligand_target_matrix))){
     ligand = colnames(ligand_target_matrix)[j]
@@ -801,6 +818,8 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
       weight = ligand_vec[top_cors,j]/mean(ligand_vec[top_cors,j])
       ##calculate ligand potential scores
       pear_cor[j] = sum(sig[top_cors]*weight)
+      #save top niche-DE genes of the ligand
+      top_DE[[j]] = (rownames(ligand_vec)[top_cor])[order(sig[top_cors]*weight,decreasing = T)[1:5]]
       #get normalizing constant
       score_norm[j] = sum(weight^2)
     }
@@ -815,7 +834,7 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
   #print(top_genes)
 
   #################### test candidate ligands
-  print('Testing candidate ligands for sufficient expression')
+  print(paste0('Testing candidate ligands for sufficient expression in cell type ',ligand_cell))
   pvalues = c()
   beta = c()
   for(j in c(1:length(top_genes))){
@@ -872,7 +891,7 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
   beta = c()
   gene_name = c()
   #iterate over all receptors
-  print('Testing candidate receptors for sufficient expression')
+  print(paste0('Testing candidate receptors for sufficient expression in cell type ',receptor_cell))
   for(j in c(1:length(receptors))){
     tryCatch({
       #get receptor
@@ -917,9 +936,21 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
   if(length(LR_pairs)==0){
     stop('no ligand-receptor pairs to report')
   }
-  LR_pairs = LR_pairs[which(as.numeric(LR_pairs[,3])<alpha),c(1:2)]
+  LR_pairs = LR_pairs[which(as.numeric(LR_pairs[,3])<alpha),c(1:3)]
+  for(j in unique(LR_pairs[,1])){
+    #get gene/ligand name
+    gene_name = unique(LR_pairs)[j]
+    #match to top_DE list
+    ID = which(names(top_DE)==gene_name)
+    #get downstream genes
+    LR_pairs[which(LR_pairs[,1]==gene_name),3] = top_DE[[ID]]
+  }
+
+  colnames(rec_mat) = c('ligand','receptor','top_downstream_niche_DE_genes')
+  rownames(rec_mat) = c(1:nrow(rec_mat))
   print(paste0('Returning ligand receptor table between ligand expressing cell type ',ligand_cell,
                ' and receptor expressing cell type ',receptor_cell,'.'))
+
   return(LR_pairs)
 
 }
