@@ -153,14 +153,13 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
   A = colSums(as.matrix(object@counts))
   #get number of genes that pass filtering
   num_pass = sum(A>=C,na.rm = T)
-  print(paste0('Number of Genes that pass filtering equal to ',num_pass))
-  if(num_pass < 1000){
-    warning('Less than 1000 genes pass filtering. Consider chaning choice of C parameter')
-  }
   print('Computing Niche-DE Pvalues')
   object = get_niche_DE_pval(object,pos = T)
   object = get_niche_DE_pval(object,pos = F)
-  print('Niche-DE analysis complete')
+  print(paste0('Niche-DE analysis complete. Number of Genes that pass filtering equal to ',num_pass))
+  if(num_pass < 1000){
+    warning('Less than 1000 genes pass filtering. Consider changing choice of C parameter')
+  }
   return(object)
 }
 
@@ -196,14 +195,14 @@ get_niche_DE_genes = function(object,test.level,index,niche,direction = 'positiv
     S = '-'
   }
   if(test.level == 'interaction'){
-    paste0('Finding Niche-DE',S,' genes at the interaction level between index cell type ',index,' and niche cell type '
-           ,niche,'. Performing BH procedure at level ',alpha,'.')
+    print(paste0('Finding Niche-DE',S,' genes at the interaction level between index cell type ',index,' and niche cell type '
+           ,niche,'. Performing BH procedure at level ',alpha,'.'))
   }
   if(test.level == 'cell type'){
-    paste0('Finding Niche-DE',' genes at the cell type level in index cell type ',index,'. Performing BH procedure at level ',alpha,'.')
+    print(paste0('Finding Niche-DE',' genes at the cell type level in index cell type ',index,'. Performing BH procedure at level ',alpha,'.'))
   }
   if(test.level == 'gene'){
-    paste0('Finding Niche-DE',' genes at the gene level','. Performing BH procedure at level ',alpha,'.')
+    print(paste0('Finding Niche-DE',' genes at the gene level','. Performing BH procedure at level ',alpha,'.'))
   }
 
   #if test.level if gene level
@@ -217,6 +216,7 @@ get_niche_DE_genes = function(object,test.level,index,niche,direction = 'positiv
     colnames(result) = c('Genes','Pvalues.Gene')
     rownames(result) = c(1:nrow(result))
     print('Returning Niche-DE Genes')
+    result = result[order(result[,2]),]
     return(result)
   }
 
@@ -230,6 +230,7 @@ get_niche_DE_genes = function(object,test.level,index,niche,direction = 'positiv
     colnames(result) = c('Genes','Pvalues.Gene')
     rownames(result) = c(1:nrow(result))
     print('Returning Niche-DE Genes')
+    result = result[order(result[,2]),]
     return(result)
   }
 
@@ -265,6 +266,7 @@ get_niche_DE_genes = function(object,test.level,index,niche,direction = 'positiv
     colnames(result) = c('Genes','Pvalues.Cell.Type')
     rownames(result) = c(1:nrow(result))
     print('Returning Niche-DE Genes')
+    result = result[order(result[,2]),]
     return(result)
   }
 
@@ -281,6 +283,7 @@ get_niche_DE_genes = function(object,test.level,index,niche,direction = 'positiv
     colnames(result) = c('Genes','Pvalues.Cell.Type')
     rownames(result) = c(1:nrow(result))
     print('Returning Niche-DE Genes')
+    result = result[order(result[,2]),]
     return(result)
   }
 
@@ -303,6 +306,7 @@ get_niche_DE_genes = function(object,test.level,index,niche,direction = 'positiv
     colnames(result) = c('Genes','Pvalues.Interaction')
     rownames(result) = c(1:nrow(result))
     print('Returning Niche-DE Genes')
+    result = result[order(result[,2]),]
     return(result)
   }
   if(test.level=='interaction' & direction=='negative'){
@@ -319,6 +323,7 @@ get_niche_DE_genes = function(object,test.level,index,niche,direction = 'positiv
     colnames(result) = c('Genes','Pvalues.Interaction')
     rownames(result) = c(1:nrow(result))
     print('Returning Niche-DE Genes')
+    result = result[order(result[,2]),]
     return(result)
   }
 }
@@ -433,7 +438,8 @@ niche_DE_markers = function(object,index,niche1,niche2,alpha = 0.05){
   gene_pval = gene_pval[which(gene_pval[,2]<(alpha/2)),]
   colnames(gene_pval) = c('Genes','Adj.Pvalues')
   rownames(gene_pval) = c(1:nrow(gene_pval))
-  print('Returning Marker Genes')
+  print('Marker gene analysis complete.')
+  gene_pval = gene_pval[order(gene_pval[,2]),]
   return(gene_pval)
 
 }
