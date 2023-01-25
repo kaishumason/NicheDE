@@ -23,7 +23,7 @@ niche_LR_spot(
 
 \item{receptor_cell}{The cell type that expresses the receptor}
 
-\item{ligand_target_matrix}{A matrix that measures the assocaition between
+\item{ligand_target_matrix}{A matrix that measures the association between
 ligands and their downstream target genes. Should be target genes by ligands}
 
 \item{lr_mat}{A matrix that matches ligands with their corresponding receptors.

@@ -2,13 +2,13 @@
 #'
 #' This function performs niche-DE
 #' @param object A niche-DE object
-#' @param C Minimum total expression of a gene needed for the model to run
+#' @param C Minimum total expression of a gene needed for the model to run. Default value is 150.
 #' @param M Minimum number of spots containing the index cell type with the
 #' niche cell type in its effective niche for (index,niche) niche patterns
-#' to be investigated
+#' to be investigated. Default value is 10.
 #' @param gamma Percentile a gene needs to be with respect to expression in the
 #'  index cell type in order for the model to investigate niche patterns for
-#'  that gene in the index cell
+#'  that gene in the index cell. Default value is 0.8 (80th percentile)
 #' @param print Logical if function should print progress report (kernel, gene #)
 #' @return A niche-DE object with niche-DE analysis performed
 #' @export
@@ -444,7 +444,7 @@ niche_DE_markers = function(object,index,niche1,niche2,alpha = 0.05){
 #' @param object A niche-DE object
 #' @param ligand_cell The cell type that expresses the ligand
 #' @param receptor_cell The cell type that expresses the receptor
-#' @param ligand_target_matrix A matrix that measures the assocaition between
+#' @param ligand_target_matrix A matrix that measures the association between
 #' ligands and their downstream target genes. Should be target genes by ligands
 #' @param lr_mat A matrix that matches ligands with their corresponding receptors.
 #' This matrix should have two columns. The first will be ligands and the second

@@ -9,15 +9,15 @@ niche_DE(object, C = 150, M = 10, gamma = 0.8, print = T)
 \arguments{
 \item{object}{A niche-DE object}
 
-\item{C}{Minimum total expression of a gene needed for the model to run}
+\item{C}{Minimum total expression of a gene needed for the model to run. Default value is 150.}
 
 \item{M}{Minimum number of spots containing the index cell type with the
 niche cell type in its effective niche for (index,niche) niche patterns
-to be investigated}
+to be investigated. Default value is 10.}
 
 \item{gamma}{Percentile a gene needs to be with respect to expression in the
 index cell type in order for the model to investigate niche patterns for
-that gene in the index cell}
+that gene in the index cell. Default value is 0.8 (80th percentile)}
 
 \item{print}{Logical if function should print progress report (kernel, gene #)}
 }
