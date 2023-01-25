@@ -1,6 +1,6 @@
 library(Matrix)
 setClassUnion(name = 'AnyMatrix', members = c("matrix", "dgCMatrix",'data.frame'))
-#set niche-de 
+#set niche-de
 Assay <- setClass(
   Class = 'Niche_DE',
   slots = c(
@@ -116,23 +116,23 @@ CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,
   if (anyDuplicated(x = colnames(x = counts_mat))){
     stop('gene names (colnames) of counts matrix must be unique')
   }
-  
-  
+
+
   #make sure that counts_mat and coordinate_mat have the same cell names in the same order
   if(mean(rownames(counts_mat)==rownames(coordinate_mat))!=1){
     stop('cell/spot names (rownames) of counts matrix and coordinate matrix do not match')
   }
-  
+
   #make sure that counts_mat and deconv_mat have the same cell names in the same order
   if(mean(rownames(counts_mat)==rownames(deconv_mat))!=1){
     stop('cell/spot names (rownames) of counts matrix and deconvolution matrix do not match')
   }
-  
+
   #make sure that deconv_mat and library_mat have the same cell types in the same order
   if(mean(colnames(deconv_mat)==rownames(library_mat))!=1){
     stop('celltypes of deconvolution matrix and reference expression matrix do not match')
   }
-  
+
   #make sure that sigma is a vector
   if((is.vector(sigma) && is.atomic(sigma))==F){
     stop('Sigma must be a vector')
@@ -145,7 +145,7 @@ CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,
   if(is.numeric(sigma)==F){
     stop('sigma must be numeric')
   }
-  
+
   #calculate number of cells per spot and expected expression
   #get genes that are shared between data and reference expression
   sim_gene = which(colnames(library_mat) %in% colnames(counts_mat))
@@ -164,7 +164,7 @@ CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,
   rownames(countsM) = rownames(counts_mat)
   #get library size of each spot
   Lib_spot = rowSums(countsM)
-  
+
   #Get expected library size given pi(deconvolution estimate for each spot)
   EL = deconv_mat%*%as.matrix(LM)
   #get expected number of total cells in a spot
@@ -178,22 +178,22 @@ CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,
   #reorder columns of count data to match that of library reference
   col.order = colnames(library_mat)
   countsM = countsM[,col.order]
-  
+
   #get min spot distance
   D = as.matrix(dist(coordinate_mat),diag = T)
   min_dist = mean(apply(D,2,function(x){sort(x,decreasing = F)[3]}))
-  
+
   #make sure that counts_mat and library_mat have the same gene names in the same order
   if(mean(colnames(countsM)==colnames(library_mat))!=1){
     stop('gene names (colnames) of counts matrix and library expression matrix do not match')
   }
-  
+
   object = new(Class = 'Niche_DE',counts = countsM,coord = coordinate_mat,
                sigma = sigma,num_cells = nst,ref_expr = library_mat,
                null_expected_expression = EEX,cell_names = rownames(countsM),
                gene_names = colnames(countsM),batch_ID = rep(1,nrow(countsM)),
                spot_distance = min_dist)
-  #make sure that counts_mat and 
+  #make sure that counts_mat and
 }
 
 #' CreateNicheDEObjectFromSeurat
@@ -202,7 +202,7 @@ CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,
 #'
 #' @param seurat_object A spatial seurat object.Coordinate matrix will be extracted via the
 #' seurat function 'GetTissueCoordinates'
-#' @param assay The assay from which to extract the counts matrix from. The counts matrix 
+#' @param assay The assay from which to extract the counts matrix from. The counts matrix
 #' will be extracted from the counts slot.
 #' @param library_mat Matrix indicating average expression profile for each cell type in the sample
 #' @param deconv_mat Deconvolution or cell type assignment matrix of data
@@ -219,7 +219,7 @@ CreateNicheDEObjectFromSeurat = function(seurat_object,assay,library_mat,deconv_
   counts_mat = Matrix::t(sobj_assay@counts)
   #extract coordinate matrix from seurat object
   coordinate_mat = Seurat::GetTissueCoordinates(seurat_object)
-  
+
   #make sure that cell names (rownames) are not null
   if (is.null(x = rownames(x = counts_mat))){
     stop('cell/spot names (rownames) of counts matrix must be non-null')
@@ -235,23 +235,23 @@ CreateNicheDEObjectFromSeurat = function(seurat_object,assay,library_mat,deconv_
   if (anyDuplicated(x = colnames(x = counts_mat))){
     stop('gene names (colnames) of counts matrix must be unique')
   }
-  
-  
+
+
   #make sure that counts_mat and coordinate_mat have the same cell names in the same order
   if(mean(rownames(counts_mat)==rownames(coordinate_mat))!=1){
     stop('cell/spot names (rownames) of counts matrix and coordinate matrix do not match')
   }
-  
+
   #make sure that counts_mat and deconv_mat have the same cell names in the same order
   if(mean(rownames(counts_mat)==rownames(deconv_mat))!=1){
     stop('cell/spot names (rownames) of counts matrix and deconvolution matrix do not match')
   }
-  
+
   #make sure that deconv_mat and library_mat have the same cell types in the same order
   if(mean(colnames(deconv_mat)==rownames(library_mat))!=1){
     stop('celltypes of deconvolution matrix and reference expression matrix do not match')
   }
-  
+
   #make sure that sigma is a vector
   if((is.vector(sigma) && is.atomic(sigma))==F){
     stop('Sigma must be a vector')
@@ -264,7 +264,7 @@ CreateNicheDEObjectFromSeurat = function(seurat_object,assay,library_mat,deconv_
   if(is.numeric(sigma)==F){
     stop('sigma must be numeric')
   }
-  
+
   #calculate number of cells per spot and expected expression
   #get genes that are shared between data and reference expression
   sim_gene = which(colnames(library_mat) %in% colnames(counts_mat))
@@ -284,7 +284,7 @@ CreateNicheDEObjectFromSeurat = function(seurat_object,assay,library_mat,deconv_
   #get library size of each spot
   print(dim(countsM))
   Lib_spot = rowSums(countsM)
-  
+
   #Get expected library size given pi(deconvolution estimate for each spot)
   EL = deconv_mat%*%as.matrix(LM)
   #get expected number of total cells in a spot
@@ -298,22 +298,22 @@ CreateNicheDEObjectFromSeurat = function(seurat_object,assay,library_mat,deconv_
   #reorder columns of count data to match that of library reference
   col.order = colnames(library_mat)
   countsM = countsM[,col.order]
-  
+
   #get min spot distance
   D = as.matrix(dist(coordinate_mat),diag = T)
   min_dist = mean(apply(D,2,function(x){sort(x,decreasing = F)[3]}))
-  
+
   #make sure that counts_mat and library_mat have the same gene names in the same order
   if(mean(colnames(countsM)==colnames(library_mat))!=1){
     stop('gene names (colnames) of counts matrix and library expression matrix do not match')
   }
-  
+
   object = new(Class = 'Niche_DE',counts = countsM,coord = coordinate_mat,
                sigma = sigma,num_cells = nst,ref_expr = library_mat,
                null_expected_expression = EEX,cell_names = rownames(countsM),
                gene_names = colnames(countsM),batch_ID = rep(1,nrow(countsM)),
                spot_distance = min_dist)
-  #make sure that counts_mat and 
+  #make sure that counts_mat and
 }
 
 
@@ -322,8 +322,8 @@ CreateNicheDEObjectFromSeurat = function(seurat_object,assay,library_mat,deconv_
 #' This function merges niche-DE objects
 #'
 #' @param objects A list of niche-DE objects
-#' @return A niche-DE object with each niche-DE object that concatenates 
-#' each niche-DE object used in the input list. Coordinates are scaled 
+#' @return A niche-DE object with each niche-DE object that concatenates
+#' each niche-DE object used in the input list. Coordinates are scaled
 #' to ensure that kernel bandwidths are consistent across datasets
 #' @export
 MergeObjects = function(objects){
@@ -339,7 +339,7 @@ MergeObjects = function(objects){
   EEX_merge = reference_obj@null_expected_expression
   refr_spot_distance = reference_obj@spot_distance
   batch_ID_merge = reference_obj@batch_ID
-  
+
   for(j in c(2:length(objects))){
     #check if sigma and L match
     if(setequal(objects[[j]]@sigma,reference_obj@sigma)==F){
@@ -348,8 +348,8 @@ MergeObjects = function(objects){
     if(mean(objects[[j]]@ref_expr==reference_obj@ref_expr)==F){
       stop('all objects being merged must consider the same kernel bandwidths')
     }
-    
-    
+
+
     #merge coordinates
     scale = objects[[j]]@spot_distance/refr_spot_distance
     coord_merge = rbind(coord_merge,objects[[j]]@coord*1/scale)
@@ -358,32 +358,32 @@ MergeObjects = function(objects){
       stop('cell types must be the same in merged objects')
     }
     num_cells_merge = rbind(num_cells_merge,objects[[j]]@num_cells)
-    
+
     #merge expected expresssion
     if(mean(colnames(EEX_merge) == colnames(objects[[j]]@null_expected_expression))!=1){
       stop('genes must be the same and in the same order in merged objects')
     }
     EEX_merge = rbind(EEX_merge,objects[[j]]@null_expected_expression)
-    
+
     #merge actual expresssion
     if(mean(colnames(counts_merge) == colnames(objects[[j]]@counts))!=1){
       stop('genes must be the same and in the same order in merged objects')
     }
     counts_merge = rbind(counts_merge,objects[[j]]@counts)
-    
-    
-    
+
+
+
     #merge batch ID
     batch_ID_new = objects[[j]]@batch_ID + max(batch_ID_merge)
     batch_ID_merge = c(batch_ID_merge,batch_ID_new)
-    
+
     #rename cells/spots
     rownames(counts_merge) = c(1:nrow(counts_merge))
     rownames(coord_merge) = c(1:nrow(coord_merge))
-    
+
     cell_names = rownames(counts_merge)
     gene_names = colnames(counts_merge)
-    
+
   }
   #make merged object
   object = new(Class = 'Niche_DE',counts = counts_merge,coord = coord_merge,
@@ -401,7 +401,7 @@ MergeObjects = function(objects){
 #'
 #' @param object A niche-DE object
 #' @return A niche-DE object the effective niche calculated.
-#' The effective niche is a list with each entry corresponding to a kernel bandwidth 
+#' The effective niche is a list with each entry corresponding to a kernel bandwidth
 #' @export
 CalculateEffectiveNiche = function(object,cutoff = 0.05){
   object@effective_niche = vector(mode = "list", length = length(object@sigma))
@@ -448,11 +448,11 @@ CalculateEffectiveNiche = function(object,cutoff = 0.05){
 
 #' Filter
 #'
-#' This function filters a seurat object to only include specific observations
+#' This function filters a niche-DE object to only include specific observations
 #'
 #' @param object A niche-DE object
 #' @param cell_names Cell names of observations that should be kept
-#' @return A niche-DE object that only includes the specified cells. 
+#' @return A niche-DE object that only includes the specified cells.
 #' We recommend using this function after calculating the effective niche on the whole dataset
 #' @export
 Filter = function(object,cell_names){
@@ -465,7 +465,7 @@ Filter = function(object,cell_names){
   for(j in c(1:length(object@effective_niche))){
     object@effective_niche[[j]] = subset(object@effective_niche[[j]], rownames(object@effective_niche[[j]]) %in% cell_names)
   }
-  object@null_expected_expression = subset(object@null_expected_expression, 
+  object@null_expected_expression = subset(object@null_expected_expression,
                                            rownames(object@null_expected_expression) %in% cell_names)
   object@batch_ID = object@batch_ID[which(object@cell_names%in% cell_names)]
   object@cell_names = object@cell_names[which(object@cell_names%in% cell_names)]
