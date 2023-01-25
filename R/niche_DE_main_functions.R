@@ -19,6 +19,7 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
   object@niche_DE = vector(mode = "list", length = length(object@sigma))
   names(object@niche_DE) = object@sigma
   counter = 1
+  valid = matrix(0,ngene,length(object@sigma))
   #iterate over each sigma value
   for(sig in object@sigma){
     print(paste0('Performing Niche-DE analysis with kernel bandwidth:',sig,' (number ',counter,' out of ',length(object@sigma),' values)'))
@@ -140,11 +141,11 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
               T_stat[,,j] = T_
               betas[,,j] = Matrix::t(beta)
               var_cov[,,j] = v_cov
+              valid[j,counter] = 1
             }
             #end of if statement
             }, #get pval
               error = function(e) {
-              print(paste0("error",j))
               skip_to_next <<- TRUE})
         }
       }
@@ -154,15 +155,15 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
     counter = counter + 1
   }
   #get column sums of counts matrix to see how many genes pass filtering
-  A = colSums(as.matrix(object@counts))
+  A = rowSums(valid)
   #get number of genes that pass filtering
-  num_pass = sum(A>=C,na.rm = T)
+  num_pass = sum(A>=1,na.rm = T)
   print('Computing Niche-DE Pvalues')
   object = get_niche_DE_pval(object,pos = T)
   object = get_niche_DE_pval(object,pos = F)
-  print(paste0('Niche-DE analysis complete. Number of Genes that pass filtering equal to ',num_pass))
+  print(paste0('Niche-DE analysis complete. Number of Genes with niche-DE T-stat equal to ',num_pass))
   if(num_pass < 1000){
-    warning('Less than 1000 genes pass filtering. Consider changing choice of C parameter')
+    warning('Less than 1000 genes pass. This could be due to insufficient read depth of data or size of C parameter. Consider changing choice of C parameter')
   }
   return(object)
 }
