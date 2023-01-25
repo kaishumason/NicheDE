@@ -19,7 +19,7 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
   object@niche_DE = vector(mode = "list", length = length(object@sigma))
   names(object@niche_DE) = object@sigma
   counter = 1
-  valid = matrix(0,ngene,length(object@sigma))
+  valid = matrix(0,ncol(object@counts),length(object@sigma))
   #iterate over each sigma value
   for(sig in object@sigma){
     print(paste0('Performing Niche-DE analysis with kernel bandwidth:',sig,' (number ',counter,' out of ',length(object@sigma),' values)'))
