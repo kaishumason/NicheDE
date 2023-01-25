@@ -21,7 +21,7 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
   counter = 1
   #iterate over each sigma value
   for(sig in object@sigma){
-    print(paste0('Performing Niche-DE analysis with kernel bandwidth ',sig,'(',counter,' out of ',length(object@sigma),' values)'))
+    print(paste0('Performing Niche-DE analysis with kernel bandwidth ',sig,' (number ',counter,' out of ',length(object@sigma),' values)'))
     #get expression filter (gamma)
     CT_filter = apply(object@ref_expr,1,function(x){quantile(x,gamma)})
     #initialize p value array
@@ -35,7 +35,7 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
     liks = rep(NA,ngene)
     for(j in c(1:ngene)){
       if(j%%1000 == 0 & print == T){
-        print(paste0('kernel bandwidth:', sig,'(',counter,' out of ',length(object@sigma),' values), ', "Processing Gene #",j,
+        print(paste0('kernel bandwidth:', sig,' (number ',counter,' out of ',length(object@sigma),' values), ', "Processing Gene #",j,
                      ' out of ',ncol(object@counts)))
       }
       #do if  gene is rejected and gene-type has at least 1 rejection
@@ -160,6 +160,7 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
   print('Computing Niche-DE Pvalues')
   object = get_niche_DE_pval(object,pos = T)
   object = get_niche_DE_pval(object,pos = F)
+  print('Niche-DE analysis complete')
   return(object)
 }
 
@@ -206,7 +207,7 @@ get_niche_DE_genes = function(object,test.level,index,niche,direction = 'positiv
   }
 
   #if test.level if gene level
-  if(test.level=='gene' & direction == T){
+  if(test.level=='gene' & direction == 'positive'){
     #get genes that reject at gene level
     gene_ind = which(object@niche_DE_pval_pos$gene_level<(alpha))
     genes = object@gene_names[gene_ind]
@@ -219,7 +220,7 @@ get_niche_DE_genes = function(object,test.level,index,niche,direction = 'positiv
     return(result)
   }
 
-  if(test.level=='gene' & direction == F){
+  if(test.level=='gene' & direction == 'negative'){
     #get genes that reject at gene level
     gene_ind = which(object@niche_DE_pval_neg$gene_level<(alpha))
     genes = object@gene_names[gene_ind]
@@ -234,12 +235,10 @@ get_niche_DE_genes = function(object,test.level,index,niche,direction = 'positiv
 
 
 
-  if((index %in% colnames(object@num_cells))==F){
+  if((index %in% colnames(object@num_cells))=='negative'){
     stop('Index cell type not found')
   }
-  if((niche %in% colnames(object@num_cells))==F){
-    stop('Niche cell type not found')
-  }
+
   #get index and nice indices
   ct_index = which(colnames(object@num_cells)==index)
   niche_index = which(colnames(object@num_cells)==niche)
@@ -253,7 +252,7 @@ get_niche_DE_genes = function(object,test.level,index,niche,direction = 'positiv
     }
   }
   #if test.level if cell type level
-  if(test.level=='cell type' & direction == T){
+  if(test.level=='cell type' & direction == 'positive'){
     #get index of index cell type
     ct_index = which(colnames(object@num_cells)==index)
     #get genes that reject at the gene and CT level
@@ -269,7 +268,7 @@ get_niche_DE_genes = function(object,test.level,index,niche,direction = 'positiv
     return(result)
   }
 
-  if(test.level=='cell type' & direction == F){
+  if(test.level=='cell type' & direction == 'negative'){
     #get index of index cell type
     ct_index = which(colnames(object@num_cells)==index)
     #get genes that reject at the gene and CT level
@@ -285,9 +284,12 @@ get_niche_DE_genes = function(object,test.level,index,niche,direction = 'positiv
     return(result)
   }
 
+  if((niche %in% colnames(object@num_cells))==F){
+    stop('Niche cell type not found')
+  }
 
   #if test.level if interaction level
-  if(test.level =='interaction' & direction==T){
+  if(test.level =='interaction' & direction=='positive'){
     ct_index = which(colnames(object@num_cells)==index)
     niche_index = which(colnames(object@num_cells)==niche)
     gene_index = which((object@niche_DE_pval_pos$gene_level<(alpha)) &
@@ -303,7 +305,7 @@ get_niche_DE_genes = function(object,test.level,index,niche,direction = 'positiv
     print('Returning Niche-DE Genes')
     return(result)
   }
-  if(test.level=='interaction' & direction==F){
+  if(test.level=='interaction' & direction=='negative'){
     ct_index = which(colnames(object@num_cells)==index)
     niche_index = which(colnames(object@num_cells)==niche)
     gene_index = which((object@niche_DE_pval_neg$gene_level<(alpha)) &

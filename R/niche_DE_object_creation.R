@@ -25,7 +25,7 @@ Assay <- setClass(
 #' @export
 print.Niche_DE = function(object){
   A = paste0('Niche-DE object with ',nrow(object@counts),' observations, ', ncol(object@counts),' genes, ',
-         length(unique(object@batch_ID)), ' batches, and ', length(object@cell_types), ' cell types.')
+         length(unique(object@batch_ID)), ' batche(s), and ', length(object@cell_types), ' cell types.')
   return(A)
 }
 
