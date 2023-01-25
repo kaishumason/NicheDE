@@ -104,41 +104,45 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
                 null = sort(c(null,rest[new_null]))
               }
             }
-            #cholesky decomposition
-            A = Matrix::chol(var_mat,LDL = FALSE,perm = FALSE)
-            #get covaraince matrix
-            V = solve(A)%*%Matrix::t(solve(A))
-            #get standard devaition vector
-            tau = sqrt(diag(V))#get sd matrix
-            V_ = matrix(NA,n_type,n_type)
-            if(length(null)==0){
-              V_ = matrix(tau,n_type,n_type)
-            }else{
-              V_[c(1:n_type^2)[-null]] = tau}
-            #for full var_cov matrix.
-            v_cov = matrix(NA,n_type^2,n_type^2)
-            if(length(null)==0){
-              v_cov = matrix(V,n_type^2,n_type^2)
-            }else{
-              v_cov[-null,-null] = as.matrix(V)}
-            #print('getting beta')
-            beta = matrix(NA,n_type,n_type)
-
-            if(length(new_null)>0){
-              beta[c(1:n_type^2)[-null]] = full_glm$coefficients[-c(1,new_null+1)]
-            }
-
-            if(length(new_null)==0){
+            if(length(nul)!=n_type^2){
+              #cholesky decomposition
+              A = Matrix::chol(var_mat,LDL = FALSE,perm = FALSE)
+              #get covaraince matrix
+              V = solve(A)%*%Matrix::t(solve(A))
+              #get standard devaition vector
+              tau = sqrt(diag(V))#get sd matrix
+              V_ = matrix(NA,n_type,n_type)
               if(length(null)==0){
-                beta = matrix(full_glm$coefficients[-c(1)],n_type,n_type)
+                V_ = matrix(tau,n_type,n_type)
               }else{
-                beta[c(1:n_type^2)[-null]] = full_glm$coefficients[-c(1)]}
+                V_[c(1:n_type^2)[-null]] = tau}
+              #for full var_cov matrix.
+              v_cov = matrix(NA,n_type^2,n_type^2)
+              if(length(null)==0){
+                v_cov = matrix(V,n_type^2,n_type^2)
+              }else{
+                v_cov[-null,-null] = as.matrix(V)}
+              #print('getting beta')
+              beta = matrix(NA,n_type,n_type)
+
+              if(length(new_null)>0){
+                beta[c(1:n_type^2)[-null]] = full_glm$coefficients[-c(1,new_null+1)]
+              }
+
+              if(length(new_null)==0){
+                if(length(null)==0){
+                  beta = matrix(full_glm$coefficients[-c(1)],n_type,n_type)
+                }else{
+                  beta[c(1:n_type^2)[-null]] = full_glm$coefficients[-c(1)]}
+              }
+              #record test statitistic
+              T_ = Matrix::t(beta/V_)
+              T_stat[,,j] = T_
+              betas[,,j] = Matrix::t(beta)
+              var_cov[,,j] = v_cov
             }
-            #record test statitistic
-            T_ = Matrix::t(beta/V_)
-            T_stat[,,j] = T_
-            betas[,,j] = Matrix::t(beta)
-            var_cov[,,j] = v_cov}, #get pval
+            #end of if statement
+            }, #get pval
               error = function(e) {
               print(paste0("error",j))
               skip_to_next <<- TRUE})
