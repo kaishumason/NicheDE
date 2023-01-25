@@ -707,6 +707,8 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
   index = which(colnames(object@num_cells)==receptor_cell)
   print(paste0('Performing niche-LR with hyperparameters K = ',K,', M = ',M,', alpha = ',alpha,', alpha_2 = ',alpha_2,
                ', truncation value = ',truncation_value,'.'))
+  print(paste0('Finding ligand receptors between ligand expressing cell type ',ligand_cell,
+               ' and receptor expressing cell type ',receptor_cell,'.'))
 
   #make sure that collocalization occurs
   #check to see if they have enough overlap
@@ -907,6 +909,8 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
     stop('no ligand-receptor pairs to report')
   }
   LR_pairs = LR_pairs[which(as.numeric(LR_pairs[,3])<alpha),c(1:2)]
+  print(paste0('Returning ligand receptor table between ligand expressing cell type ',ligand_cell,
+               ' and receptor expressing cell type ',receptor_cell,'.'))
   return(LR_pairs)
 
 }

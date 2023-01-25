@@ -25,7 +25,7 @@ Assay <- setClass(
 #' @export
 print.Niche_DE = function(object){
   A = paste0('Niche-DE object with ',nrow(object@counts),' observations, ', ncol(object@counts),' genes, ',
-         length(unique(object@batch_ID)), ' batche(s), and ', length(object@cell_types), ' cell types.')
+         length(unique(object@batch_ID)), ' batch(es), and ', length(object@cell_types), ' cell types.')
   return(A)
 }
 
@@ -113,6 +113,11 @@ CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,
   if (missing(x = counts_mat)) {
     stop("Must provide counts matrix")
   }
+
+  if (sum(counts_mat%%1)!=0){
+    stop('counts matrix must contain only integers')
+  }
+
   #make sure that cell names (rownames) are not null
   if (is.null(x = rownames(x = counts_mat))){
     stop('cell/spot names (rownames) of counts matrix must be non-null')
@@ -214,7 +219,7 @@ CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,
                gene_names = colnames(countsM),batch_ID = rep(1,nrow(countsM)),
                spot_distance = min_dist)
   A = paste0('Niche-DE object created with ',nrow(object@counts),' observations, ', ncol(object@counts),' genes, ',
-             length(unique(object@batch_ID)), ' batche(s), and ', length(object@cell_types), ' cell types.')
+             length(unique(object@batch_ID)), ' batch(es), and ', length(object@cell_types), ' cell types.')
   print(A)
   return(object)
 }
@@ -240,6 +245,11 @@ CreateNicheDEObjectFromSeurat = function(seurat_object,assay,library_mat,deconv_
   #extract raw counts matrix from seurat object
   sobj_assay = Seurat::GetAssay(seurat_object,assay)
   counts_mat = Matrix::t(sobj_assay@counts)
+  #make sure that counts_mat is integers
+  if (sum(counts_mat%%1)!=0){
+    stop('counts matrix must contain only integers')
+  }
+
   #extract coordinate matrix from seurat object
   coordinate_mat = Seurat::GetTissueCoordinates(seurat_object)
 
@@ -344,7 +354,7 @@ CreateNicheDEObjectFromSeurat = function(seurat_object,assay,library_mat,deconv_
   #make sure that counts_mat and
 
   A = paste0('Niche-DE object created with ',nrow(object@counts),' observations, ', ncol(object@counts),' genes, ',
-             length(unique(object@batch_ID)), ' batche(s), and ', length(object@cell_types), ' cell types.')
+             length(unique(object@batch_ID)), ' batch(es), and ', length(object@cell_types), ' cell types.')
   print(A)
   return(object)
 }
