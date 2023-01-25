@@ -567,9 +567,6 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
       ##calculate ligand potential scores
       pear_cor[j] = sum(sig[top_cors]*weight)
       top_DE[[j]] = (rownames(ligand_vec)[top_cors])[order(sig[top_cors]*weight,decreasing = T)[1:5]]
-      if(j%in%c(1,100,1000)){
-        print(top_DE[[j]])
-      }
       #get normalizing constant
       score_norm[j] = sum(weight^2)
     }
@@ -689,6 +686,8 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
   for(j in unique(LR_pairs[,1])){
     #get gene/ligand name
     gene_name = unique(LR_pairs)[j]
+    print(gene_name)
+    print(names(top_DE))
     #match to top_DE list
     ID = which(names(top_DE)==gene_name)
     print(ID)
