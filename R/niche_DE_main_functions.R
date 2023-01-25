@@ -104,7 +104,7 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
                 null = sort(c(null,rest[new_null]))
               }
             }
-            if(length(nul)!=n_type^2){
+            if(length(null)!=n_type^2){
               #cholesky decomposition
               A = Matrix::chol(var_mat,LDL = FALSE,perm = FALSE)
               #get covaraince matrix
