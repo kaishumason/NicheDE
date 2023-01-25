@@ -21,7 +21,7 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
   counter = 1
   #iterate over each sigma value
   for(sig in object@sigma){
-    print(paste0('Performing Niche-DE analysis with kernel bandwidth ',sig,' (number ',counter,' out of ',length(object@sigma),' values)'))
+    print(paste0('Performing Niche-DE analysis with kernel bandwidth:',sig,' (number ',counter,' out of ',length(object@sigma),' values)'))
     #get expression filter (gamma)
     CT_filter = apply(object@ref_expr,1,function(x){quantile(x,gamma)})
     #initialize p value array
@@ -473,6 +473,8 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
 
   print(paste0('Performing niche-LR with hyperparameters K = ',K,', M = ',M,', alpha = ',alpha,
                ', truncation value = ',truncation_value,'.'))
+  print(paste0('Finding ligand receptors between ligand expressing cell type ',ligand_cell,
+               ' and receptor expressing cell type ',receptor_cell,'.'))
   #make sure that collocalization occurs
   #check to see if they have enough overlap
   colloc = check_colloc(object,index,niche)
@@ -676,6 +678,9 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
   if(length(LR_pairs)>2){
     rownames(LR_pairs) = c(1:nrow(LR_pairs))
   }
+
+  print(paste0('Returning ligand receptor table between ligand expressing cell type ',ligand_cell,
+               ' and receptor expressing cell type ',receptor_cell,'.'))
   return(LR_pairs)
 
 }
