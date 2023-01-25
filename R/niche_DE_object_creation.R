@@ -12,6 +12,7 @@ Assay <- setClass(
     ref_expr = 'AnyMatrix',
     null_expected_expression = 'AnyMatrix',
     cell_names = 'vector',
+    cell_types = 'vector',
     gene_names = 'vector',
     batch_ID = 'vector',
     spot_distance = 'numeric',
@@ -21,6 +22,11 @@ Assay <- setClass(
   )
 )
 
+print.Niche_DE = function(object){
+  A = paste0('Niche-DE object with ',nrow(object@counts),' observations, ', ncol(object@counts),' genes, ',
+         length(unique(object@batch_ID)), ' batches, and ', length(object@cell_types), ' cell types.')
+  return(A)
+}
 
 #' CreateLibraryMatrix
 #'
@@ -190,7 +196,7 @@ CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,
 
   object = new(Class = 'Niche_DE',counts = countsM,coord = coordinate_mat,
                sigma = sigma,num_cells = nst,ref_expr = library_mat,
-               null_expected_expression = EEX,cell_names = rownames(countsM),
+               null_expected_expression = EEX,cell_names = rownames(countsM), cell_types = colnames(nst),
                gene_names = colnames(countsM),batch_ID = rep(1,nrow(countsM)),
                spot_distance = min_dist)
   #make sure that counts_mat and
@@ -389,7 +395,7 @@ MergeObjects = function(objects){
   object = new(Class = 'Niche_DE',counts = counts_merge,coord = coord_merge,
                sigma = reference_obj@sigma,num_cells = num_cells_merge,
                ref_expr = reference_obj@ref_expr,
-               null_expected_expression = EEX_merge,cell_names = cell_names,
+               null_expected_expression = EEX_merge,cell_names = cell_names, cell_types = colnames(num_cells_merge),
                gene_names = gene_names,batch_ID = batch_ID_merge,
                spot_distance = refr_spot_distance)
   return(object)
