@@ -214,7 +214,8 @@ CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,
                spot_distance = min_dist)
   A = paste0('Niche-DE object created with ',nrow(object@counts),' observations, ', ncol(object@counts),' genes, ',
              length(unique(object@batch_ID)), ' batches, and ', length(object@cell_types), ' cell types.')
-  return(A)
+  print(A)
+  return(object)
 }
 
 #' CreateNicheDEObjectFromSeurat
