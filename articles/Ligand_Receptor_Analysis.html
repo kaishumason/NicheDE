@@ -101,18 +101,19 @@ ligands and their downstream target genes. The dimension should be
 receptors. This matrix should have two columns. The first will be
 ligands and the second will be the corresponding receptors</li>
 <li>K: The number of downstream target genes to use when calculating the
-ligand activity score</li>
-<li>M: The maximum number of ligands that can pass initial
-filtering</li>
+ligand activity score. Default value is 25.</li>
+<li>M: The maximum number of ligands that can pass initial filtering.
+Default value is 50.</li>
 <li>alpha: The level at which to perform the Benjamini Hochberg
-correction</li>
+correction. Default value is 0.05.</li>
 <li>truncation value: The value at which to truncate T statistics.</li>
 </ul>
 For ‘niche_LR_cell’, their is an additional parameter ‘alpha_2’ which
 refers to the null quantile to compare observed epression to. That is
 that we compare expression of the ligand and receptor to see if it is
 greater than the ‘alpha_2’ percentile of gene expression over all genes
-expressed in the ligand expressing or reeptor expressing cell.
+expressed in the ligand expressing or receptor expressing cell.The
+Default value is 0.5 (50th percentile).
 </details><p>We now perform ligand-receptor analysis to infer ligand-receptor
 interactions between tumor cells (ligand expressing cell) and
 fibroblasts (receptor expressing cell) on spot level data. The output
