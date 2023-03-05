@@ -6,7 +6,7 @@ template:
 
 articles:
 - title: Vignettes
-  navbar: Yee
+  navbar: Vignettes
   contents:
   - Installation
   - Deconvolution
