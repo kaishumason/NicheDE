@@ -50,7 +50,7 @@ contrast_post = function(betas_all,V_cov_all,index,niche){
     if(j%%5000 == 0){
       paste0('gene #',j,' out of ', ngene)
     }
-    V_cov = V_cov_all[,,j]
+    V_cov = V_cov_all[[j]]
     betas = betas_all[,,j]
     #do if  gene is rejected and gene-type has at least 1 rejection
     tryCatch({

@@ -31,7 +31,11 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
     dimnames = list(A = colnames(object@num_cells),B  = colnames(object@num_cells), C = colnames(object@counts))
     #pgt is index type by niche type by gene
     T_stat = array(NA,c(n_type,n_type,ngene),dimnames = dimnames)
-    var_cov = array(NA,c(n_type^2,n_type^2,ngene))
+    #var_cov is too large for even moderately many cell types so will use list instead
+    #var_cov = array(NA,c(n_type^2,n_type^2,ngene))
+    var_cov = vector(mode='list', length=ngene)
+    names(var_cov) = colnames(object@counts)
+    #initalize betas
     betas = array(NA,c(n_type,n_type,ngene),dimnames = dimnames)
     liks = rep(NA,ngene)
     for(j in c(1:ngene)){
@@ -140,7 +144,7 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
               T_ = Matrix::t(beta/V_)
               T_stat[,,j] = T_
               betas[,,j] = Matrix::t(beta)
-              var_cov[,,j] = v_cov
+              var_cov[[j]] = v_cov
               valid[j,counter] = 1
             }
             #end of if statement
