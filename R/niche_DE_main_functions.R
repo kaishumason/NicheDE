@@ -567,9 +567,9 @@ niche_DE_markers_test = function(object,index,niche1,niche2,alpha = 0.05){
   contrast_phoch = p.adjust(contrast,method = "BH")
   #bind genes and their pvalue
   gene_pval = data.frame(object@gene_names,contrast_phoch)
-  print(dim(gene_pval))
   #filter to only those that reject
   gene_pval = gene_pval[which(gene_pval[,2]<(alpha/2)),]
+  print(dim(gene_pval))
   colnames(gene_pval) = c('Genes','Adj.Pvalues')
   rownames(gene_pval) = c(1:nrow(gene_pval))
   print('Marker gene analysis complete.')
