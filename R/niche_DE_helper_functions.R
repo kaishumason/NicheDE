@@ -132,7 +132,7 @@ contrast_post_test = function(betas_all,V_cov_all,nulls_all,index,niche){
   return(p)
 }
 
-
+#' @export
 check_colloc = function(object,index,niche){
   #initialize list
   colloc = rep(NA, length = length(object@sigma))
