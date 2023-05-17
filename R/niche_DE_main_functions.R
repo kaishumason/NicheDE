@@ -39,7 +39,7 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
     betas = array(NA,c(n_type,n_type,ngene),dimnames = dimnames)
     liks = rep(NA,ngene)
     for(j in c(1:ngene)){
-      if(j%%1000 == 0 & print == T){
+      if(j%%1 == 0 & print == T){
         print(paste0('kernel bandwidth:', sig,' (number ',counter,' out of ',length(object@sigma),' values), ', "Processing Gene #",j,
                      ' out of ',ncol(object@counts)))
       }
