@@ -34,7 +34,7 @@ print.Niche_DE = function(object){
 #' This function creates a expression profile matrix for single cell data
 #'
 #' @param data Single cell rna-seq counts matrix. Dimension should be cells/spots by genes
-#' @param cell_type Cell_type assignment matrix. First row is cell names and second row is cell type assignment.
+#' @param cell_type Cell_type assignment matrix. First column is cell names and second column is cell type assignment.
 #' @return A library matrix with the average expression profile per cell type
 #' @export
 CreateLibraryMatrix = function(data,cell_type){
