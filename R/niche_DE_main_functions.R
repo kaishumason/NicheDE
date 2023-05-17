@@ -144,7 +144,7 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
               T_ = Matrix::t(beta/V_)
               T_stat[,,j] = T_
               betas[,,j] = Matrix::t(beta)
-              var_cov[[j]] = v_cov
+              var_cov[[j]] = Matrix::Matrix(v_cov,sparse = TRUE)
               valid[j,counter] = 1
             }
             #end of if statement
