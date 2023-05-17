@@ -155,6 +155,8 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
               error = function(e) {
               skip_to_next <<- TRUE})
         }
+      }else{
+        nulls[[j]] = c(1:n_type^2)
       }
     }
     #save object

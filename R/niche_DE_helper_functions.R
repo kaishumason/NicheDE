@@ -48,7 +48,7 @@ contrast_post = function(betas_all,V_cov_all,index,niche){
   #print('start')
   for(j in c(1:ngene)){
     if(j%%5000 == 0){
-      paste0('gene #',j,' out of ', ngene)
+      print(paste0('gene #',j,' out of ', ngene))
     }
     V_cov = V_cov_all[[j]]
     betas = betas_all[,,j]
@@ -127,7 +127,6 @@ contrast_post_test = function(betas_all,V_cov_all,nulls_all,index,niche){
       p_stat = 1-pnorm(T_stat)
       p[j,] = p_stat} #get pval
       , error = function(e) {
-        print(paste0("error",j))
         skip_to_next <<- TRUE})
   }
   return(p)
