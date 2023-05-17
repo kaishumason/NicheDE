@@ -348,7 +348,7 @@ CreateNicheDEObjectFromSeurat = function(seurat_object,assay,library_mat,deconv_
 
   object = new(Class = 'Niche_DE',counts = countsM,coord = coordinate_mat,
                sigma = sigma,num_cells = nst,ref_expr = library_mat,
-               null_expected_expression = EEX,cell_names = rownames(countsM),
+               null_expected_expression = EEX,cell_names = rownames(countsM),cell_types = colnames(nst),
                gene_names = colnames(countsM),batch_ID = rep(1,nrow(countsM)),
                spot_distance = min_dist)
   #make sure that counts_mat and

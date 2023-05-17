@@ -86,22 +86,33 @@ contrast_post_test = function(betas_all,V_cov_all,nulls_all,index,niche){
     if(j%%5000 == 0){
       paste0('gene #',j,' out of ', ngene)
     }
+    #boolean for if we can even get the covariance matrix
+    fail = F
+    #read in null values (remove those interactions)
+    null = nulls_all[[j]]
+    #readin cholesky decomp of covariance matrix
+    V_cov_decomp = V_cov_all[[j]]
+    #get true covariance matrix from cholesky decomps
+    tryCatch({
+    V = solve(V_cov_decomp)%*%Matrix::t(solve(V_cov_decomp))} #get pval
+    , error = function(e) {
+      skip_to_next <<- TRUE
+      fail = T})
+
+    if(fail==T){
+      V = matrix(NA,n_type^2,n_type^2)[-null,-null]
+    }
+    #make matrix with nulls added
+    V_cov = matrix(NA,n_type^2,n_type^2)
+    if(length(null)==0){
+      V_cov = matrix(V,n_type^2,n_type^2)
+    }else{
+      V_cov[-null,-null] = as.matrix(V)}
+    betas = betas_all[,,j]
+
+
     #do if  gene is rejected and gene-type has at least 1 rejection
     tryCatch({
-      #read in null values (remove those interactions)
-      null = nulls_all[[j]]
-      #readin cholesky decomp of covariance matrix
-      V_cov_decomp = V_cov_all[[j]]
-      #get true covariance matrix from cholesky decomps
-      V = solve(V_cov_decomp)%*%Matrix::t(solve(V_cov_decomp))
-      #make matrix with nulls added
-      V_cov = matrix(NA,n_type^2,n_type^2)
-      if(length(null)==0){
-        V_cov = matrix(V,n_type^2,n_type^2)
-      }else{
-        V_cov[-null,-null] = as.matrix(V)}
-      betas = betas_all[,,j]
-
       #get sd of contrast
       index_1 = (index-1)*n_type + niche[1]
       index_2 = (index-1)*n_type + niche[2]
