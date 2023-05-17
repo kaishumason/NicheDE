@@ -9,7 +9,7 @@ CreateLibraryMatrix(data, cell_type)
 \arguments{
 \item{data}{Single cell rna-seq counts matrix. Dimension should be cells/spots by genes}
 
-\item{cell_type}{Cell_type assignment matrix. First row is cell names and second row is cell type assignment.}
+\item{cell_type}{Cell_type assignment matrix. First column is cell names and second column is cell type assignment.}
 }
 \value{
 A library matrix with the average expression profile per cell type
