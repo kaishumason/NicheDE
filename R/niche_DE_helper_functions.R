@@ -73,6 +73,50 @@ contrast_post = function(betas_all,V_cov_all,index,niche){
   return(p)
 }
 
+#' @export
+contrast_post_test = function(betas_all,V_cov_all,nulls_all,index,niche){
+  #initialize p value array
+  ngene = dim(betas_all)[3]
+  n_type = dim(betas_all)[1]
+  #pgt is index type by niche type by gene
+  p = matrix(NA,ngene,1)
+  rownames(p) = dimnames(betas_all)[[3]]
+  #print('start')
+  for(j in c(1:ngene)){
+    if(j%%5000 == 0){
+      paste0('gene #',j,' out of ', ngene)
+    }
+    null = nulls_all[[j]]
+    V_cov_decomp = V_cov_all[[j]]
+    #get true covariance matrix from cholesky decomps
+    V = solve(V_cov_decomp)%*%Matrix::t(solve(V_cov_decomp))
+    #make matrix with nulls added
+    V_cov = matrix(NA,n_type^2,n_type^2)
+    if(length(null)==0){
+      V_cov = matrix(V,n_type^2,n_type^2)
+    }else{
+      V_cov[-null,-null] = as.matrix(V)}
+    betas = betas_all[,,j]
+    #do if  gene is rejected and gene-type has at least 1 rejection
+    tryCatch({
+      #get sd of contrast
+      index_1 = (index-1)*n_type + niche[1]
+      index_2 = (index-1)*n_type + niche[2]
+      var_contrast = diag(V_cov)[index_1]+diag(V_cov)[index_2]-2*V_cov[index_1,index_2]
+
+      #test statistic
+      T_stat = betas[index,niche[1]] - betas[index,niche[2]]
+      T_stat = T_stat/(sqrt(var_contrast))
+      #print(T_stat)
+      #print('getting pvalue')
+      p_stat = 1-pnorm(T_stat)
+      p[j,] = p_stat} #get pval
+      , error = function(e) {
+        print(paste0("error",j))
+        skip_to_next <<- TRUE})
+  }
+  return(p)
+}
 
 
 check_colloc = function(object,index,niche){
