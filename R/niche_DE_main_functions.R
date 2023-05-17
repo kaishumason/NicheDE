@@ -457,7 +457,7 @@ niche_DE_markers = function(object,index,niche1,niche2,alpha = 0.05){
 }
 
 
-#' Get Niche-DE marker genes
+#' Get Niche-DE marker genes(test)
 #'
 #' This function returns genes marker genes in the index cell type when near the first niche cell type realtive to the second one
 #'
