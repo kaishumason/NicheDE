@@ -568,13 +568,16 @@ niche_DE_markers_test = function(object,index,niche1,niche2,alpha = 0.05){
   #bind genes and their pvalue
   gene_pval = data.frame(object@gene_names,contrast_phoch)
   #filter to only those that reject
-  gene_pval = gene_pval[which(gene_pval[,2]<(alpha/2)),]
-  print(dim(gene_pval))
-  colnames(gene_pval) = c('Genes','Adj.Pvalues')
-  rownames(gene_pval) = c(1:nrow(gene_pval))
+  gene_pval_ = gene_pval[which(gene_pval[,2]<(alpha/2)),]
+  if(nrow(gene_pval_)==0){
+    print("No Significant Genes")
+    return(gene_pval)
+  }
+  colnames(gene_pval_) = c('Genes','Adj.Pvalues')
+  rownames(gene_pval_) = c(1:nrow(gene_pval))
   print('Marker gene analysis complete.')
-  gene_pval = gene_pval[order(gene_pval[,2]),]
-  return(gene_pval)
+  gene_pval = gene_pval_[order(gene_pval_[,2]),]
+  return(gene_pval_)
 
 }
 
