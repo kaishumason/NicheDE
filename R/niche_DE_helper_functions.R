@@ -86,7 +86,7 @@ contrast_post_test = function(betas_all,V_cov_all,nulls_all,index,niche){
     if(j%%5000 == 0){
       print(paste0('gene #',j,' out of ', ngene))
     }
-    print(j)
+    #print(j)
     #boolean for if we can even get the covariance matrix
     fail = F
     #read in null values (remove those interactions)
