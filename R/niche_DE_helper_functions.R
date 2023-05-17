@@ -95,7 +95,7 @@ contrast_post_test = function(betas_all,V_cov_all,nulls_all,index,niche){
     V_cov_decomp = V_cov_all[[j]]
     #get true covariance matrix from cholesky decomps
     tryCatch({
-    V = solve(V_cov_decomp)%*%Matrix::t(solve(V_cov_decomp))} #get pval
+    V = V_cov_decomp%*%Matrix::t(V_cov_decomp)} #get pval
     , error = function(e) {
       skip_to_next <<- TRUE
       fail = T})

@@ -114,8 +114,9 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
             if(length(null)!=n_type^2){
               #cholesky decomposition
               A = Matrix::chol(var_mat,LDL = FALSE,perm = FALSE)
+              A_solve = solve(A)
               #get covaraince matrix
-              V = solve(A)%*%Matrix::t(solve(A))
+              V = A_solve%*%Matrix::t(A_solve)
               #get standard devaition vector
               tau = sqrt(diag(V))#get sd matrix
               V_ = matrix(NA,n_type,n_type)
@@ -146,7 +147,7 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
               T_ = Matrix::t(beta/V_)
               T_stat[,,j] = T_
               betas[,,j] = Matrix::t(beta)
-              var_cov[[j]] = A
+              var_cov[[j]] = A_solve
               nulls[[j]] = null
               valid[j,counter] = 1
             }
@@ -574,7 +575,7 @@ niche_DE_markers_test = function(object,index,niche1,niche2,alpha = 0.05){
     return(gene_pval)
   }
   colnames(gene_pval_) = c('Genes','Adj.Pvalues')
-  rownames(gene_pval_) = c(1:nrow(gene_pval))
+  rownames(gene_pval_) = c(1:nrow(gene_pval_))
   print('Marker gene analysis complete.')
   gene_pval = gene_pval_[order(gene_pval_[,2]),]
   return(gene_pval_)
