@@ -100,7 +100,7 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
             }else{
               X_partial = as((X_partial),"sparseMatrix")
             }
-            #get variance matrix
+            #get variance matrix. Variance is [t(X_partial*W)%*%X_partial]^(-1)
             var_mat = Matrix::t(X_partial*W)%*%X_partial
             #if there are degenerate columns, remove them
             new_null = c()
