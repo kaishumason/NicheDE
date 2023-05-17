@@ -84,7 +84,7 @@ contrast_post_test = function(betas_all,V_cov_all,nulls_all,index,niche){
   #print('start')
   for(j in c(1:ngene)){
     if(j%%5000 == 0){
-      paste0('gene #',j,' out of ', ngene)
+      print(paste0('gene #',j,' out of ', ngene))
     }
     print(j)
     #boolean for if we can even get the covariance matrix
@@ -106,7 +106,7 @@ contrast_post_test = function(betas_all,V_cov_all,nulls_all,index,niche){
     #make matrix with nulls added
     V_cov = matrix(NA,n_type^2,n_type^2)
     if(length(null)==0){
-      V_cov = matrix(V,n_type^2,n_type^2)
+      V_cov = V
     }else{
       V_cov[-null,-null] = as.matrix(V)}
     betas = betas_all[,,j]
