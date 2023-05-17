@@ -503,7 +503,7 @@ CalculateEffectiveNiche = function(object,cutoff = 0.05){
 #' @export
 Filter = function(object,cell_names){
   if(mean(cell_names%in%object@cell_names)!=1){
-    stop('SOme cell names not present in niche-DE object')
+    stop('Some cell names not present in niche-DE object')
   }
   object@counts = subset(object@counts, rownames(object@counts) %in% cell_names)
   object@coord = subset(object@coord, rownames(object@coord) %in% cell_names)

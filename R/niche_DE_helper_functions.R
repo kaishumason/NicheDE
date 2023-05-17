@@ -37,44 +37,44 @@ celltype_level = function(p,w = rep(1,ncol(p))){
   return (p_total)
 }
 
-#' @export
-contrast_post = function(betas_all,V_cov_all,index,niche){
+#' export
+#contrast_post = function(betas_all,V_cov_all,index,niche){
   #initialize p value array
-  ngene = dim(betas_all)[3]
-  n_type = dim(betas_all)[1]
+  #ngene = dim(betas_all)[3]
+  #n_type = dim(betas_all)[1]
   #pgt is index type by niche type by gene
-  p = matrix(NA,ngene,1)
-  rownames(p) = dimnames(betas_all)[[3]]
+  #p = matrix(NA,ngene,1)
+  #rownames(p) = dimnames(betas_all)[[3]]
   #print('start')
-  for(j in c(1:ngene)){
-    if(j%%5000 == 0){
-      print(paste0('gene #',j,' out of ', ngene))
-    }
-    V_cov = V_cov_all[[j]]
-    betas = betas_all[,,j]
+  #for(j in c(1:ngene)){
+    #if(j%%5000 == 0){
+      #print(paste0('gene #',j,' out of ', ngene))
+    #}
+    #V_cov = V_cov_all[[j]]
+    #betas = betas_all[,,j]
     #do if  gene is rejected and gene-type has at least 1 rejection
-    tryCatch({
+    #tryCatch({
       #get sd of contrast
-      index_1 = (index-1)*n_type + niche[1]
-      index_2 = (index-1)*n_type + niche[2]
-      var_contrast = diag(V_cov)[index_1]+diag(V_cov)[index_2]-2*V_cov[index_1,index_2]
+      #index_1 = (index-1)*n_type + niche[1]
+      #index_2 = (index-1)*n_type + niche[2]
+      #var_contrast = diag(V_cov)[index_1]+diag(V_cov)[index_2]-2*V_cov[index_1,index_2]
 
       #test statistic
-      T_stat = betas[index,niche[1]] - betas[index,niche[2]]
-      T_stat = T_stat/(sqrt(var_contrast))
+      #T_stat = betas[index,niche[1]] - betas[index,niche[2]]
+      #T_stat = T_stat/(sqrt(var_contrast))
       #print(T_stat)
       #print('getting pvalue')
-      p_stat = 1-pnorm(T_stat)
-      p[j,] = p_stat} #get pval
-      , error = function(e) {
-        print(paste0("error",j))
-        skip_to_next <<- TRUE})
-  }
-  return(p)
-}
+      #p_stat = 1-pnorm(T_stat)
+      #p[j,] = p_stat} #get pval
+      #, error = function(e) {
+      #  print(paste0("error",j))
+      #  skip_to_next <<- TRUE})
+  #}
+ # return(p)
+#}
 
 #' @export
-contrast_post_test = function(betas_all,V_cov_all,nulls_all,index,niche){
+contrast_post = function(betas_all,V_cov_all,nulls_all,index,niche){
   #initialize p value array
   ngene = dim(betas_all)[3]
   n_type = dim(betas_all)[1]
@@ -86,22 +86,13 @@ contrast_post_test = function(betas_all,V_cov_all,nulls_all,index,niche){
     if(j%%5000 == 0){
       print(paste0('gene #',j,' out of ', ngene))
     }
-    #print(j)
-    #boolean for if we can even get the covariance matrix
-    fail = F
     #read in null values (remove those interactions)
     null = nulls_all[[j]]
-    #readin cholesky decomp of covariance matrix
-    V_cov_decomp = V_cov_all[[j]]
-    #get true covariance matrix from cholesky decomps
-    tryCatch({
-    V = V_cov_decomp%*%Matrix::t(V_cov_decomp)} #get pval
-    , error = function(e) {
-      skip_to_next <<- TRUE
-      fail = T})
+    #reading covariance matrix
+    V = V_cov_all[[j]]
 
-    if(fail==T){
-      V = matrix(NA,n_type^2,n_type^2)[-null,-null]
+    if(is.null(V)){
+      V = matrix(NA,n_type^2,n_type^2)
     }
     #make matrix with nulls added
     V_cov = matrix(NA,n_type^2,n_type^2)

@@ -27,3 +27,17 @@ near the niche1 cell type relative to the niche2 cell type
 \description{
 This function returns genes marker genes in the index cell type when near the first niche cell type realtive to the second one
 }
+\details{
+param object A niche-DE object
+param index The index cell type which we want to find marker genes for
+param niche1 The niche cell type for the marker genes found
+param niche2 The niche we wish to compare (index,niche1) patterns to
+param pos Logical indicating whether to return genes that are (index,niche)+
+patterns (pos = T) or (index,niche)- (pos = F)
+param alpha The level at which to perform the Benjamini Hochberg correction. Default value is 0.05.
+return A vector of genes that are niche marker genes for the index cell type
+near the niche1 cell type relative to the niche2 cell type
+Get Niche-DE marker genes(test)
+
+This function returns genes marker genes in the index cell type when near the first niche cell type realtive to the second one
+}

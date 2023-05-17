@@ -45,6 +45,9 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
         print(paste0('kernel bandwidth:', sig,' (number ',counter,' out of ',length(object@sigma),' values), ', "Processing Gene #",j,
                      ' out of ',ncol(object@counts)))
       }
+      if((sum(object@counts[,j])>C)&(mean(object@ref_expr[,j]<CT_filter)!=1)==F){
+        nulls[[j]] = c(1:n_type^2)
+      }
       #do if  gene is rejected and gene-type has at least 1 rejection
       if((sum(object@counts[,j])>C)&(mean(object@ref_expr[,j]<CT_filter)!=1)){
         #get pstg matrix
@@ -77,7 +80,7 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
             bad_ind  = which(object@null_expected_expression[,j]==0)
             #print('Running GLM')
             #run neg binom regression
-            #print(2)
+            #print()
             if(length(bad_ind)>0){
               full_glm =suppressWarnings({glm(object@counts[-bad_ind,j]~X_partial[-bad_ind,] + offset(log(object@null_expected_expression[-bad_ind,j])), family = "poisson")}) #do full glm
             }else{
@@ -114,11 +117,14 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
             if(length(null)!=n_type^2){
               #cholesky decomposition
               A = Matrix::chol(var_mat,LDL = FALSE,perm = FALSE)
-              A_solve = solve(A)
               #get covaraince matrix
-              V = A_solve%*%Matrix::t(A_solve)
+              #print("1")
+              V = Matrix::solve(A)%*%Matrix::t(Matrix::solve(A))
               #get standard devaition vector
-              tau = sqrt(diag(V))#get sd matrix
+              #print("2")
+              #get sd matrix
+              tau = sqrt(Matrix::diag(V))
+              #print("3")
               V_ = matrix(NA,n_type,n_type)
               if(length(null)==0){
                 V_ = matrix(tau,n_type,n_type)
@@ -130,6 +136,7 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
                 v_cov = matrix(V,n_type^2,n_type^2)
               }else{
                 v_cov[-null,-null] = as.matrix(V)}
+              #print("4")
               #print('getting beta')
               beta = matrix(NA,n_type,n_type)
 
@@ -144,20 +151,26 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
                   beta[c(1:n_type^2)[-null]] = full_glm$coefficients[-c(1)]}
               }
               #record test statitistic
+
               T_ = Matrix::t(beta/V_)
+
               T_stat[,,j] = T_
+
               betas[,,j] = Matrix::t(beta)
-              var_cov[[j]] = A_solve
+
+              var_cov[[j]] = as.matrix(V)
+
               nulls[[j]] = null
+
               valid[j,counter] = 1
+
             }
             #end of if statement
             }, #get pval
               error = function(e) {
+              #print(paste0("error,",j))
               skip_to_next <<- TRUE})
-        }
-      }else{
-        nulls[[j]] = c(1:n_type^2)
+          }
       }
     }
     #save object
@@ -347,117 +360,117 @@ get_niche_DE_genes = function(object,test.level,index,niche,direction = 'positiv
 #'
 #' This function returns genes marker genes in the index cell type when near the first niche cell type realtive to the second one
 #'
-#' @param object A niche-DE object
-#' @param index The index cell type which we want to find marker genes for
-#' @param niche1 The niche cell type for the marker genes found
-#' @param niche2 The niche we wish to compare (index,niche1) patterns to
-#' @param pos Logical indicating whether to return genes that are (index,niche)+
+#' param object A niche-DE object
+#' param index The index cell type which we want to find marker genes for
+#' param niche1 The niche cell type for the marker genes found
+#' param niche2 The niche we wish to compare (index,niche1) patterns to
+#' param pos Logical indicating whether to return genes that are (index,niche)+
 #' patterns (pos = T) or (index,niche)- (pos = F)
-#' @param alpha The level at which to perform the Benjamini Hochberg correction. Default value is 0.05.
-#' @return A vector of genes that are niche marker genes for the index cell type
+#' param alpha The level at which to perform the Benjamini Hochberg correction. Default value is 0.05.
+#' return A vector of genes that are niche marker genes for the index cell type
 #'  near the niche1 cell type relative to the niche2 cell type
-#' @export
-niche_DE_markers = function(object,index,niche1,niche2,alpha = 0.05){
 
-
-  if((index %in% colnames(object@num_cells))==F){
-    stop('Index cell type not found')
-  }
-  if((niche1 %in% colnames(object@num_cells))==F){
-    stop('Niche1 cell type not found')
-  }
-  if((niche2 %in% colnames(object@num_cells))==F){
-    stop('Niche2 cell type not found')
-  }
-
-  print(paste0('Finding Niche-DE marker genes in index cell type ',index,' with niche cell type ',niche1,
-               ' relative to niche cell type ',niche2,'. BH procedure performed at level ',alpha,'.'))
-
-  #get beta array
-  betas_all = object@niche_DE[[1]]$beta
-  #get variance covariance array
-  v_cov_all = object@niche_DE[[1]]$var_cov
-  #get index for index and niche cell types
-  index_index = which(colnames(object@num_cells)==index)
-  niche1_index = which(colnames(object@num_cells)==niche1)
-  niche2_index = which(colnames(object@num_cells)==niche2)
-
-  #make sure that collocalization occurs
-  #check to see if they have enough overlap
-  colloc = check_colloc(object,index_index,niche1_index)
-  for(value in c(1:length(colloc))){
-    if(colloc[value]<30){
-      warning('Less than 30 observations containing collocalization of ',index,
-              ' and ',niche1,' at kernel bandwidth ',names(colloc)[value],
-              '. Results may be unreliable.')
-    }
-  }
-
-  #make sure that collocalization occurs
-  #check to see if they have enough overlap
-  colloc = check_colloc(object,index_index,niche2_index)
-  for(value in c(1:length(colloc))){
-    if(colloc[value]<30){
-      warning('Less than 30 observations containing collocalization of ',index,
-              ' and ',niche2,' at kernel bandwidth ',names(colloc)[value],
-              '. Results may be unreliable.')
-    }
-  }
-
-
-
-
-  #get marker pvals
-  pval = contrast_post(betas_all,v_cov_all,index_index,c(niche1_index,niche2_index))
-  #if multiple kernels do this for all kernels
-  if(length(object@sigma)>=2){
-    for(j in c(2:length(object@sigma))){
-      #print(j)
-      betas_all = object@niche_DE[[j]]$beta
-      v_cov_all = object@niche_DE[[j]]$var_cov
-      index_index = which(colnames(object@num_cells)==index)
-      niche1_index = which(colnames(object@num_cells)==niche1)
-      niche2_index = which(colnames(object@num_cells)==niche2)
-      pval = cbind(pval,contrast_post(betas_all,v_cov_all,index_index,c(niche1_index,niche2_index)))
-    }
-  }
-  #apply cauchy combination
-  #record log likelihoods
-  log_liks = object@niche_DE[[1]]$log_lik
-  if(length(object@niche_DE)>=2){
-    for(j in c(2:length(object@niche_DE))){
-      log_liks = cbind(log_liks,object@niche_DE[[j]]$log_lik)
-    }
-  }
-  if(length(object@niche_DE)>=2){
-    log_liks[is.infinite(log_liks)] = 0
-    suppressWarnings({ W = t(apply(log_liks,1,function(x){exp(x-min(x,na.rm = T))}))})
-  }
-
-  if(length(object@niche_DE)==1){
-    log_liks[is.infinite(log_liks)] = 0
-    suppressWarnings({ W = rep(1,length(log_liks))})
-  }
-
-  #W = apply(W,1,function(x){x/sum(x)})
-  W[is.infinite(W)] = 10e160
-  #bind pvalues and weights
-  contrast = cbind(pval,W)
-  #apply cauchy rule
-  contrast = as.matrix(apply(contrast,1,function(x){gene_level(x[1:(length(x)/2)],x[(length(x)/2+1):length(x)])}))
-  #apply BH
-  contrast_phoch = p.adjust(contrast,method = "BH")
-  #bind genes and their pvalue
-  gene_pval = data.frame(object@gene_names,contrast_phoch)
-  #filter to only those that reject
-  gene_pval = gene_pval[which(gene_pval[,2]<(alpha/2)),]
-  colnames(gene_pval) = c('Genes','Adj.Pvalues')
-  rownames(gene_pval) = c(1:nrow(gene_pval))
-  print('Marker gene analysis complete.')
-  gene_pval = gene_pval[order(gene_pval[,2]),]
-  return(gene_pval)
-
-}
+# #niche_DE_markers_old = function(object,index,niche1,niche2,alpha = 0.05){
+#
+#
+#   if((index %in% colnames(object@num_cells))==F){
+#     stop('Index cell type not found')
+#   }
+#   if((niche1 %in% colnames(object@num_cells))==F){
+#     stop('Niche1 cell type not found')
+#   }
+#   if((niche2 %in% colnames(object@num_cells))==F){
+#     stop('Niche2 cell type not found')
+#   }
+#
+#   print(paste0('Finding Niche-DE marker genes in index cell type ',index,' with niche cell type ',niche1,
+#                ' relative to niche cell type ',niche2,'. BH procedure performed at level ',alpha,'.'))
+#
+#   #get beta array
+#   betas_all = object@niche_DE[[1]]$beta
+#   #get variance covariance array
+#   v_cov_all = object@niche_DE[[1]]$var_cov
+#   #get index for index and niche cell types
+#   index_index = which(colnames(object@num_cells)==index)
+#   niche1_index = which(colnames(object@num_cells)==niche1)
+#   niche2_index = which(colnames(object@num_cells)==niche2)
+#
+#   #make sure that collocalization occurs
+#   #check to see if they have enough overlap
+#   colloc = check_colloc(object,index_index,niche1_index)
+#   for(value in c(1:length(colloc))){
+#     if(colloc[value]<30){
+#       warning('Less than 30 observations containing collocalization of ',index,
+#               ' and ',niche1,' at kernel bandwidth ',names(colloc)[value],
+#               '. Results may be unreliable.')
+#     }
+#   }
+#
+#   #make sure that collocalization occurs
+#   #check to see if they have enough overlap
+#   colloc = check_colloc(object,index_index,niche2_index)
+#   for(value in c(1:length(colloc))){
+#     if(colloc[value]<30){
+#       warning('Less than 30 observations containing collocalization of ',index,
+#               ' and ',niche2,' at kernel bandwidth ',names(colloc)[value],
+#               '. Results may be unreliable.')
+#     }
+#   }
+#
+#
+#
+#
+#   #get marker pvals
+#   pval = contrast_post(betas_all,v_cov_all,index_index,c(niche1_index,niche2_index))
+#   #if multiple kernels do this for all kernels
+#   if(length(object@sigma)>=2){
+#     for(j in c(2:length(object@sigma))){
+#       #print(j)
+#       betas_all = object@niche_DE[[j]]$beta
+#       v_cov_all = object@niche_DE[[j]]$var_cov
+#       index_index = which(colnames(object@num_cells)==index)
+#       niche1_index = which(colnames(object@num_cells)==niche1)
+#       niche2_index = which(colnames(object@num_cells)==niche2)
+#       pval = cbind(pval,contrast_post(betas_all,v_cov_all,index_index,c(niche1_index,niche2_index)))
+#     }
+#   }
+#   #apply cauchy combination
+#   #record log likelihoods
+#   log_liks = object@niche_DE[[1]]$log_lik
+#   if(length(object@niche_DE)>=2){
+#     for(j in c(2:length(object@niche_DE))){
+#       log_liks = cbind(log_liks,object@niche_DE[[j]]$log_lik)
+#     }
+#   }
+#   if(length(object@niche_DE)>=2){
+#     log_liks[is.infinite(log_liks)] = 0
+#     suppressWarnings({ W = t(apply(log_liks,1,function(x){exp(x-min(x,na.rm = T))}))})
+#   }
+#
+#   if(length(object@niche_DE)==1){
+#     log_liks[is.infinite(log_liks)] = 0
+#     suppressWarnings({ W = rep(1,length(log_liks))})
+#   }
+#
+#   #W = apply(W,1,function(x){x/sum(x)})
+#   W[is.infinite(W)] = 10e160
+#   #bind pvalues and weights
+#   contrast = cbind(pval,W)
+#   #apply cauchy rule
+#   contrast = as.matrix(apply(contrast,1,function(x){gene_level(x[1:(length(x)/2)],x[(length(x)/2+1):length(x)])}))
+#   #apply BH
+#   contrast_phoch = p.adjust(contrast,method = "BH")
+#   #bind genes and their pvalue
+#   gene_pval = data.frame(object@gene_names,contrast_phoch)
+#   #filter to only those that reject
+#   gene_pval = gene_pval[which(gene_pval[,2]<(alpha/2)),]
+#   colnames(gene_pval) = c('Genes','Adj.Pvalues')
+#   rownames(gene_pval) = c(1:nrow(gene_pval))
+#   print('Marker gene analysis complete.')
+#   gene_pval = gene_pval[order(gene_pval[,2]),]
+#   return(gene_pval)
+#
+# }
 
 
 #' Get Niche-DE marker genes(test)
@@ -474,7 +487,7 @@ niche_DE_markers = function(object,index,niche1,niche2,alpha = 0.05){
 #' @return A vector of genes that are niche marker genes for the index cell type
 #'  near the niche1 cell type relative to the niche2 cell type
 #' @export
-niche_DE_markers_test = function(object,index,niche1,niche2,alpha = 0.05){
+niche_DE_markers = function(object,index,niche1,niche2,alpha = 0.05){
 
 
   if((index %in% colnames(object@num_cells))==F){
@@ -526,18 +539,18 @@ niche_DE_markers_test = function(object,index,niche1,niche2,alpha = 0.05){
 
 
   #get marker pvals
-  pval = contrast_post_test(betas_all,v_cov_all,nulls_all,index_index,c(niche1_index,niche2_index))
+  pval = contrast_post(betas_all,v_cov_all,nulls_all,index_index,c(niche1_index,niche2_index))
   #if multiple kernels do this for all kernels
   if(length(object@sigma)>=2){
     for(j in c(2:length(object@sigma))){
       #print(j)
       betas_all = object@niche_DE[[j]]$beta
       v_cov_all = object@niche_DE[[j]]$var_cov
-      nulls = object@niche_DE[[j]]$nulls
+      nulls_all = object@niche_DE[[j]]$nulls
       index_index = which(colnames(object@num_cells)==index)
       niche1_index = which(colnames(object@num_cells)==niche1)
       niche2_index = which(colnames(object@num_cells)==niche2)
-      pval = cbind(pval,contrast_post(betas_all,v_cov_all,index_index,c(niche1_index,niche2_index)))
+      pval = cbind(pval,contrast_post(betas_all,v_cov_all,nulls_all,index_index,c(niche1_index,niche2_index)))
     }
   }
   #apply cauchy combination
