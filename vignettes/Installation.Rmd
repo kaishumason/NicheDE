@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 # Installation 
-You can install NicheDE with the follwoing code
+You can install NicheDE with the following code
 ```
 Sys.setenv(R_REMOTES_NO_ERRORS_FROM_WARNINGS="true")
 install.packages("devtools")

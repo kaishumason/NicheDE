@@ -19,7 +19,7 @@ Assay <- setClass(
     niche_DE = 'list',
     niche_DE_pval_pos = 'list',
     niche_DE_pval_neg = 'list',
-    scale = 'numeric'
+    scale = 'vector'
   )
 )
 
@@ -395,7 +395,7 @@ MergeObjects = function(objects){
   #refr_spot_distance = reference_obj@min_distance
   refr_spot_distance = 100/reference_obj@scale
   batch_ID_merge = reference_obj@batch_ID
-
+  scales = c(1)
   for(j in c(2:length(objects))){
     #check if sigma and L match
     if(setequal(objects[[j]]@sigma,reference_obj@sigma)==F){
@@ -409,6 +409,7 @@ MergeObjects = function(objects){
     #merge coordinates so that they scale the same
     #scale = (objects[[j]]@min_distance)/refr_spot_distance
     scale = (100/objects[[j]]@scale)/refr_spot_distance
+    scales = c(scales,scale)
     coord_merge = rbind(coord_merge,objects[[j]]@coord*1/scale)
     #merge num cells
     if(mean(colnames(num_cells_merge) == colnames(objects[[j]]@num_cells))!=1){
@@ -448,7 +449,7 @@ MergeObjects = function(objects){
                ref_expr = reference_obj@ref_expr,
                null_expected_expression = EEX_merge,cell_names = cell_names, cell_types = colnames(num_cells_merge),
                gene_names = gene_names,batch_ID = batch_ID_merge,
-               spot_distance = refr_spot_distance)
+               spot_distance = 100,scale = scales)
   return(object)
 }
 
