@@ -14,7 +14,7 @@ CreateNicheDEObjectFromSeurat(
 }
 \arguments{
 \item{seurat_object}{A spatial seurat object.Coordinate matrix will be extracted via the
-seurat function 'GetTissueCoordinates'}
+seurat function 'GetTissueCoordinates'. The coordiantes will be scaled such that the median nearest neighbor distance is 100.}
 
 \item{assay}{The assay from which to extract the counts matrix from. The counts matrix
 will be extracted from the counts slot.}

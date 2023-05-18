@@ -18,7 +18,8 @@ Assay <- setClass(
     spot_distance = 'numeric',
     niche_DE = 'list',
     niche_DE_pval_pos = 'list',
-    niche_DE_pval_neg = 'list'
+    niche_DE_pval_neg = 'list',
+    scale = 'numeric'
   )
 )
 
@@ -101,7 +102,7 @@ CreateLibraryMatrixFromSeurat = function(seurat_object,assay){
 #' This function creates a niche-DE object
 #'
 #' @param counts_mat Counts matrix. Dimension should be cells/spots by genes
-#' @param coordinate_mat Coordinate matrix
+#' @param coordinate_mat Coordinate matrix. It will be scaled such that the median nearest neighbor distance is 100.
 #' @param library_mat Matrix indicating average expression profile for each cell type in the sample
 #' @param deconv_mat Deconvolution or cell type assignment matrix of data
 #' @param sigma List of kernel bandwidths to use in calculating the effective niche
@@ -204,6 +205,12 @@ CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,
   D = as.matrix(dist(coordinate_mat),diag = T)
   min_dist = mean(apply(D,2,function(x){sort(x,decreasing = F)[3]}))
 
+  #scale coordiante matrix so that min_dist = 100
+  scale = 100/min_dist
+  coordinate_mat = coordinate_mat*scale
+  min_dist = 100
+
+
   if(length(sigma)==0){
     sigma = c(min_dist*0.001,min_dist,min_dist*2,min_dist*3)
   }
@@ -217,7 +224,7 @@ CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,
                sigma = sigma,num_cells = nst,ref_expr = library_mat,
                null_expected_expression = EEX,cell_names = rownames(countsM), cell_types = colnames(nst),
                gene_names = colnames(countsM),batch_ID = rep(1,nrow(countsM)),
-               spot_distance = min_dist)
+               spot_distance = min_dist,scale = scale)
   A = paste0('Niche-DE object created with ',nrow(object@counts),' observations, ', ncol(object@counts),' genes, ',
              length(unique(object@batch_ID)), ' batch(es), and ', length(object@cell_types), ' cell types.')
   print(A)
@@ -229,7 +236,7 @@ CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,
 #' This function creates a niche-DE object from a seurat object
 #'
 #' @param seurat_object A spatial seurat object.Coordinate matrix will be extracted via the
-#' seurat function 'GetTissueCoordinates'
+#' seurat function 'GetTissueCoordinates'. The coordiantes will be scaled such that the median nearest neighbor distance is 100.
 #' @param assay The assay from which to extract the counts matrix from. The counts matrix
 #' will be extracted from the counts slot.
 #' @param library_mat Matrix indicating average expression profile for each cell type in the sample
@@ -341,6 +348,11 @@ CreateNicheDEObjectFromSeurat = function(seurat_object,assay,library_mat,deconv_
   D = as.matrix(dist(coordinate_mat),diag = T)
   min_dist = mean(apply(D,2,function(x){sort(x,decreasing = F)[3]}))
 
+  #scale coordiante matrix so that min_dist = 100
+  scale = 100/min_dist
+  coordinate_mat = coordinate_mat*scale
+  min_dist = 100
+
   #make sure that counts_mat and library_mat have the same gene names in the same order
   if(mean(colnames(countsM)==colnames(library_mat))!=1){
     stop('gene names (colnames) of counts matrix and library expression matrix do not match')
@@ -350,7 +362,7 @@ CreateNicheDEObjectFromSeurat = function(seurat_object,assay,library_mat,deconv_
                sigma = sigma,num_cells = nst,ref_expr = library_mat,
                null_expected_expression = EEX,cell_names = rownames(countsM),cell_types = colnames(nst),
                gene_names = colnames(countsM),batch_ID = rep(1,nrow(countsM)),
-               spot_distance = min_dist)
+               spot_distance = min_dist,scale = scale)
   #make sure that counts_mat and
 
   A = paste0('Niche-DE object created with ',nrow(object@counts),' observations, ', ncol(object@counts),' genes, ',
@@ -380,7 +392,8 @@ MergeObjects = function(objects){
   counts_merge = reference_obj@counts
   num_cells_merge = reference_obj@num_cells
   EEX_merge = reference_obj@null_expected_expression
-  refr_spot_distance = reference_obj@spot_distance
+  #refr_spot_distance = reference_obj@min_distance
+  refr_spot_distance = 100/reference_obj@scale
   batch_ID_merge = reference_obj@batch_ID
 
   for(j in c(2:length(objects))){
@@ -393,8 +406,9 @@ MergeObjects = function(objects){
     }
 
 
-    #merge coordinates
-    scale = objects[[j]]@spot_distance/refr_spot_distance
+    #merge coordinates so that they scale the same
+    #scale = (objects[[j]]@min_distance)/refr_spot_distance
+    scale = (100/objects[[j]]@scale)/refr_spot_distance
     coord_merge = rbind(coord_merge,objects[[j]]@coord*1/scale)
     #merge num cells
     if(mean(colnames(num_cells_merge) == colnames(objects[[j]]@num_cells))!=1){

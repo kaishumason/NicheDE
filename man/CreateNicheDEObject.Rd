@@ -9,7 +9,7 @@ CreateNicheDEObject(counts_mat, coordinate_mat, library_mat, deconv_mat, sigma)
 \arguments{
 \item{counts_mat}{Counts matrix. Dimension should be cells/spots by genes}
 
-\item{coordinate_mat}{Coordinate matrix}
+\item{coordinate_mat}{Coordinate matrix. It will be scaled such that the median nearest neighbor distance is 100.}
 
 \item{library_mat}{Matrix indicating average expression profile for each cell type in the sample}
 
