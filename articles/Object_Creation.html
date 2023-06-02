@@ -86,7 +86,9 @@ Arguments
 #genes.
 <ul>
 <li>coordinate mat: Coordinate matrix. Dimension should be #cells/spots
-by 2. Make sure that rownames match that of the counts matrix.</li>
+by 2. Make sure that rownames match that of the counts matrix. The
+coordinates are scaled such that the median nearest neighbor distance is
+100.</li>
 <li>library mat: The average expression profile matrix calculated from a
 reference dataset.</li>
 <li>deconv mat: The deconvolution matrix for the spatial dataset. The
@@ -116,7 +118,8 @@ except for the ones prefixed by niche_DE.</p>
 The dimension will be #cells/spots by #genes.Genes are filtered out if
 they do not exist within the scrna-seq reference dataset.</li>
 <li>coord: The spatial coordinates matrix of the spatial transcriptomics
-dataset.</li>
+dataset. It is scaled such that the median nearest neighbor distance is
+100.</li>
 <li>sigma: The kernel bandwidth(s) chosen for calculating the effective
 niche. Recommended values will be discussed shortly.</li>
 <li>num_cells: A #cells/spots by #cell types matrix indicating the
@@ -139,6 +142,8 @@ wants to filter cells via the function ‘Filter’</li>
 merging objects.</li>
 <li>spot_distance: The mean distance between a cell/spot and its nearest
 neighbor.This value can be used to inform the choice of sigma.</li>
+<li>scale: The scaling to convert our coordinates back to their original
+scale</li>
 </ul></details></main>
 </div>
 
