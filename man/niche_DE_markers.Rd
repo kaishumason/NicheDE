@@ -16,9 +16,6 @@ niche_DE_markers(object, index, niche1, niche2, alpha = 0.05)
 \item{niche2}{The niche we wish to compare (index,niche1) patterns to}
 
 \item{alpha}{The level at which to perform the Benjamini Hochberg correction. Default value is 0.05.}
-
-\item{pos}{Logical indicating whether to return genes that are (index,niche)+
-patterns (pos = T) or (index,niche)- (pos = F)}
 }
 \value{
 A vector of genes that are niche marker genes for the index cell type

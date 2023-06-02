@@ -51,6 +51,8 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
       #do if  gene is rejected and gene-type has at least 1 rejection
       if((sum(object@counts[,j])>C)&(mean(object@ref_expr[,j]<CT_filter)!=1)){
         #get pstg matrix
+        #print(j)
+        #t1 = Sys.time()
         pstg = object@num_cells%*%as.matrix(diag(object@ref_expr[,j]))/object@null_expected_expression[,j]
         pstg[,object@ref_expr[,j]<CT_filter] = 0
         pstg[pstg<0.05]=0
@@ -66,7 +68,8 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
           X[k,] = as.vector(t(cov_j))#important to take the transpose
         }
         #get index, niche pairs that are non existent
-        null = which(apply(X,2,function(x){sum(x>0)})<M)
+        null = which(apply(X,2,function(x){sum(x>0,na.rm = T)})<M)
+        #print(length(null))
         X_partial = X
         rest = c(1:ncol(X))
         if(length(null)>0){
@@ -87,6 +90,7 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
               full_glm = suppressWarnings({glm(object@counts[,j]~X_partial + offset(log(object@null_expected_expression[,j])), family = "poisson")}) #do full glm
             }
             mu_hat = exp(predict(full_glm))#get mean
+            #print(Sys.time()-t1)
             #get dicpersion parameter
             A = optimize(nb_lik,x = object@counts[,j],mu = mu_hat, lower = 0.05, upper = 100) #get overdispersion parameter
             #save dispersion parameter
@@ -481,8 +485,6 @@ get_niche_DE_genes = function(object,test.level,index,niche,direction = 'positiv
 #' @param index The index cell type which we want to find marker genes for
 #' @param niche1 The niche cell type for the marker genes found
 #' @param niche2 The niche we wish to compare (index,niche1) patterns to
-#' @param pos Logical indicating whether to return genes that are (index,niche)+
-#' patterns (pos = T) or (index,niche)- (pos = F)
 #' @param alpha The level at which to perform the Benjamini Hochberg correction. Default value is 0.05.
 #' @return A vector of genes that are niche marker genes for the index cell type
 #'  near the niche1 cell type relative to the niche2 cell type
