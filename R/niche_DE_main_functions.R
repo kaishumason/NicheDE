@@ -51,7 +51,7 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
       #do if  gene is rejected and gene-type has at least 1 rejection
       if((sum(object@counts[,j])>C)&(mean(object@ref_expr[,j]<CT_filter)!=1)){
         #get pstg matrix
-        print(j)
+        #print(j)
         #t1 = Sys.time()
         pstg = object@num_cells%*%as.matrix(diag(object@ref_expr[,j]))/object@null_expected_expression[,j]
         pstg[,object@ref_expr[,j]<CT_filter] = 0
