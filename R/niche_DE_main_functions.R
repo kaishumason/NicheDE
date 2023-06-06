@@ -51,7 +51,7 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
       #do if  gene is rejected and gene-type has at least 1 rejection
       if((sum(object@counts[,j])>C)&(mean(object@ref_expr[,j]<CT_filter)!=1)){
         #get pstg matrix
-        #print(j)
+        print(j)
         #t1 = Sys.time()
         pstg = object@num_cells%*%as.matrix(diag(object@ref_expr[,j]))/object@null_expected_expression[,j]
         pstg[,object@ref_expr[,j]<CT_filter] = 0
@@ -245,6 +245,10 @@ get_niche_DE_genes = function(object,test.level,index,niche,direction = 'positiv
     #get associated pvalues
     pval = object@niche_DE_pval_pos$gene_level[gene_ind]
     result = data.frame(genes,pval)
+    if(dim(result)[1]==0){
+      print("No Niche-DE Genes at this Resolution")
+      return(result)
+    }
     colnames(result) = c('Genes','Pvalues.Gene')
     rownames(result) = c(1:nrow(result))
     print('Returning Niche-DE Genes')
@@ -259,6 +263,10 @@ get_niche_DE_genes = function(object,test.level,index,niche,direction = 'positiv
     #get associated pvalues
     pval = object@niche_DE_pval_neg$gene_level[gene_ind]
     result = data.frame(genes,pval)
+    if(dim(result)[1]==0){
+      print("No Niche-DE Genes at this Resolution")
+      return(result)
+    }
     colnames(result) = c('Genes','Pvalues.Gene')
     rownames(result) = c(1:nrow(result))
     print('Returning Niche-DE Genes')
@@ -275,6 +283,12 @@ get_niche_DE_genes = function(object,test.level,index,niche,direction = 'positiv
   #get index and nice indices
   ct_index = which(colnames(object@num_cells)==index)
   niche_index = which(colnames(object@num_cells)==niche)
+  if(length(ct_index)==0){
+    stop("Index Cell Type Not Found")
+  }
+  if(length(niche_index)==0){
+    stop("Niche Cell Type Not Found")
+  }
   #check to see if they have enough overlap
   colloc = check_colloc(object,ct_index,niche_index)
   for(value in c(1:length(colloc))){
@@ -295,6 +309,10 @@ get_niche_DE_genes = function(object,test.level,index,niche,direction = 'positiv
     pval = object@niche_DE_pval_pos$cell_type_level[gene_index,ct_index]
     #save results
     result = data.frame(genes,pval)
+    if(dim(result)[1]==0){
+      print("No Niche-DE Genes at this Resolution")
+      return(result)
+    }
     colnames(result) = c('Genes','Pvalues.Cell.Type')
     rownames(result) = c(1:nrow(result))
     print('Returning Niche-DE Genes')
@@ -312,6 +330,10 @@ get_niche_DE_genes = function(object,test.level,index,niche,direction = 'positiv
     pval = object@niche_DE_pval_neg$cell_type_level[gene_index,ct_index]
     #save results
     result = data.frame(genes,pval)
+    if(dim(result)[1]==0){
+      print("No Niche-DE Genes at this Resolution")
+      return(result)
+    }
     colnames(result) = c('Genes','Pvalues.Cell.Type')
     rownames(result) = c(1:nrow(result))
     print('Returning Niche-DE Genes')
@@ -335,6 +357,10 @@ get_niche_DE_genes = function(object,test.level,index,niche,direction = 'positiv
     pval = object@niche_DE_pval_pos$interaction_level[ct_index,niche_index,gene_index]
     #save results
     result = data.frame(genes,pval)
+    if(dim(result)[1]==0){
+      print("No Niche-DE Genes at this Resolution")
+      return(result)
+    }
     colnames(result) = c('Genes','Pvalues.Interaction')
     rownames(result) = c(1:nrow(result))
     print('Returning Niche-DE Genes')
@@ -352,6 +378,10 @@ get_niche_DE_genes = function(object,test.level,index,niche,direction = 'positiv
     pval = object@niche_DE_pval_neg$interaction_level[ct_index,niche_index,gene_index]
     #save results
     result = data.frame(genes,pval)
+    if(dim(result)[1]==0){
+      print("No Niche-DE Genes at this Resolution")
+      return(result)
+    }
     colnames(result) = c('Genes','Pvalues.Interaction')
     rownames(result) = c(1:nrow(result))
     print('Returning Niche-DE Genes')
