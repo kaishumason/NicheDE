@@ -4,7 +4,15 @@
 \alias{niche_DE_parallel}
 \title{Niche_DE}
 \usage{
-niche_DE_parallel(object, C = 150, M = 10, gamma = 0.8, print = T, cores = 4)
+niche_DE_parallel(
+  object,
+  C = 150,
+  M = 10,
+  gamma = 0.8,
+  print = T,
+  cores = 4,
+  Int = T
+)
 }
 \arguments{
 \item{object}{A niche-DE object}

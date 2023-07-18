@@ -44,6 +44,7 @@ reference:
   contents:
   - CalculateEffectiveNiche
   - niche_DE
+  - niche_DE_parallel
 
 - title: "Downstream Analysis"
   desc: >
@@ -53,6 +54,7 @@ reference:
   - niche_DE_markers
   - niche_LR_cell
   - niche_LR_spot
+  - contrast_post
 
 
 

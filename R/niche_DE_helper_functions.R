@@ -258,16 +258,14 @@ get_niche_DE_pval = function(object,pos = T){
 
 
 #' @export
-niche_DE_core = function(object,j,sig,CT_filter,C = 150,M = 10,gamma = 0.8,print = T){
+niche_DE_core_correct = function(object,j,sig,CT_filter,C = 150,M = 10,gamma = 0.8,print = T){
   valid = 0
+  liks_val = NA
   n_type = ncol(object@num_cells)
-
-  if(j%%1000 == 0 & print == T){
-    print(paste0('kernel bandwidth:', sig,' (number ',counter,' out of ',length(object@sigma),' values), ', "Processing Gene #",j,
-                 ' out of ',ncol(object@counts)))
-  }
-  if((sum(object@counts[,j])>C)&(mean(object@ref_expr[,j]<CT_filter)!=1)==F){
+  #check if we need to do niche-DE
+  if((sum(object@counts[,j])<C) | (mean(object@ref_expr[,j]<CT_filter)!=1)==F){
     null = c(1:n_type^2)
+    liks_val = NA
   }
   if((sum(object@counts[,j])>C)&(mean(object@ref_expr[,j]<CT_filter)!=1)){
     #get pstg matrix
@@ -279,6 +277,8 @@ niche_DE_core = function(object,j,sig,CT_filter,C = 150,M = 10,gamma = 0.8,print
     #get X
     #print(1)
     X = matrix(NA,nrow(pstg),n_type^2)
+    #get counter
+    counter = which(object@sigma == sig)[1]
     for(k in c(1:nrow(pstg))){
       #get feature matrix by multiplying effective niche and pstg vector
       ps = as.matrix(pstg[k,])
@@ -309,7 +309,7 @@ niche_DE_core = function(object,j,sig,CT_filter,C = 150,M = 10,gamma = 0.8,print
         }else{
           full_glm = suppressWarnings({glm(object@counts[,j]~X_partial + offset(log(object@null_expected_expression[,j])), family = "poisson")}) #do full glm
         }
-        mu_hat = exp(predict(full_glm))#get mean
+        mu_hat = as.numeric(exp(predict(full_glm)))#get mean
         #print(Sys.time()-t1)
         #get dicpersion parameter
         A = optimize(nb_lik,x = object@counts[,j],mu = mu_hat, lower = 0.05, upper = 100) #get overdispersion parameter
@@ -319,13 +319,17 @@ niche_DE_core = function(object,j,sig,CT_filter,C = 150,M = 10,gamma = 0.8,print
         liks_val = -A$objective
         #calculate W matrix for distribution of beta hat
         W =as.vector(mu_hat/(1 + mu_hat/disp))#get W matrix
+
         #print(3)
         #perform cholesky decomp for finding inverse of X^TWX
         if(length(bad_ind)>0){
-          X_partial = as((X_partial[-bad_ind,]),"sparseMatrix")
+          X_partial = X_partial[-bad_ind,]
+          #Matrix(regMat, sparse=TRUE)
+          #X_partial = as((X_partial[-bad_ind,]),"sparseMatrix")
           #remove bad indices
         }else{
-          X_partial = as((X_partial),"sparseMatrix")
+          #X_partial = as((X_partial),"sparseMatrix")
+          #Matrix(regMat, sparse=TRUE)
         }
         #get variance matrix. Variance is [t(X_partial*W)%*%X_partial]^(-1)
         var_mat = Matrix::t(X_partial*W)%*%X_partial
@@ -363,7 +367,6 @@ niche_DE_core = function(object,j,sig,CT_filter,C = 150,M = 10,gamma = 0.8,print
           #print("4")
           #print('getting beta')
           beta = matrix(NA,n_type,n_type)
-
           if(length(new_null)>0){
             beta[c(1:n_type^2)[-null]] = full_glm$coefficients[-c(1,new_null+1)]
           }
@@ -375,7 +378,6 @@ niche_DE_core = function(object,j,sig,CT_filter,C = 150,M = 10,gamma = 0.8,print
               beta[c(1:n_type^2)[-null]] = full_glm$coefficients[-c(1)]}
           }
           #record test statitistic
-
           T_ = Matrix::t(beta/V_)
           valid = 1
           #
@@ -394,21 +396,17 @@ niche_DE_core = function(object,j,sig,CT_filter,C = 150,M = 10,gamma = 0.8,print
       }, #get pval
       error = function(e) {
         #print(paste0("error,",j))
-        return (list(T_ = matrix(NA,n_type,n_type),betas = matrix(NA,n_type,n_type), V = 0,nulls = c(1:n_type^2), valid = 0,liks = NA))
+        #return (list(T_ = matrix(NA,n_type,n_type),betas = matrix(NA,n_type,n_type), V = 0,nulls = c(1:n_type^2), valid = 0,liks = NA))
         skip_to_next <<- TRUE})
     }
   }
   if(valid == 1){
     return (list(T_ = T_,betas = Matrix::t(beta), V = as.matrix(V),nulls = null, valid = valid,liks = liks_val))
   }else{
-    return (list(T_ = matrix(NA,n_type,n_type),betas = matrix(NA,n_type,n_type), V = 0,nulls = c(1:n_type^2), valid = 0,liks = NA))
+    return (list(T_ = 0,betas = 0, V = 0,nulls = c(1:n_type^2), valid = 0,liks = liks_val))
   }
 
 }
-
-
-
-
 
 
 

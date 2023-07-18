@@ -2,7 +2,7 @@
 % Please edit documentation in R/niche_DE_main_functions.R
 \name{get_niche_DE_genes}
 \alias{get_niche_DE_genes}
-\title{Get niche genes for the given index and niche cell types at the desired test.level}
+\title{Getniche genes for the given index and niche cell types at the desired test.level}
 \usage{
 get_niche_DE_genes(
   object,

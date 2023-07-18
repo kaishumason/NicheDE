@@ -211,13 +211,14 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
 #' @return A niche-DE object with niche-DE analysis performed
 #' @export
 #' @importFrom foreach %dopar%
-niche_DE_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,cores = 4){
+niche_DE_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,cores = 4,Int = T){
   #use core niche-DE function and nb_lik function
   nb_lik = function(x,mu,disp){
     #returns negative log likelihood: Var = mu + mu^2/size
     return(-sum(dnbinom(x=x, size = disp, mu = mu,log = TRUE)))
   }
-  niche_DE_core = function(object,j,sig,CT_filter,C = 150,M = 10,gamma = 0.8,print = T){
+
+  niche_DE_core = function(object,j,sig,CT_filter,C = 150,M = 10,gamma = 0.8,Int = T){
     valid = 0
     liks_val = NA
     n_type = ncol(object@num_cells)
@@ -256,7 +257,7 @@ niche_DE_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,cores =
         rest = rest[-null]
       }
       #continue if at least one index,niche pair is viable
-      if(length(null)!=n_type^2){
+      if(length(null)!=n_type^2 & Int == T){
         tryCatch({
           #if expected expression for a spot is 0, remove it
           bad_ind  = which(object@null_expected_expression[,j]==0)
@@ -283,11 +284,12 @@ niche_DE_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,cores =
           #perform cholesky decomp for finding inverse of X^TWX
           if(length(bad_ind)>0){
             X_partial = X_partial[-bad_ind,]
-            #Matrix(regMat, sparse=TRUE)
+            #X_partial = Matrix(X_partial, sparse=TRUE)
             #X_partial = as((X_partial[-bad_ind,]),"sparseMatrix")
             #remove bad indices
           }else{
             #X_partial = as((X_partial),"sparseMatrix")
+            #X_partial = Matrix(X_partial, sparse=TRUE)
             #Matrix(regMat, sparse=TRUE)
           }
           #get variance matrix. Variance is [t(X_partial*W)%*%X_partial]^(-1)
@@ -358,14 +360,75 @@ niche_DE_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,cores =
           #return (list(T_ = matrix(NA,n_type,n_type),betas = matrix(NA,n_type,n_type), V = 0,nulls = c(1:n_type^2), valid = 0,liks = NA))
           skip_to_next <<- TRUE})
       }
+      if(length(null)!=n_type^2 & Int == F){
+        tryCatch({
+          #if expected expression for a spot is 0, remove it
+          lm = lm((object@counts[,j] - object@null_expected_expression[,j]) ~ X_partial)
+          sum_lm =  summary(lm)
+          #get log likelihood
+          liks_val = stats::logLik(lm)
+          #get vcov mat
+          var_mat = (sum_lm$cov.unscaled)*(sum_lm$sigma^2)
+          #remove first observation
+          var_mat = var_mat[-c(1),-c(1)]
+          #see if any bettas have 0 variance
+          new_null = c()
+          new_null = which(diag(as.matrix(var_mat))==0)
+          if(length(new_null)>0){
+            var_mat = var_mat[-new_null,-new_null]
+            null = sort(c(null,rest[new_null]))
+          }
+          #get beta coefficients
+          if(length(null)!=n_type^2){
+
+            #print('getting beta')
+            beta = matrix(NA,n_type,n_type)
+            T_ = matrix(NA,n_type,n_type)
+            if(length(new_null)>0){
+              beta[c(1:n_type^2)[-null]] = lm$coefficients[-c(1,new_null+1)]
+              T_[c(1:n_type^2)[-null]] = sum_lm$coefficients[-c(1,new_null+1),3]
+            }
+
+            if(length(new_null)==0){
+              if(length(null)==0){
+                beta = matrix(lm$coefficients[-c(1)],n_type,n_type)
+                T_ = matrix(sum_lm$coefficients[-c(1),3],n_type,n_type)
+              }else{
+                beta[c(1:n_type^2)[-null]] = lm$coefficients[-c(1)]
+                T_[c(1:n_type^2)[-null]] = sum_lm$coefficients[-c(1),3]
+                }
+            }
+            #record test statitistic
+            valid = 1
+            #
+            # T_stat[,,j] = T_
+            #
+            # betas[,,j] = Matrix::t(beta)
+            #
+            # var_cov[[j]] = as.matrix(V)
+            #
+            # nulls[[j]] = null
+            #
+            # valid[j,counter] = 1
+
+          }
+          #end of if statement
+        }, #get pval
+        error = function(e) {
+          #print(paste0("error,",j))
+          #return (list(T_ = matrix(NA,n_type,n_type),betas = matrix(NA,n_type,n_type), V = 0,nulls = c(1:n_type^2), valid = 0,liks = NA))
+          skip_to_next <<- TRUE})
+      }
     }
     if(valid == 1){
-      return (list(T_ = T_,betas = Matrix::t(beta), V = as.matrix(V),nulls = null, valid = valid,liks = liks_val))
+      return (list(T_ = Matrix::t(T_),betas = Matrix::t(beta), V = as.matrix(var_mat),nulls = null, valid = valid,liks = liks_val))
     }else{
       return (list(T_ = 0,betas = 0, V = 0,nulls = c(1:n_type^2), valid = 0,liks = liks_val))
     }
 
   }
+
+
   #starting Message
   print(paste0('Starting Niche-DE analysis with parameters C = ',C,', M = ',M,', gamma = ', gamma,'.'))
   #initialize list output
@@ -393,7 +456,7 @@ niche_DE_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,cores =
 
     # Use foreach loop to parallelize "hello" function
     results <- foreach::foreach(i = 1:ngene)%dopar% {
-      niche_DE_core(object,i,sig,CT_filter,C,M,gamma,print)
+      niche_DE_core(object,i,sig,CT_filter,C,M,gamma,Int)
     }
     #get likelihood list
     liks = unlist(lapply(results, function(result) result$liks))
@@ -439,7 +502,7 @@ niche_DE_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,cores =
   return(object)
 }
 
-#' Get niche genes for the given index and niche cell types at the desired test.level
+#' Getniche genes for the given index and niche cell types at the desired test.level
 #'
 #' This function returns genes that show niche patterns at the desired test.level
 #'
