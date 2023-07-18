@@ -106,16 +106,17 @@ CreateLibraryMatrixFromSeurat = function(seurat_object,assay){
 #' @param library_mat Matrix indicating average expression profile for each cell type in the sample
 #' @param deconv_mat Deconvolution or cell type assignment matrix of data
 #' @param sigma List of kernel bandwidths to use in calculating the effective niche
+#' @param counts Boolean of if counts data supplied is integer. Default is true
 #' @return A niche-DE object
 #' @export
-CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,sigma){
+CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,sigma,counts = T){
   print('Creating Niche-DE object')
   #make sure that counts matrix is provided
   if (missing(x = counts_mat)) {
     stop("Must provide counts matrix")
   }
 
-  if (sum(counts_mat%%1)!=0){
+  if (counts == T & sum(counts_mat%%1)!=0){
     stop('counts matrix must contain only integers')
   }
 
@@ -242,9 +243,10 @@ CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,
 #' @param library_mat Matrix indicating average expression profile for each cell type in the sample
 #' @param deconv_mat Deconvolution or cell type assignment matrix of data
 #' @param sigma List of kernel bandwidths to use in calculating the effective niche
+#' @param counts Boolean of if counts data supplied is integer. Default is true
 #' @return A niche-DE object
 #' @export
-CreateNicheDEObjectFromSeurat = function(seurat_object,assay,library_mat,deconv_mat,sigma){
+CreateNicheDEObjectFromSeurat = function(seurat_object,assay,library_mat,deconv_mat,sigma, counts = T){
   #make sure that counts matrix is provided
   if (missing(x = seurat_object)) {
     stop("Must provide seurat object matrix")
@@ -253,7 +255,7 @@ CreateNicheDEObjectFromSeurat = function(seurat_object,assay,library_mat,deconv_
   sobj_assay = Seurat::GetAssay(seurat_object,assay)
   counts_mat = Matrix::t(sobj_assay@counts)
   #make sure that counts_mat is integers
-  if (sum(counts_mat%%1)!=0){
+  if (counts ==T & sum(counts_mat%%1)!=0){
     stop('counts matrix must contain only integers')
   }
 

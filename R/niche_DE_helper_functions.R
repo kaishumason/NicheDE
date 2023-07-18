@@ -254,3 +254,162 @@ get_niche_DE_pval = function(object,pos = T){
 
   return(object)
 }
+
+
+
+#' @export
+niche_DE_core = function(object,j,sig,CT_filter,C = 150,M = 10,gamma = 0.8,print = T){
+  valid = 0
+  n_type = ncol(object@num_cells)
+
+  if(j%%1000 == 0 & print == T){
+    print(paste0('kernel bandwidth:', sig,' (number ',counter,' out of ',length(object@sigma),' values), ', "Processing Gene #",j,
+                 ' out of ',ncol(object@counts)))
+  }
+  if((sum(object@counts[,j])>C)&(mean(object@ref_expr[,j]<CT_filter)!=1)==F){
+    null = c(1:n_type^2)
+  }
+  if((sum(object@counts[,j])>C)&(mean(object@ref_expr[,j]<CT_filter)!=1)){
+    #get pstg matrix
+    #print(j)
+    #t1 = Sys.time()
+    pstg = object@num_cells%*%as.matrix(diag(object@ref_expr[,j]))/object@null_expected_expression[,j]
+    pstg[,object@ref_expr[,j]<CT_filter] = 0
+    pstg[pstg<0.05]=0
+    #get X
+    #print(1)
+    X = matrix(NA,nrow(pstg),n_type^2)
+    for(k in c(1:nrow(pstg))){
+      #get feature matrix by multiplying effective niche and pstg vector
+      ps = as.matrix(pstg[k,])
+      EN_j = round(object@effective_niche[[counter]][k,],2)
+      cov_j = ps%*%t(EN_j)
+      #make into a vector
+      X[k,] = as.vector(t(cov_j))#important to take the transpose
+    }
+    #get index, niche pairs that are non existent
+    null = which(apply(X,2,function(x){sum(x>0,na.rm = T)})<M)
+    #print(length(null))
+    X_partial = X
+    rest = c(1:ncol(X))
+    if(length(null)>0){
+      X_partial = X[,-null]
+      rest = rest[-null]
+    }
+    #continue if at least one index,niche pair is viable
+    if(length(null)!=n_type^2){
+      tryCatch({
+        #if expected expression for a spot is 0, remove it
+        bad_ind  = which(object@null_expected_expression[,j]==0)
+        #print('Running GLM')
+        #run neg binom regression
+        #print()
+        if(length(bad_ind)>0){
+          full_glm =suppressWarnings({glm(object@counts[-bad_ind,j]~X_partial[-bad_ind,] + offset(log(object@null_expected_expression[-bad_ind,j])), family = "poisson")}) #do full glm
+        }else{
+          full_glm = suppressWarnings({glm(object@counts[,j]~X_partial + offset(log(object@null_expected_expression[,j])), family = "poisson")}) #do full glm
+        }
+        mu_hat = exp(predict(full_glm))#get mean
+        #print(Sys.time()-t1)
+        #get dicpersion parameter
+        A = optimize(nb_lik,x = object@counts[,j],mu = mu_hat, lower = 0.05, upper = 100) #get overdispersion parameter
+        #save dispersion parameter
+        disp = A$minimum
+        #save likelihood
+        liks_val = -A$objective
+        #calculate W matrix for distribution of beta hat
+        W =as.vector(mu_hat/(1 + mu_hat/disp))#get W matrix
+        #print(3)
+        #perform cholesky decomp for finding inverse of X^TWX
+        if(length(bad_ind)>0){
+          X_partial = as((X_partial[-bad_ind,]),"sparseMatrix")
+          #remove bad indices
+        }else{
+          X_partial = as((X_partial),"sparseMatrix")
+        }
+        #get variance matrix. Variance is [t(X_partial*W)%*%X_partial]^(-1)
+        var_mat = Matrix::t(X_partial*W)%*%X_partial
+        #if there are degenerate columns, remove them
+        new_null = c()
+        if(length(bad_ind)>0){
+          new_null = which(diag(as.matrix(var_mat))==0)
+          if(length(new_null)>0){
+            var_mat = var_mat[-new_null,-new_null]
+            null = sort(c(null,rest[new_null]))
+          }
+        }
+        if(length(null)!=n_type^2){
+          #cholesky decomposition
+          A = Matrix::chol(var_mat,LDL = FALSE,perm = FALSE)
+          #get covaraince matrix
+          #print("1")
+          V = Matrix::solve(A)%*%Matrix::t(Matrix::solve(A))
+          #get standard devaition vector
+          #print("2")
+          #get sd matrix
+          tau = sqrt(Matrix::diag(V))
+          #print("3")
+          V_ = matrix(NA,n_type,n_type)
+          if(length(null)==0){
+            V_ = matrix(tau,n_type,n_type)
+          }else{
+            V_[c(1:n_type^2)[-null]] = tau}
+          #for full var_cov matrix.
+          v_cov = matrix(NA,n_type^2,n_type^2)
+          if(length(null)==0){
+            v_cov = matrix(V,n_type^2,n_type^2)
+          }else{
+            v_cov[-null,-null] = as.matrix(V)}
+          #print("4")
+          #print('getting beta')
+          beta = matrix(NA,n_type,n_type)
+
+          if(length(new_null)>0){
+            beta[c(1:n_type^2)[-null]] = full_glm$coefficients[-c(1,new_null+1)]
+          }
+
+          if(length(new_null)==0){
+            if(length(null)==0){
+              beta = matrix(full_glm$coefficients[-c(1)],n_type,n_type)
+            }else{
+              beta[c(1:n_type^2)[-null]] = full_glm$coefficients[-c(1)]}
+          }
+          #record test statitistic
+
+          T_ = Matrix::t(beta/V_)
+          valid = 1
+          #
+          # T_stat[,,j] = T_
+          #
+          # betas[,,j] = Matrix::t(beta)
+          #
+          # var_cov[[j]] = as.matrix(V)
+          #
+          # nulls[[j]] = null
+          #
+          # valid[j,counter] = 1
+
+        }
+        #end of if statement
+      }, #get pval
+      error = function(e) {
+        #print(paste0("error,",j))
+        return (list(T_ = matrix(NA,n_type,n_type),betas = matrix(NA,n_type,n_type), V = 0,nulls = c(1:n_type^2), valid = 0,liks = NA))
+        skip_to_next <<- TRUE})
+    }
+  }
+  if(valid == 1){
+    return (list(T_ = T_,betas = Matrix::t(beta), V = as.matrix(V),nulls = null, valid = valid,liks = liks_val))
+  }else{
+    return (list(T_ = matrix(NA,n_type,n_type),betas = matrix(NA,n_type,n_type), V = 0,nulls = c(1:n_type^2), valid = 0,liks = NA))
+  }
+
+}
+
+
+
+
+
+
+
+

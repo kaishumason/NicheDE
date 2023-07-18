@@ -9,7 +9,8 @@ CreateNicheDEObjectFromSeurat(
   assay,
   library_mat,
   deconv_mat,
-  sigma
+  sigma,
+  counts = T
 )
 }
 \arguments{
@@ -24,6 +25,8 @@ will be extracted from the counts slot.}
 \item{deconv_mat}{Deconvolution or cell type assignment matrix of data}
 
 \item{sigma}{List of kernel bandwidths to use in calculating the effective niche}
+
+\item{counts}{Boolean of if counts data supplied is integer. Default is true}
 }
 \value{
 A niche-DE object

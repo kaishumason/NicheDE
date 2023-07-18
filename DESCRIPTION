@@ -19,5 +19,7 @@ VignetteBuilder: knitr
 Imports: 
     abind,
     Matrix,
-    Seurat
+    Seurat,
+    foreach,
+    doParallel
 URL: https://kmason23.github.io/NicheDE/

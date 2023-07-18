@@ -51,7 +51,7 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
       #do if  gene is rejected and gene-type has at least 1 rejection
       if((sum(object@counts[,j])>C)&(mean(object@ref_expr[,j]<CT_filter)!=1)){
         #get pstg matrix
-        #print(j)j
+        #print(j)
         #t1 = Sys.time()
         pstg = object@num_cells%*%as.matrix(diag(object@ref_expr[,j]))/object@null_expected_expression[,j]
         pstg[,object@ref_expr[,j]<CT_filter] = 0
@@ -195,7 +195,249 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
   return(object)
 }
 
+#' Niche_DE
+#'
+#' This function performs niche-DE
+#' @param object A niche-DE object
+#' @param C Minimum total expression of a gene needed for the model to run. Default value is 150.
+#' @param M Minimum number of spots containing the index cell type with the
+#' niche cell type in its effective niche for (index,niche) niche patterns
+#' to be investigated. Default value is 10.
+#' @param gamma Percentile a gene needs to be with respect to expression in the
+#'  index cell type in order for the model to investigate niche patterns for
+#'  that gene in the index cell. Default value is 0.8 (80th percentile)
+#' @param print Logical if function should print progress report (kernel, gene #)
+#' @param cores Number of cores to use for paralellization
+#' @return A niche-DE object with niche-DE analysis performed
+#' @export
+#' @importFrom foreach %dopar%
+niche_DE_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,cores = 4){
+  #use core niche-DE function and nb_lik function
+  nb_lik = function(x,mu,disp){
+    #returns negative log likelihood: Var = mu + mu^2/size
+    return(-sum(dnbinom(x=x, size = disp, mu = mu,log = TRUE)))
+  }
+  niche_DE_core = function(object,j,sig,CT_filter,C = 150,M = 10,gamma = 0.8,print = T){
+    valid = 0
+    liks_val = NA
+    n_type = ncol(object@num_cells)
+    #check if we need to do niche-DE
+    if((sum(object@counts[,j])<C) | (mean(object@ref_expr[,j]<CT_filter)!=1)==F){
+      null = c(1:n_type^2)
+      liks_val = NA
+    }
+    if((sum(object@counts[,j])>C)&(mean(object@ref_expr[,j]<CT_filter)!=1)){
+      #get pstg matrix
+      #print(j)
+      #t1 = Sys.time()
+      pstg = object@num_cells%*%as.matrix(diag(object@ref_expr[,j]))/object@null_expected_expression[,j]
+      pstg[,object@ref_expr[,j]<CT_filter] = 0
+      pstg[pstg<0.05]=0
+      #get X
+      #print(1)
+      X = matrix(NA,nrow(pstg),n_type^2)
+      #get counter
+      counter = which(object@sigma == sig)[1]
+      for(k in c(1:nrow(pstg))){
+        #get feature matrix by multiplying effective niche and pstg vector
+        ps = as.matrix(pstg[k,])
+        EN_j = round(object@effective_niche[[counter]][k,],2)
+        cov_j = ps%*%t(EN_j)
+        #make into a vector
+        X[k,] = as.vector(t(cov_j))#important to take the transpose
+      }
+      #get index, niche pairs that are non existent
+      null = which(apply(X,2,function(x){sum(x>0,na.rm = T)})<M)
+      #print(length(null))
+      X_partial = X
+      rest = c(1:ncol(X))
+      if(length(null)>0){
+        X_partial = X[,-null]
+        rest = rest[-null]
+      }
+      #continue if at least one index,niche pair is viable
+      if(length(null)!=n_type^2){
+        tryCatch({
+          #if expected expression for a spot is 0, remove it
+          bad_ind  = which(object@null_expected_expression[,j]==0)
+          #print('Running GLM')
+          #run neg binom regression
+          #print()
+          if(length(bad_ind)>0){
+            full_glm =suppressWarnings({glm(object@counts[-bad_ind,j]~X_partial[-bad_ind,] + offset(log(object@null_expected_expression[-bad_ind,j])), family = "poisson")}) #do full glm
+          }else{
+            full_glm = suppressWarnings({glm(object@counts[,j]~X_partial + offset(log(object@null_expected_expression[,j])), family = "poisson")}) #do full glm
+          }
+          mu_hat = as.numeric(exp(predict(full_glm)))#get mean
+          #print(Sys.time()-t1)
+          #get dicpersion parameter
+          A = optimize(nb_lik,x = object@counts[,j],mu = mu_hat, lower = 0.05, upper = 100) #get overdispersion parameter
+          #save dispersion parameter
+          disp = A$minimum
+          #save likelihood
+          liks_val = -A$objective
+          #calculate W matrix for distribution of beta hat
+          W =as.vector(mu_hat/(1 + mu_hat/disp))#get W matrix
 
+          #print(3)
+          #perform cholesky decomp for finding inverse of X^TWX
+          if(length(bad_ind)>0){
+            X_partial = X_partial[-bad_ind,]
+            #Matrix(regMat, sparse=TRUE)
+            #X_partial = as((X_partial[-bad_ind,]),"sparseMatrix")
+            #remove bad indices
+          }else{
+            #X_partial = as((X_partial),"sparseMatrix")
+            #Matrix(regMat, sparse=TRUE)
+          }
+          #get variance matrix. Variance is [t(X_partial*W)%*%X_partial]^(-1)
+          var_mat = Matrix::t(X_partial*W)%*%X_partial
+          #if there are degenerate columns, remove them
+          new_null = c()
+          if(length(bad_ind)>0){
+            new_null = which(diag(as.matrix(var_mat))==0)
+            if(length(new_null)>0){
+              var_mat = var_mat[-new_null,-new_null]
+              null = sort(c(null,rest[new_null]))
+            }
+          }
+          if(length(null)!=n_type^2){
+            #cholesky decomposition
+            A = Matrix::chol(var_mat,LDL = FALSE,perm = FALSE)
+            #get covaraince matrix
+            #print("1")
+            V = Matrix::solve(A)%*%Matrix::t(Matrix::solve(A))
+            #get standard devaition vector
+            #print("2")
+            #get sd matrix
+            tau = sqrt(Matrix::diag(V))
+            #print("3")
+            V_ = matrix(NA,n_type,n_type)
+            if(length(null)==0){
+              V_ = matrix(tau,n_type,n_type)
+            }else{
+              V_[c(1:n_type^2)[-null]] = tau}
+            #for full var_cov matrix.
+            v_cov = matrix(NA,n_type^2,n_type^2)
+            if(length(null)==0){
+              v_cov = matrix(V,n_type^2,n_type^2)
+            }else{
+              v_cov[-null,-null] = as.matrix(V)}
+            #print("4")
+            #print('getting beta')
+            beta = matrix(NA,n_type,n_type)
+            if(length(new_null)>0){
+              beta[c(1:n_type^2)[-null]] = full_glm$coefficients[-c(1,new_null+1)]
+            }
+
+            if(length(new_null)==0){
+              if(length(null)==0){
+                beta = matrix(full_glm$coefficients[-c(1)],n_type,n_type)
+              }else{
+                beta[c(1:n_type^2)[-null]] = full_glm$coefficients[-c(1)]}
+            }
+            #record test statitistic
+            T_ = Matrix::t(beta/V_)
+            valid = 1
+            #
+            # T_stat[,,j] = T_
+            #
+            # betas[,,j] = Matrix::t(beta)
+            #
+            # var_cov[[j]] = as.matrix(V)
+            #
+            # nulls[[j]] = null
+            #
+            # valid[j,counter] = 1
+
+          }
+          #end of if statement
+        }, #get pval
+        error = function(e) {
+          #print(paste0("error,",j))
+          #return (list(T_ = matrix(NA,n_type,n_type),betas = matrix(NA,n_type,n_type), V = 0,nulls = c(1:n_type^2), valid = 0,liks = NA))
+          skip_to_next <<- TRUE})
+      }
+    }
+    if(valid == 1){
+      return (list(T_ = T_,betas = Matrix::t(beta), V = as.matrix(V),nulls = null, valid = valid,liks = liks_val))
+    }else{
+      return (list(T_ = 0,betas = 0, V = 0,nulls = c(1:n_type^2), valid = 0,liks = liks_val))
+    }
+
+  }
+  #starting Message
+  print(paste0('Starting Niche-DE analysis with parameters C = ',C,', M = ',M,', gamma = ', gamma,'.'))
+  #initialize list output
+  object@niche_DE = vector(mode = "list", length = length(object@sigma))
+  names(object@niche_DE) = object@sigma
+  counter = 1
+  valid = matrix(0,ncol(object@counts),length(object@sigma))
+  #iterate over each sigma value
+  for(sig in object@sigma){
+    print(paste0('Performing Niche-DE analysis with kernel bandwidth:',sig,' (number ',counter,' out of ',length(object@sigma),' values)'))
+    #get expression filter (gamma)
+    CT_filter = apply(object@ref_expr,1,function(x){quantile(x,gamma)})
+    #get number of genes
+    ngene = ncol(object@counts)
+    #save nuber of cell types
+    n_type = ncol(object@num_cells)
+    #save dimnames for arrays
+    dimnames = list(A = colnames(object@num_cells),B  = colnames(object@num_cells), C = colnames(object@counts))
+    dimdims = c(ncol(object@num_cells),ncol(object@num_cells),ncol(object@counts))
+    #prepare parallelization
+    num_cores <- cores
+    # Set up the parallel backend using doParallel
+    cl <- parallel::makeCluster(num_cores)
+    doParallel::registerDoParallel(cl)
+
+    # Use foreach loop to parallelize "hello" function
+    results <- foreach::foreach(i = 1:ngene)%dopar% {
+      niche_DE_core(object,i,sig,CT_filter,C,M,gamma,print)
+    }
+    #get likelihood list
+    liks = unlist(lapply(results, function(result) result$liks))
+    #get null entries
+    nulls = lapply(results, function(result) result$nulls)
+    names(nulls) = colnames(object@counts)
+    #get variance covariance list
+    var_cov = lapply(results, function(result) result$nulls)
+    names(var_cov) = colnames(object@counts)
+    #get T_stat_array
+    T_stat_list = lapply(results, function(result) result$T_)
+    #convert to an array
+    T_stat = array(NA, dim = dimdims,dimnames = dimnames)
+    dimnames(T_stat) =  dimnames
+
+    #get beta array
+    betas_list = lapply(results, function(result) result$betas)
+    #convert to an array
+    betas <- array(NA, dim = dimdims,dimnames = dimnames)
+    dimnames(betas) =  dimnames
+    #loop through to fill betas and T_stat
+    for(vv in c(1:ngene)){
+      T_stat[,,vv] = T_stat_list[[vv]]
+      betas[,,vv] = betas_list[[vv]]
+    }
+    #save valid matrix
+    valid[,counter] = unlist(lapply(results, function(result) result$valid))
+    #save object
+    object@niche_DE[[counter]] = list(T_stat = T_stat,beta = betas,var_cov = var_cov,nulls = nulls,log_lik = liks)
+    counter = counter + 1
+  }
+  #get column sums of counts matrix to see how many genes pass filtering
+  A = rowSums(valid)
+  #get number of genes that pass filtering
+  num_pass = sum(A>=1,na.rm = T)
+  print('Computing Niche-DE Pvalues')
+  object = get_niche_DE_pval(object,pos = T)
+  object = get_niche_DE_pval(object,pos = F)
+  print(paste0('Niche-DE analysis complete. Number of Genes with niche-DE T-stat equal to ',num_pass))
+  if(num_pass < 1000){
+    warning('Less than 1000 genes pass. This could be due to insufficient read depth of data or size of C parameter. Consider changing choice of C parameter')
+  }
+  return(object)
+}
 
 #' Get niche genes for the given index and niche cell types at the desired test.level
 #'

@@ -4,7 +4,14 @@
 \alias{CreateNicheDEObject}
 \title{CreateNicheDEObject}
 \usage{
-CreateNicheDEObject(counts_mat, coordinate_mat, library_mat, deconv_mat, sigma)
+CreateNicheDEObject(
+  counts_mat,
+  coordinate_mat,
+  library_mat,
+  deconv_mat,
+  sigma,
+  counts = T
+)
 }
 \arguments{
 \item{counts_mat}{Counts matrix. Dimension should be cells/spots by genes}
@@ -16,6 +23,8 @@ CreateNicheDEObject(counts_mat, coordinate_mat, library_mat, deconv_mat, sigma)
 \item{deconv_mat}{Deconvolution or cell type assignment matrix of data}
 
 \item{sigma}{List of kernel bandwidths to use in calculating the effective niche}
+
+\item{counts}{Boolean of if counts data supplied is integer. Default is true}
 }
 \value{
 A niche-DE object
