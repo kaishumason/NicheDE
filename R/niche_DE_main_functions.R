@@ -458,6 +458,8 @@ niche_DE_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,cores =
     results <- foreach::foreach(i = 1:ngene)%dopar% {
       niche_DE_core(object,i,sig,CT_filter,C,M,gamma,Int)
     }
+    #close cluster
+    doParallel::stopImplicitCluster()
     #get likelihood list
     liks = unlist(lapply(results, function(result) result$liks))
     #get null entries
