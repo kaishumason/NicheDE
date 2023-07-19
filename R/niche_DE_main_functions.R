@@ -287,10 +287,11 @@ niche_DE_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,cores =
             #X_partial = Matrix(X_partial, sparse=TRUE)
             #X_partial = as((X_partial[-bad_ind,]),"sparseMatrix")
             #remove bad indices
+            X_partial = Matrix::Matrix(X_partial, sparse=TRUE)
           }else{
             #X_partial = as((X_partial),"sparseMatrix")
             #X_partial = Matrix(X_partial, sparse=TRUE)
-            #Matrix(regMat, sparse=TRUE)
+            X_partial = Matrix::Matrix(X_partial, sparse=TRUE)
           }
           #get variance matrix. Variance is [t(X_partial*W)%*%X_partial]^(-1)
           var_mat = Matrix::t(X_partial*W)%*%X_partial
