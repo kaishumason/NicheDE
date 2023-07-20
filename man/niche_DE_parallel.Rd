@@ -11,7 +11,8 @@ niche_DE_parallel(
   gamma = 0.8,
   print = T,
   cores = 4,
-  Int = T
+  Int = T,
+  outfile = ""
 )
 }
 \arguments{
