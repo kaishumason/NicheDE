@@ -377,18 +377,20 @@ niche_DE_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,Int = T
         tryCatch({
           #if expected expression for a spot is 0, remove it
           lm = lm((counts - null_expected_expression) ~ X_partial)
+          rm("X_partial")
+          gc()
           sum_lm =  summary(lm)
           #get log likelihood
           liks_val = stats::logLik(lm)
           #get vcov mat
-          var_mat = (sum_lm$cov.unscaled)*(sum_lm$sigma^2)
+          V = (sum_lm$cov.unscaled)*(sum_lm$sigma^2)
           #remove first observation
-          var_mat = var_mat[-c(1),-c(1)]
+          V = V[-c(1),-c(1)]
           #see if any bettas have 0 variance
           new_null = c()
-          new_null = which(diag(as.matrix(var_mat))==0)
+          new_null = which(diag(as.matrix(V))==0)
           if(length(new_null)>0){
-            var_mat = var_mat[-new_null,-new_null]
+            V = V[-new_null,-new_null]
             null = sort(c(null,rest[new_null]))
           }
           #get beta coefficients
