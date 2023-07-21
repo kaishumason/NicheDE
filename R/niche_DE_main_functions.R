@@ -211,7 +211,7 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
 #' @return A niche-DE object with niche-DE analysis performed
 #' @export
 #' @importFrom foreach %dopar%
-niche_DE_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,cores = 4,Int = T,outfile = ""){
+niche_DE_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,Int = T){
   #use core niche-DE function and nb_lik function
   nb_lik = function(x,mu,disp){
     #returns negative log likelihood: Var = mu + mu^2/size
@@ -249,7 +249,7 @@ niche_DE_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,cores =
         X[k,] = as.vector(t(cov_j))#important to take the transpose
       }
       rm("pstg")
-
+      gc()
       #get index, niche pairs that are non existent
       null = which(apply(X,2,function(x){sum(x>0,na.rm = T)})<M)
       #print(length(null))
@@ -260,6 +260,7 @@ niche_DE_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,cores =
         rest = rest[-null]
       }
       rm("X")
+      gc()
       #print("hello")
       #continue if at least one index,niche pair is viable
       if(length(null)!=n_type^2 & Int == T){
@@ -285,7 +286,7 @@ niche_DE_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,cores =
         #calculate W matrix for distribution of beta hat
         W =as.vector(mu_hat/(1 + mu_hat/disp))#get W matrix
         rm("mu_hat")
-
+        gc()
         #print(3)
         #perform cholesky decomp for finding inverse of X^TWX
         if(length(bad_ind)>0){
@@ -302,7 +303,7 @@ niche_DE_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,cores =
         #get variance matrix. Variance is [t(X_partial*W)%*%X_partial]^(-1)
         var_mat = Matrix::t(X_partial*W)%*%X_partial
         rm("X_partial")
-
+        gc()
         #if there are degenerate columns, remove them
         new_null = c()
         if(length(bad_ind)>0){
@@ -320,7 +321,7 @@ niche_DE_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,cores =
           V = Matrix::solve(A)%*%Matrix::t(Matrix::solve(A))
           rm("A")
           rm("var_mat")
-
+          gc()
           #get standard devaition vector
           #print("2")
           #get sd matrix
@@ -447,6 +448,10 @@ niche_DE_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,cores =
   names(object@niche_DE) = object@sigma
   counter = 1
   valid = matrix(0,ncol(object@counts),length(object@sigma))
+
+  #Set up the parallel backend using doParallel
+  #cl <- parallel::makeCluster(cores,outfile = outfile)
+  #doParallel::registerDoParallel(cl)
   #iterate over each sigma value
   for(sig in object@sigma){
     print(paste0('Performing Niche-DE analysis with kernel bandwidth:',sig,' (number ',counter,' out of ',length(object@sigma),' values)'))
@@ -460,15 +465,15 @@ niche_DE_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,cores =
     dimnames = list(A = colnames(object@num_cells),B  = colnames(object@num_cells), C = colnames(object@counts))
     dimdims = c(ncol(object@num_cells),ncol(object@num_cells),ncol(object@counts))
     #prepare parallelization
-    num_cores <- cores
+    #num_cores <- cores
     # Set up the parallel backend using doParallel
-    cl <- parallel::makeCluster(cores,outfile = outfile)
-    doParallel::registerDoParallel(cl)
+    #cl <- parallel::makeCluster(cores,outfile = outfile)
+    #doParallel::registerDoParallel(cl)
     N = ncol(object@counts)
     # Use foreach loop to parallelize niche-DE function
-    print(paste0("Running Niche-DE in parallel across ",cores," cores"))
+    #print(paste0("Running Niche-DE in parallel across ",cores," cores"))
     results <- foreach::foreach(i = 1:ngene)%dopar% {
-      if(i%%10 == 0 & print == T){
+      if(i%%1000 == 0 & print == T){
         print(paste0('kernel bandwidth:', sig, "Processing Gene #",i,
                      ' out of ',N))
       }
@@ -476,7 +481,7 @@ niche_DE_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,cores =
                     object@counts[,i],CT_filter,C,M,gamma,Int)
     }
     #close cluster
-    doParallel::stopImplicitCluster()
+    #doParallel::stopImplicitCluster()
     #get likelihood list
     liks = unlist(lapply(results, function(result) result$liks))
     #get null entries
@@ -508,9 +513,11 @@ niche_DE_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,cores =
     counter = counter + 1
     #remove everything but what's needed
     print("Cleaning disk for next iteration")
-    rm(list=ls()[! ls() %in% c("object","counter","nb_lik","niche_DE_core","C","M","gamma","valid","cores","Int","print","outfile")])
+    rm(list=ls()[! ls() %in% c("object","counter","nb_lik","niche_DE_core","C","M","gamma","valid","cores","Int","print","outfile","cl","nicheDE")])
     gc()
   }
+  #close cluster
+  #doParallel::stopImplicitCluster()
   #get column sums of counts matrix to see how many genes pass filtering
   A = rowSums(valid)
   #get number of genes that pass filtering
