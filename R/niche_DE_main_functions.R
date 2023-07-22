@@ -485,7 +485,7 @@ niche_DE_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,Int = T
         print(paste0('kernel bandwidth:', sig, "Processing Gene #",i,
                      ' out of ',N))
       }
-      niche_DE_core(object@ref_expr[,i],object@effective_niche[[counter]],object@num_cells,object@null_expected_expression[,i],
+      result <- niche_DE_core(object@ref_expr[,i],object@effective_niche[[counter]],object@num_cells,object@null_expected_expression[,i],
                     object@counts[,i],CT_filter,C,M,gamma,Int)
       gc()  # Perform garbage collection after each iteration
       result  # Return the result from the niche_DE_core function
