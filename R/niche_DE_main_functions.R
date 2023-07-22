@@ -436,9 +436,15 @@ niche_DE_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,Int = T
       }
     }
     if(valid == 1){
-      return (list(T_ = Matrix::t(T_),betas = Matrix::t(beta), V = as.matrix(V),nulls = null, valid = valid,liks = liks_val))
+      A = list(T_ = Matrix::t(T_),betas = Matrix::t(beta), V = as.matrix(V),nulls = null, valid = valid,liks = liks_val)
+      rm(list=ls()[! ls() %in% c("A")])
+      gc()
+      return (A)
     }else{
-      return (list(T_ = 0,betas = 0, V = 0,nulls = c(1:n_type^2), valid = 0,liks = liks_val))
+      A = list(T_ = 0,betas = 0, V = 0,nulls = c(1:n_type^2), valid = 0,liks = liks_val)
+      rm(list=ls()[! ls() %in% c("A")])
+      gc()
+      return (A)
     }
 
   }
@@ -481,6 +487,8 @@ niche_DE_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,Int = T
       }
       niche_DE_core(object@ref_expr[,i],object@effective_niche[[counter]],object@num_cells,object@null_expected_expression[,i],
                     object@counts[,i],CT_filter,C,M,gamma,Int)
+      gc()  # Perform garbage collection after each iteration
+      result  # Return the result from the niche_DE_core function
     }
     #close cluster
     #doParallel::stopImplicitCluster()
