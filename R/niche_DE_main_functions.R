@@ -1426,7 +1426,7 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
     #get gene/ligand name
     #match to top_DE list
     ID = which(names(top_DE)==j)
-    print(ID)
+    #print(ID)
     #get downstream genes
     LR_pairs[which(LR_pairs[,1]==j),3] = top_DE[[ID]]
   }
