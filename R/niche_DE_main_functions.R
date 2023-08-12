@@ -256,7 +256,8 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
         #get pstg matrix
         #print(j)
         #t1 = Sys.time()
-        pstg = object@num_cells%*%as.matrix(diag(object@ref_expr[,j]))/object@null_expected_expression[,j]
+        EEJ = as.vector(object@num_cells%*%object@ref_expr[,j])
+        pstg = object@num_cells%*%as.matrix(diag(object@ref_expr[,j]))/EEJ
         pstg[,object@ref_expr[,j]<CT_filter] = 0
         pstg[pstg<0.05]=0
         #get X
@@ -284,14 +285,14 @@ niche_DE = function(object,C = 150,M = 10,gamma = 0.8,print = T){
           tryCatch({
             nvar =ncol(X_partial)
             #if expected expression for a spot is 0, remove it
-            bad_ind  = which(object@null_expected_expression[,j]==0)
+            bad_ind  = which(EEJ==0)
             #print('Running GLM')
             #run neg binom regression
             #print()
             if(length(bad_ind)>0){
-              full_glm =suppressWarnings({glm(object@counts[-bad_ind,j]~X_partial[-bad_ind,] + offset(log(object@null_expected_expression[-bad_ind,j])), family = "poisson")}) #do full glm
+              full_glm =suppressWarnings({glm(object@counts[-bad_ind,j]~X_partial[-bad_ind,] + offset(log(EEJ[-bad_ind])), family = "poisson")}) #do full glm
             }else{
-              full_glm = suppressWarnings({glm(object@counts[,j]~X_partial + offset(log(object@null_expected_expression[,j])), family = "poisson")}) #do full glm
+              full_glm = suppressWarnings({glm(object@counts[,j]~X_partial + offset(log(EEJ)), family = "poisson")}) #do full glm
             }
             mu_hat = exp(predict(full_glm))#get mean
             #print(Sys.time()-t1)
@@ -541,9 +542,11 @@ niche_DE_parallel = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = 
             #cholesky decomposition
             A = Matrix::chol(var_mat,LDL = FALSE,perm = FALSE)
             #get covaraince matrix
-            #print("1")
             V = Matrix::solve(A)%*%Matrix::t(Matrix::solve(A))
             V = V[1:(n_type^2-length(null)),1:(n_type^2-length(null))]
+            #save V as an upper triangular matrix
+            V =  Matrix::Matrix(upper.tri(V,diag = T)*V, sparse=TRUE)
+            #remove large objects
             rm("A")
             rm("var_mat")
             #get sd matrix
@@ -569,6 +572,7 @@ niche_DE_parallel = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = 
             #record test statitistic
             T_ = beta/V_
             valid = 1
+
 
           }
           #end of if statement
@@ -601,6 +605,8 @@ niche_DE_parallel = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = 
           }
           #remove first observation
           V = V[-c(1),-c(1)]
+          #save V as an upper triangular matrix
+          V =  Matrix::Matrix(upper.tri(V,diag = T)*V, sparse=TRUE)
           #get beta coefficients
           if(length(null)!=n_type^2){
             #get coefficients
@@ -637,8 +643,9 @@ niche_DE_parallel = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = 
           skip_to_next <<- TRUE})
       }
     }
+    #print(pryr::memused())
     if(valid == 1){
-      A = list(T_ = Matrix::t(T_),betas = Matrix::t(beta), V = as.matrix(V),nulls = null, valid = valid,liks = liks_val)
+      A = list(T_ = Matrix::t(T_),betas = Matrix::t(beta), V = V,nulls = null, valid = valid,liks = liks_val)
       rm(list=ls()[! ls() %in% c("A")])
       #gc()
       return (A)
@@ -678,7 +685,10 @@ niche_DE_parallel = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = 
     start_time <- Sys.time()
     NDE_list = vector(mode='list', length=ngene)
     for(iter in c(1:ngene)){
-      NDE_list[[iter]] = list(ref_expr = object@ref_expr[,iter], null_EE =object@null_expected_expression[,iter],
+      #get expected expression of gene j
+      EEJ = as.vector(object@num_cells%*%object@ref_expr[,iter])
+      #make list with elemtns needed to compute niche-DE for gene j
+      NDE_list[[iter]] = list(ref_expr = object@ref_expr[,iter], null_EE = EEJ,
                               counts = object@counts[,iter],gene_num = iter)
     }
     end_time <- Sys.time()
@@ -690,7 +700,13 @@ niche_DE_parallel = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = 
                           batchID = object@batch_ID)
 
     print(paste0("Running Niche-DE in parallel"))
-
+    #make new environment
+    temp_env = new.env()
+    temp_env$constat_param = constant_param
+    temp_env$niche_DE_core = niche_DE_core
+    #export variables to cluster
+    parallel::clusterExport(cluster, varlist = ls(temp_env), envir = temp_env)
+    #perofmr in parallel over environment
     results <- parallel::parLapply(cl = cluster,NDE_list,fun = niche_DE_core,constants = constant_param)
 
 

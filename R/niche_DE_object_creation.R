@@ -9,8 +9,7 @@ Assay <- setClass(
     sigma = 'vector',
     num_cells = 'AnyMatrix',
     effective_niche = 'list',
-    ref_expr = 'AnyMatrix',
-    null_expected_expression = 'AnyMatrix',
+    ref_expr = 'AnyMatrix',#null_expected_expression = 'AnyMatrix',
     cell_names = 'vector',
     cell_types = 'vector',
     gene_names = 'vector',
@@ -53,7 +52,7 @@ CreateLibraryMatrix = function(data,cell_type){
   for (j in c(1:n_CT)){
     #get cells that belong to this cell type
     cells = data[which(cell_type[,1]==CT[j]),]
-    L[j,] = colMeans(as.matrix(cells))
+    L[j,] = L[j,] = apply(cells,2,function(x){mean(x)})
   }
   print('Average expression matrix computed')
   return(L)
@@ -90,7 +89,7 @@ CreateLibraryMatrixFromSeurat = function(seurat_object,assay){
   for (j in c(1:n_CT)){
     #get cells that belong to this cell type
     cells = data[which(cell_type==CT[j]),]
-    L[j,] = colMeans(as.matrix(cells))
+    L[j,] = apply(cells,2,function(x){mean(x)})
   }
   print('Average expression profile matrix computed.')
   return(L)
@@ -183,10 +182,15 @@ CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,
   sim_gene = which(colnames(counts_mat)%in% gene_list)
   #filter counts_mat by removing genes that are not in the library_mat
   countsM = counts_mat[,sim_gene]
+  #change column and row names
   colnames(countsM) = colnames(counts_mat)[sim_gene]
   rownames(countsM) = rownames(counts_mat)
   #get library size of each spot
-  Lib_spot = rowSums(countsM)
+  print(dim(countsM))
+  #Lib_spot = rowSums(as.matrix(countsM))
+  Lib_spot = apply(countsM,1,function(x){sum(x)})
+  #make matrix sparse
+  countsM = Matrix::Matrix(counts_mat[,sim_gene], sparse=TRUE)
 
   #Get expected library size given pi(deconvolution estimate for each spot)
   EL = deconv_mat%*%as.matrix(LM)
@@ -196,8 +200,8 @@ CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,
   nst = diag(num_cell[,1])%*%as.matrix(deconv_mat)
   rownames(nst) = rownames(countsM)
   #get expected gene expression given pi
-  EEX = as.matrix(nst)%*%as.matrix(library_mat)
-  rownames(EEX) = rownames(countsM)
+  #EEX = as.matrix(nst)%*%as.matrix(library_mat)
+  #rownames(EEX) = rownames(countsM)
   #reorder columns of count data to match that of library reference
   col.order = colnames(library_mat)
   countsM = countsM[,col.order]
@@ -222,8 +226,8 @@ CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,
   }
 
   object = new(Class = 'Niche_DE',counts = countsM,coord = coordinate_mat,
-               sigma = sigma,num_cells = nst,ref_expr = library_mat,
-               null_expected_expression = EEX,cell_names = rownames(countsM), cell_types = colnames(nst),
+               sigma = sigma,num_cells = nst,ref_expr = library_mat,#null_expected_expression = EEX,
+               cell_names = rownames(countsM), cell_types = colnames(nst),
                gene_names = colnames(countsM),batch_ID = rep(1,nrow(countsM)),
                spot_distance = min_dist,scale = scale)
   A = paste0('Niche-DE object created with ',nrow(object@counts),' observations, ', ncol(object@counts),' genes, ',
@@ -329,8 +333,10 @@ CreateNicheDEObjectFromSeurat = function(seurat_object,assay,library_mat,deconv_
   colnames(countsM) = colnames(counts_mat)[sim_gene]
   rownames(countsM) = rownames(counts_mat)
   #get library size of each spot
-  print(dim(countsM))
+  #print(dim(countsM))
   Lib_spot = rowSums(countsM)
+  #make matrix sparse
+  countsM = Matrix::Matrix(counts_mat[,sim_gene], sparse=TRUE)
 
   #Get expected library size given pi(deconvolution estimate for each spot)
   EL = deconv_mat%*%as.matrix(LM)
@@ -340,8 +346,8 @@ CreateNicheDEObjectFromSeurat = function(seurat_object,assay,library_mat,deconv_
   nst = diag(num_cell[,1])%*%as.matrix(deconv_mat)
   rownames(nst) = rownames(countsM)
   #get expected gene expression given pi
-  EEX = as.matrix(nst)%*%as.matrix(library_mat)
-  rownames(EEX) = rownames(countsM)
+  #EEX = as.matrix(nst)%*%as.matrix(library_mat)
+  #rownames(EEX) = rownames(countsM)
   #reorder columns of count data to match that of library reference
   col.order = colnames(library_mat)
   countsM = countsM[,col.order]
@@ -361,8 +367,8 @@ CreateNicheDEObjectFromSeurat = function(seurat_object,assay,library_mat,deconv_
   }
 
   object = new(Class = 'Niche_DE',counts = countsM,coord = coordinate_mat,
-               sigma = sigma,num_cells = nst,ref_expr = library_mat,
-               null_expected_expression = EEX,cell_names = rownames(countsM),cell_types = colnames(nst),
+               sigma = sigma,num_cells = nst,ref_expr = library_mat,#null_expected_expression = EEX,
+               cell_names = rownames(countsM),cell_types = colnames(nst),
                gene_names = colnames(countsM),batch_ID = rep(1,nrow(countsM)),
                spot_distance = min_dist,scale = scale)
   #make sure that counts_mat and
@@ -393,7 +399,6 @@ MergeObjects = function(objects){
   coord_merge = reference_obj@coord
   counts_merge = reference_obj@counts
   num_cells_merge = reference_obj@num_cells
-  EEX_merge = reference_obj@null_expected_expression
   #refr_spot_distance = reference_obj@min_distance
   refr_spot_distance = 100/reference_obj@scale
   batch_ID_merge = reference_obj@batch_ID
@@ -419,12 +424,6 @@ MergeObjects = function(objects){
     }
     num_cells_merge = rbind(num_cells_merge,objects[[j]]@num_cells)
 
-    #merge expected expresssion
-    if(mean(colnames(EEX_merge) == colnames(objects[[j]]@null_expected_expression))!=1){
-      stop('genes must be the same and in the same order in merged objects')
-    }
-    EEX_merge = rbind(EEX_merge,objects[[j]]@null_expected_expression)
-
     #merge actual expresssion
     if(mean(colnames(counts_merge) == colnames(objects[[j]]@counts))!=1){
       stop('genes must be the same and in the same order in merged objects')
@@ -449,7 +448,7 @@ MergeObjects = function(objects){
   object = new(Class = 'Niche_DE',counts = counts_merge,coord = coord_merge,
                sigma = reference_obj@sigma,num_cells = num_cells_merge,
                ref_expr = reference_obj@ref_expr,
-               null_expected_expression = EEX_merge,cell_names = cell_names, cell_types = colnames(num_cells_merge),
+               cell_names = cell_names, cell_types = colnames(num_cells_merge),
                gene_names = gene_names,batch_ID = batch_ID_merge,
                spot_distance = 100,scale = scales)
   return(object)
@@ -518,18 +517,19 @@ CalculateEffectiveNiche = function(object,cutoff = 0.05){
 #' @return A niche-DE object that only includes the specified cells.
 #' We recommend using this function after calculating the effective niche on the whole dataset
 #' @export
-Filter = function(object,cell_names){
+Filter_NDE = function(object,cell_names){
   if(mean(cell_names%in%object@cell_names)!=1){
     stop('Some cell names not present in niche-DE object')
   }
-  object@counts = subset(object@counts, rownames(object@counts) %in% cell_names)
-  object@coord = subset(object@coord, rownames(object@coord) %in% cell_names)
-  object@num_cells = subset(object@num_cells, rownames(object@num_cells) %in% cell_names)
-  for(j in c(1:length(object@effective_niche))){
-    object@effective_niche[[j]] = subset(object@effective_niche[[j]], rownames(object@effective_niche[[j]]) %in% cell_names)
+  object@counts = object@counts[rownames(object@counts) %in% cell_names,]
+  object@coord = object@coord[rownames(object@coord) %in% cell_names,]
+  object@num_cells = object@num_cells[rownames(object@num_cells) %in% cell_names,]
+  if(length(object@effective_niche) > 0){
+    for(j in c(1:length(object@effective_niche))){
+      object@effective_niche[[j]] = object@effective_niche[[j]][rownames(object@effective_niche[[j]]) %in% cell_names,]
+    }
   }
-  object@null_expected_expression = subset(object@null_expected_expression,
-                                           rownames(object@null_expected_expression) %in% cell_names)
+  #object@null_expected_expression = object@null_expected_expression[rownames(object@null_expected_expression) %in% cell_names,]
   object@batch_ID = object@batch_ID[which(object@cell_names%in% cell_names)]
   object@cell_names = object@cell_names[which(object@cell_names%in% cell_names)]
   return(object)

@@ -73,8 +73,14 @@ contrast_post = function(betas_all,V_cov_all,nulls_all,index,niche){
       #get sd of contrast
       index_1 = (index-1)*n_type + niche[1]
       index_2 = (index-1)*n_type + niche[2]
-      var_contrast = diag(V_cov)[index_1]+diag(V_cov)[index_2]-2*V_cov[index_1,index_2]
-
+      #get minimum of the two indices
+      id1 = min(index_1,index_2)
+      id2 = max(index_1,index_2)
+      #compute contrast score
+      var_contrast = diag(V_cov)[index_1]+diag(V_cov)[index_2]-2*V_cov[id1,id2]
+      #print(diag(V_cov)[index_1])
+      #print(diag(V_cov)[index_2])
+      #print(V_cov[id1,id2])
       #test statistic
       T_stat = betas[index,niche[1]] - betas[index,niche[2]]
       T_stat = T_stat/(sqrt(var_contrast))
@@ -100,7 +106,7 @@ check_colloc = function(object,index,niche){
     #get indices such that niche is in effective niche
     niche_ind = which(object@effective_niche[[counter]][,niche] > min(object@effective_niche[[counter]][,niche]))
     #get length of overlap
-    colloc[counter] = length(niche_ind %in% index_ind)
+    colloc[counter] = sum(niche_ind %in% index_ind == T)
     counter = counter + 1
   }
   #return lengths of overlap
