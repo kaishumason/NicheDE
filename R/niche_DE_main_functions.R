@@ -921,7 +921,7 @@ get_niche_DE_genes = function(object,test.level,index,niche,direction = 'positiv
     niche_index = which(colnames(object@num_cells)==niche)
     gene_index = which((object@niche_DE_pval_pos$gene_level<(alpha)) &
                          (object@niche_DE_pval_pos$cell_type_level[,ct_index]<(alpha)) &
-                         (object@niche_DE_pval_pos$interaction_level[ct_index,niche_index,]<(alpha/2)))
+                         (object@niche_DE_pval_pos$interaction_level[ct_index,niche_index,]<(alpha)))
     genes = object@gene_names[gene_index]
     #get associated pvalues
     pval = object@niche_DE_pval_pos$interaction_level[ct_index,niche_index,gene_index]
@@ -942,7 +942,7 @@ get_niche_DE_genes = function(object,test.level,index,niche,direction = 'positiv
     niche_index = which(colnames(object@num_cells)==niche)
     gene_index = which((object@niche_DE_pval_neg$gene_level<(alpha)) &
                          (object@niche_DE_pval_neg$cell_type_level[,ct_index]<(alpha)) &
-                         (object@niche_DE_pval_neg$interaction_level[ct_index,niche_index,]<(alpha/2)))
+                         (object@niche_DE_pval_neg$interaction_level[ct_index,niche_index,]<(alpha)))
     genes = object@gene_names[gene_index]
     #get associated pvalues
     pval = object@niche_DE_pval_neg$interaction_level[ct_index,niche_index,gene_index]

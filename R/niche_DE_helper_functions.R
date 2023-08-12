@@ -113,7 +113,7 @@ check_colloc = function(object,index,niche){
   return(colloc)
 }
 
-
+#need to edit to get postive and negative
 
 #' @export
 get_niche_DE_pval = function(object,pos = T){
@@ -141,11 +141,13 @@ get_niche_DE_pval = function(object,pos = T){
   #convert T_stat to pvalue
   if(pos ==T){
     T_stat_list_sign = lapply(T_stat_list,function(x){T_to_p(x,alternative = 'positive')})
+    T_stat_list = T_stat_list_sign
   }
   if(pos==F){
     T_stat_list_sign = lapply(T_stat_list,function(x){T_to_p(x,alternative = 'negative')})
+    T_stat_list = T_stat_list_sign
   }
-  T_stat_list = lapply(T_stat_list,function(x){T_to_p(x,alternative = 'two.sided')})
+  #T_stat_list = lapply(T_stat_list,function(x){T_to_p(x,alternative = 'two.sided')})
   #apply cauchy rule to get gene pvalues and make into a dataframe
   gene_p = lapply(T_stat_list,function(x){apply(x,3,function(y){gene_level(y)})})
   n <- length(gene_p[[1]])
