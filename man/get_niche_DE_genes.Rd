@@ -9,7 +9,7 @@ get_niche_DE_genes(
   test.level,
   index,
   niche,
-  direction = "positive",
+  positive = T,
   alpha = 0.05
 )
 }
@@ -23,10 +23,10 @@ get_niche_DE_genes(
 
 \item{niche}{The niche cell type}
 
+\item{alpha}{The level at which to perform the Benjamini Hochberg correction. Default value = 0.05}
+
 \item{direction}{Character indicating whether to return genes that are (index,niche)+
 patterns (direction = 'positive') or (index,niche)- (direction = 'negative'). Default value is 'positive'.}
-
-\item{alpha}{The level at which to perform the Benjamini Hochberg correction. Default value = 0.05}
 }
 \value{
 A vector of genes that are niche significant at the desired FDR,

@@ -23,5 +23,6 @@ Imports:
     foreach,
     doParallel,
 	fastDummies,
-	parallel
+	parallel,
+	poolr
 URL: https://kmason23.github.io/NicheDE/
