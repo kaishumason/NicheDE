@@ -709,6 +709,7 @@ niche_DE_parallel_new = function(object,cluster, C = 150,M = 10,gamma = 0.8,prin
           if(length(null)!=n_type^2){
             #get coefficients for important variables and intercept
             coeff = full_glm$coefficients[1:(nvar+1)]
+            coeff[is.na(coeff)] = 0
             #cholesky decomposition
             A = Matrix::chol(var_mat,LDL = FALSE,perm = FALSE)
             #get covaraince matrix
@@ -791,9 +792,11 @@ niche_DE_parallel_new = function(object,cluster, C = 150,M = 10,gamma = 0.8,prin
           if(length(null)!=n_type^2){
             #get coefficients
             coeff = lm$coefficients[1:(nvar+1)]
+            coeff[is.na(coeff)] = 0
             #get number of true coefficents
             num_coef = n_type^2 - length(null)
             coeff_T = sum_lm$coefficients[c(1:(num_coef+1)),3]
+            coeff_T[is.na(coeff_T)] = 0
             #print('getting beta')
             beta = matrix(NA,n_type,n_type)
             T_ = matrix(NA,n_type,n_type)
@@ -896,29 +899,6 @@ niche_DE_parallel_new = function(object,cluster, C = 150,M = 10,gamma = 0.8,prin
     })
 
     names(results) = object@gene_names
-    #liks = unlist(lapply(results, function(result) result$log_likelihood))
-    #get null entries
-    #nulls = lapply(results, function(result) result$nulls)
-    #names(nulls) = colnames(object@counts)
-    #get variance covariance list
-    #var_cov = lapply(results, function(result) result$Varcov)
-    #names(var_cov) = colnames(object@counts)
-    #get T_stat_array
-    #T_stat_list = lapply(results, function(result) result$T_stat)
-    #convert to an array
-    #T_stat = array(NA, dim = dimdims,dimnames = dimnames)
-    #dimnames(T_stat) =  dimnames
-
-    #get beta array
-    #betas_list = lapply(results, function(result) result$betas)
-    #convert to an array
-    #betas <- array(NA, dim = dimdims,dimnames = dimnames)
-    #dimnames(betas) =  dimnames
-    #loop through to fill betas and T_stat
-    #for(vv in c(1:ngene)){
-      #T_stat[,,vv] = T_stat_list[[vv]]
-      #betas[,,vv] = betas_list[[vv]]
-    #}
     #save valid matrix
     valid[,counter] = unlist(lapply(results, function(result) result$valid))
     #save object

@@ -42,25 +42,29 @@ gene_level_fisher = function(p,varcov,beta_cov = T){
   #remove Na's from p
   p = p[is.na(p)==F]
   if(length(p)>0 & is.null(dim(varcov))==F){
-    if(beta_cov == T){
-      #convert varcov to matrix
-      varcov = as.matrix(varcov)
-      #make varcov matrix symmetric
-      varcov = as.matrix(ultosymmetric(varcov))
-      #get diagonal elements
-      A = 1/diag(varcov)
-      #make into diagonal matrix
-      A = diag(A)
-      #get variance of ABeta
-      varcov = A%*%varcov%*%t(A)
-      #convert to correlation matrix
-      varcov = cov2cor(varcov)
-      #get 1-sided correlation structure for pvalues
-      varcov = poolr::mvnconv(varcov, target = "m2lp",side  = 1, cov2cor = F)
+    if(length(p) == dim(varcov)[1]){
+      if(beta_cov == T){
+        #convert varcov to matrix
+        varcov = as.matrix(varcov)
+        #make varcov matrix symmetric
+        varcov = as.matrix(ultosymmetric(varcov))
+        #get diagonal elements
+        A = 1/diag(varcov)
+        #make into diagonal matrix
+        A = diag(A)
+        #get variance of ABeta
+        varcov = A%*%varcov%*%t(A)
+        #convert to correlation matrix
+        varcov = cov2cor(varcov)
+        #get 1-sided correlation structure for pvalues
+        varcov = poolr::mvnconv(varcov, target = "m2lp",side  = 1, cov2cor = F)
+      }
+      #do Browns test to get combined pvalue
+      p_total = poolr::fisher(p,side = 1,R = varcov,adjust = "generalized")$p
+      return(p_total)
+    }else{
+      return(NA)
     }
-    #do Browns test to get combined pvalue
-    p_total = poolr::fisher(p,side = 1,R = varcov,adjust = "generalized")$p
-    return(p_total)
   }else{
     return(NA)
   }
@@ -119,7 +123,7 @@ celltype_level_fisher = function(p,varcov){
       p_total[iter] = p_CT
     }
   }
-  ind_counter = 0
+
   return (p_total)
 }
 
@@ -582,7 +586,7 @@ get_niche_DE_pval_fisher_new = function(object,pos = T){
   #iterate over sigmas
   print("Computing Gene Level Pvalues")
   for(k in c(1:length(T_stat_list))){
-    #print(k)
+    print(k)
     #print("making T_stats")
     if(k > length(object@sigma)){
       gene_p[,k] = gene_p[,1]
