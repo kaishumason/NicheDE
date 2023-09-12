@@ -29,6 +29,28 @@ T_to_p = function(T_stat,alternative = 'two.sided'){
 
 
 
+
+#' @export
+gene_level = function(p,w = rep(1,length(p))){
+  p = tan((0.5-p)*pi)
+  p_total = weighted.mean(p,w,na.rm = T)
+  p_total = 1-pcauchy(p_total)
+  return (p_total)
+}
+
+
+#' @export
+celltype_level = function(p,w = rep(1,ncol(p))){
+  p = tan((0.5-p)*pi)
+  p_total = apply(p,1,function(x){weighted.mean(x,w,na.rm = T)})
+  p_total = 1-pcauchy(p_total)
+  return (p_total)
+}
+
+
+
+
+
 #' @export
 gene_level_fisher = function(p,varcov,beta_cov = T){
   #need to take transpose because conversion to vector is columnwise
@@ -241,7 +263,6 @@ get_niche_DE_pval_fisher = function(object,pos = T){
   #iterate over sigmas
   print("Computing Gene Level Pvalues")
   for(k in c(1:length(T_stat_list))){
-    print(k)
     #print("making T_stats")
     if(k > length(object@sigma)){
       gene_p[,k] = gene_p[,1]

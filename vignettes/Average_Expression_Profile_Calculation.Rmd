@@ -32,7 +32,8 @@ If you have raw data matrices, the expression profile matrix can be created usin
  data('liver_met_data')
  data('liver_met_CT')
  #create library matrix
- CreateLibraryMatrix(liver_met_data,liver_met_CT)
+ L = CreateLibraryMatrix(liver_met_data,liver_met_CT)
+ View(L)
  ```
  
 

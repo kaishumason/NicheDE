@@ -198,7 +198,6 @@ CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,
   colnames(countsM) = colnames(counts_mat)[sim_gene]
   rownames(countsM) = rownames(counts_mat)
   #get library size of each spot
-  print(dim(countsM))
   #Lib_spot = rowSums(as.matrix(countsM))
   Lib_spot = apply(countsM,1,function(x){sum(x)})
   #make matrix sparse
@@ -208,7 +207,6 @@ CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,
   EL = deconv_mat%*%as.matrix(LM)
   #get expected number of total cells in a spot
   num_cell = Lib_spot/EL
-  print("hello")
   #get effective niche
   #nst = diag(num_cell[,1])%*%as.matrix(deconv_mat)
   nst = sweep(as.matrix(deconv_mat), MARGIN=1, num_cell[,1], `*`)
@@ -276,6 +274,7 @@ CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,
 #' @return A niche-DE object
 #' @export
 CreateNicheDEObjectFromSeurat = function(seurat_object,assay,library_mat,deconv_mat,sigma, counts = T){
+  print("Creating Niche-DE object")
   #make sure that counts matrix is provided
   if (missing(x = seurat_object)) {
     stop("Must provide seurat object matrix")
@@ -579,7 +578,7 @@ CalculateEffectiveNicheLargeScale = function(object,batch_size = 1000,cutoff = 0
       num_iter = ceiling(C/batch_size)
 
       for(j in c(1:num_iter)){
-        print("Calculating effective niche for cells ",batch_size*(j-1)+1, " to ",min(batch_size*j,C) )
+        print(paste0("Calculating effective niche for cells ",batch_size*(j-1)+1, " to ",min(batch_size*j,C) ))
         #get indices we wanna look at
         inds_left = batch_size*(j-1)+1
         inds_right = min(batch_size*j,C)

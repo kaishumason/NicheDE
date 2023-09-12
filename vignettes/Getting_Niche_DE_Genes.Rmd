@@ -31,9 +31,10 @@ knitr::opts_chunk$set(
 
 Below, we find interaction level (fibroblast,tumor)+ niche genes.
 ```
-get_niche_DE_genes(NDE_obj,'I',index='stromal',niche = 'tumor_epithelial',positive = T,alpha = 0.05)
+DE_genes = get_niche_DE_genes(NDE_obj,'I',index='stromal',niche = 'tumor_epithelial',positive = T,alpha = 0.05)
+head(DE_genes)
 ```
-The output is a list of genes and their corresponding pvalues at the resolution specified.
+The output is a matrix of genes and their corresponding pvalues at the resolution specified.
 
 <details>
   <summary>Interpretting Your Results</summary>
@@ -52,10 +53,10 @@ The output is a list of genes and their corresponding pvalues at the resolution 
 #Load enichr package
 library(enrichR)
 #get fibroblast tumor niche genes
-fibro_tum_pos = get_niche_DE_genes(NDE_obj,'interaction',index='stromal',niche = 'tumor_epithelial',pos = T,alpha = 0.05)
+fibro_tum_pos = get_niche_DE_genes(NDE_obj,'I',index='stromal',niche = 'tumor_epithelial',positive = T,alpha = 0.05)
 #run pathway enrichment analysis
 fibro_tum_processes = enrichr(fibro_tum_pos[,1],databases = 'Reactome_2016')
 #View processes in a table
-head(fibro_tum_processes$Reactome_2016)
+View(fibro_tum_processes$Reactome_2016)
 ```
 
