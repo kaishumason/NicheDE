@@ -2,6 +2,7 @@
 #'
 #' This function performs niche-DE
 #' @param object A niche-DE object
+#' @param cluster Cluster to perform parallel computations on
 #' @param C Minimum total expression of a gene needed for the model to run. Default value is 150.
 #' @param M Minimum number of spots containing the index cell type with the
 #' niche cell type in its effective niche for (index,niche) niche patterns
@@ -14,7 +15,7 @@
 #' @return A niche-DE object with niche-DE analysis performed
 #' @export
 #' @importFrom foreach %dopar%
-niche_DE_parallel = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T,batch = T){
+niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T,batch = T){
   #use core niche-DE function and nb_lik function
   nb_lik = function(x,mu,disp){
     #returns negative log likelihood: Var = mu + mu^2/size

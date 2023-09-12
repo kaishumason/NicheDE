@@ -8,6 +8,8 @@ CalculateEffectiveNiche(object, cutoff = 0.05)
 }
 \arguments{
 \item{object}{A niche-DE object}
+
+\item{cutoff}{Minimum kernel similarity. Similarities below this value get truncated to 0}
 }
 \value{
 A niche-DE object the effective niche calculated.

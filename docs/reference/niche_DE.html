@@ -54,13 +54,26 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">niche_DE</span><span class="op">(</span><span class="va">object</span>, C <span class="op">=</span> <span class="fl">150</span>, M <span class="op">=</span> <span class="fl">10</span>, gamma <span class="op">=</span> <span class="fl">0.8</span>, print <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">niche_DE</span><span class="op">(</span></span>
+<span>  <span class="va">object</span>,</span>
+<span>  <span class="va">cluster</span>,</span>
+<span>  C <span class="op">=</span> <span class="fl">150</span>,</span>
+<span>  M <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>  gamma <span class="op">=</span> <span class="fl">0.8</span>,</span>
+<span>  print <span class="op">=</span> <span class="cn">T</span>,</span>
+<span>  Int <span class="op">=</span> <span class="cn">T</span>,</span>
+<span>  batch <span class="op">=</span> <span class="cn">T</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>object</dt>
 <dd><p>A niche-DE object</p></dd>
+
+
+<dt>cluster</dt>
+<dd><p>Cluster to perform parallel computations on</p></dd>
 
 
 <dt>C</dt>
@@ -81,6 +94,10 @@ that gene in the index cell. Default value is 0.8 (80th percentile)</p></dd>
 
 <dt>print</dt>
 <dd><p>Logical if function should print progress report (kernel, gene #)</p></dd>
+
+
+<dt>cores</dt>
+<dd><p>Number of cores to use for paralellization</p></dd>
 
 </dl></div>
     <div class="section level2">

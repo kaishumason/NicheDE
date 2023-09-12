@@ -107,7 +107,7 @@ calculation</li>
 <span><span class="co">#make Niche-DE object</span></span>
 <span><span class="va">NDE_obj</span> <span class="op">=</span> <span class="fu"><a href="../reference/CreateNicheDEObject.html">CreateNicheDEObject</a></span><span class="op">(</span><span class="va">vignette_counts</span>,<span class="va">vignette_coord</span>,</span>
 <span>                              <span class="va">vignette_library_matrix</span>,<span class="va">vignette_deconv_mat</span>,</span>
-<span>                              sigma <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">400</span>,<span class="fl">1000</span><span class="op">)</span><span class="op">)</span></span></code></pre>
+<span>                              sigma <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">100</span>,<span class="fl">250</span><span class="op">)</span><span class="op">)</span></span></code></pre>
 <details><summary>
 What’s in the object?
 </summary><p>We see that their are 14 slots, 10 of which are populated when making
@@ -132,16 +132,13 @@ manuscript.</li>
 <li>ref_expr: The average expression profile matrix. The dimension is
 #cell types by #genes. Each row gives the average expression of each
 gene for a given cell type based on the reference dataset supplied.</li>
-<li>null_expected_expression: The expected expression profile for each
-cell/spot given its cell type deconvolution and library size. It is of
-dimension #cells/spots by #genes.</li>
 <li>cell_names: The name of each cell. This will be used if the use
 wants to filter cells via the function ‘Filter’</li>
 <li>gene_names: The gene names.</li>
 <li>batch_ID: The batch ID for each cell/spot. This will be used when
 merging objects.</li>
-<li>spot_distance: The mean distance between a cell/spot and its nearest
-neighbor.This value can be used to inform the choice of sigma.</li>
+<li>spot_distance: 100. Coordinates are scaled so that the distance
+between a spot and its nearest neighbor is 100.</li>
 <li>scale: The scaling to convert our coordinates back to their original
 scale</li>
 </ul></details></main>

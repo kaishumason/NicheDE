@@ -101,8 +101,28 @@ Arguments
 <li>cutoff: The minimum kernel similarity allowable. Similarities below
 this value are truncated to 0. Default value 0.05.</li>
 </ul></details><pre><code><span><span class="va">NDE_obj</span> <span class="op">=</span> <span class="fu"><a href="../reference/CalculateEffectiveNiche.html">CalculateEffectiveNiche</a></span><span class="op">(</span><span class="va">NDE_obj</span><span class="op">)</span></span></code></pre>
+<div class="section level3">
+<h3 id="large-scale-data">Large Scale Data<a class="anchor" aria-label="anchor" href="#large-scale-data"></a>
+</h3>
+<p>Because calculation of the effective niche requires construction of a
+distance matrix, data with many cells/spots will cause crashes. To avoid
+this, we use the function ‘CalculateEffectiveNicheLargeScale’ which
+takes in three arguments.</p>
 <details><summary>
-Suggestions on choice of kernel bandwidth
+Arguments
+</summary><ul>
+<li>object: A niche-DE object</li>
+<li>batch_size: How many cells do we calculate the effective niche for
+at a time. Default value 1000.</li>
+<li>cutoff: The minimum kernel similarity allowable. Similarities below
+this value are truncated to 0. Default value 0.05.</li>
+</ul></details><pre><code><span><span class="va">NDE_obj</span> <span class="op">=</span> <span class="fu"><a href="../reference/CalculateEffectiveNicheLargeScale.html">CalculateEffectiveNicheLargeScale</a></span><span class="op">(</span><span class="va">NDE_obj</span>,batch_size <span class="op">=</span> <span class="fl">1000</span>, cutoff <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span></code></pre>
+</div>
+<div class="section level3">
+<h3 id="suggestions-on-choice-of-kernel">Suggestions on Choice of Kernel<a class="anchor" aria-label="anchor" href="#suggestions-on-choice-of-kernel"></a>
+</h3>
+<details><summary>
+Kernel Tutorial bandwidth
 </summary><p>Choosing a reasonable sigma vector is critical to generating robust
 and interpretable results.Sigma essentially determines what range of
 neighboring spots contribute towards the effective niche. Small values
@@ -116,7 +136,7 @@ of the spatial coordinates of the grid with the middle spot colored
 red.</p>
 <details><summary>
 Code for generating coordinate plot
-</summary><div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+</summary><div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning: package 'ggplot2' was built under R version 4.2.3</span></span>
 <span><span class="co">#generate coordiantes</span></span>
@@ -139,7 +159,7 @@ middle spot itself. This may be appropriate if the spot can contain many
 cells like in Visium data.<br></p>
 <details><summary>
 Code for generating plot with small sigma
-</summary><div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+</summary><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#input your own sigma value</span></span>
 <span><span class="va">sigma</span> <span class="op">=</span> <span class="fl">0.001</span></span>
 <span><span class="co">#compute kernel similarities</span></span>
@@ -159,7 +179,7 @@ we believe that niche patterns only depend on the closest neighbors of a
 spot.<br></p>
 <details><summary>
 Code for generating plot with medium sigma
-</summary><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+</summary><div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#input your own sigma value</span></span>
 <span><span class="va">sigma</span> <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="co">#compute kernel similarities</span></span>
@@ -180,7 +200,7 @@ appropriate if we believe that niche patterns only depend on tissue
 level patterns in niche.<br></p>
 <details><summary>
 Code for generating plot with large sigma
-</summary><div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+</summary><div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#input your own sigma value</span></span>
 <span><span class="va">sigma</span> <span class="op">=</span> <span class="fl">10</span></span>
 <span><span class="co">#compute kernel similarities</span></span>
@@ -193,12 +213,15 @@ Code for generating plot with large sigma
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_color_manual</a></span><span class="op">(</span><span class="va">red</span>, values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"black"</span>, <span class="st">"red"</span><span class="op">)</span><span class="op">)</span><span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position<span class="op">=</span><span class="st">"none"</span><span class="op">)</span></span></code></pre></div>
 <img src="Effective_Niche_Calculation_files/figure-html/unnamed-chunk-5-1.png" width="700"></details><p>Clearly the choice of sigma can affect what niche patterns you will
 find. For spot data which can contain many cells like Visium, we
-recommend using a sigma vector that contains a small value, a value
-equal to the distance between neighboring spots, and a value somewhat
-larger, say 2-3 times the distance between neighboring spots.</p>
+recommend using a sigma vector that contains a small value (e.g. 1), a
+value equal to the distance between neighboring spots (100), and a value
+somewhat larger, say 2-3 times the distance between neighboring spots
+(200-300).</p>
 </details>
 </div>
-  </main>
+</div>
+  </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
+    </nav></aside>
 </div>
 
 

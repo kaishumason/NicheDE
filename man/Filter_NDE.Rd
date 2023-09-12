@@ -2,7 +2,7 @@
 % Please edit documentation in R/niche_DE_object_creation.R
 \name{Filter_NDE}
 \alias{Filter_NDE}
-\title{Filter}
+\title{Filter_NDE}
 \usage{
 Filter_NDE(object, cell_names)
 }

@@ -49,7 +49,7 @@
     <loc>https://kmason23.github.io/NicheDE/reference/CalculateEffectiveNiche.html</loc>
   </url>
   <url>
-    <loc>https://kmason23.github.io/NicheDE/reference/contrast_post.html</loc>
+    <loc>https://kmason23.github.io/NicheDE/reference/CalculateEffectiveNicheLargeScale.html</loc>
   </url>
   <url>
     <loc>https://kmason23.github.io/NicheDE/reference/CreateLibraryMatrix.html</loc>
@@ -64,7 +64,7 @@
     <loc>https://kmason23.github.io/NicheDE/reference/CreateNicheDEObjectFromSeurat.html</loc>
   </url>
   <url>
-    <loc>https://kmason23.github.io/NicheDE/reference/Filter.html</loc>
+    <loc>https://kmason23.github.io/NicheDE/reference/Filter_NDE.html</loc>
   </url>
   <url>
     <loc>https://kmason23.github.io/NicheDE/reference/get_niche_DE_genes.html</loc>
@@ -80,9 +80,6 @@
   </url>
   <url>
     <loc>https://kmason23.github.io/NicheDE/reference/niche_DE_markers.html</loc>
-  </url>
-  <url>
-    <loc>https://kmason23.github.io/NicheDE/reference/niche_DE_parallel.html</loc>
   </url>
   <url>
     <loc>https://kmason23.github.io/NicheDE/reference/niche_LR_cell.html</loc>

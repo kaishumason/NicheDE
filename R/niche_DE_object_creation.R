@@ -490,6 +490,7 @@ MergeObjects = function(objects){
 #' This function calculates the effective niche of a niche-DE object
 #'
 #' @param object A niche-DE object
+#' @param cutoff Minimum kernel similarity. Similarities below this value get truncated to 0
 #' @return A niche-DE object the effective niche calculated.
 #' The effective niche is a list with each entry corresponding to a kernel bandwidth
 #' @export
@@ -546,6 +547,8 @@ CalculateEffectiveNiche = function(object,cutoff = 0.05){
 #' This function calculates the effective niche of a niche-DE object
 #'
 #' @param object A niche-DE object
+#' @param batch_size Number of cells to calculate the effective niche for at a time
+#' @param cutoff Minimum kernel similarity. Similarities below this value get truncated to 0
 #' @return A niche-DE object the effective niche calculated.
 #' The effective niche is a list with each entry corresponding to a kernel bandwidth
 #' @export
@@ -616,7 +619,7 @@ CalculateEffectiveNicheLargeScale = function(object,batch_size = 1000,cutoff = 0
 
 
 
-#' Filter
+#' Filter_NDE
 #'
 #' This function filters a niche-DE object to only include specific observations
 #'

@@ -88,18 +88,18 @@ Arguments
 </summary><ul>
 <li>object: A niche-DE object</li>
 <li>test.level: The resolution at which to return genes. There are three
-choices for test.level;gene level, cell type level, and interaction
-level.</li>
+choices for test.level;gene level (‘G’), cell type level (‘CT’), and
+interaction level (‘I’).</li>
 <li>index: The index cell type of interest</li>
 <li>niche: The niche cell type of interest</li>
-<li>direction: Character indicating whether to return genes that are
-(index,niche)+ patterns (direction = ‘positive’) or (index,niche)-
-(direction = ‘negative’). Default value is ‘positive’.</li>
+<li>positive: Boolean of whether to return positive/upregulated niche-DE
+genes (True) or negative/downweighted niche-DE genes (False). Default
+value is True.</li>
 <li>alpha: The level at which to perform the benjamini-hochberg
 procedure at each resolution level. Default value is 0.05.<br>
 </li>
 </ul></details><p>Below, we find interaction level (fibroblast,tumor)+ niche genes.</p>
-<pre><code><span><span class="fu"><a href="../reference/get_niche_DE_genes.html">get_niche_DE_genes</a></span><span class="op">(</span><span class="va">NDE_obj</span>,<span class="st">'interaction'</span>,index<span class="op">=</span><span class="st">'stromal'</span>,niche <span class="op">=</span> <span class="st">'tumor_epithelial'</span>,direction <span class="op">=</span> <span class="st">'positive'</span>,alpha <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span></code></pre>
+<pre><code><span><span class="fu"><a href="../reference/get_niche_DE_genes.html">get_niche_DE_genes</a></span><span class="op">(</span><span class="va">NDE_obj</span>,<span class="st">'I'</span>,index<span class="op">=</span><span class="st">'stromal'</span>,niche <span class="op">=</span> <span class="st">'tumor_epithelial'</span>,positive <span class="op">=</span> <span class="cn">T</span>,alpha <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span></code></pre>
 <p>The output is a list of genes and their corresponding pvalues at the
 resolution specified.</p>
 <details><summary>

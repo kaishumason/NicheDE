@@ -35,7 +35,7 @@ reference:
   contents:
   - CreateNicheDEObject
   - CreateNicheDEObjectFromSeurat
-  - Filter
+  - Filter_NDE
   - MergeObjects
 
 - title: "Calculating the Effective Niche and Performing Niche-DE"
@@ -43,8 +43,8 @@ reference:
     Functions for Calculating the Effective Niche and Performing Niche-DE
   contents:
   - CalculateEffectiveNiche
+  - CalculateEffectiveNicheLargeScale
   - niche_DE
-  - niche_DE_parallel
 
 - title: "Downstream Analysis"
   desc: >
@@ -54,7 +54,6 @@ reference:
   - niche_DE_markers
   - niche_LR_cell
   - niche_LR_spot
-  - contrast_post
 
 
 

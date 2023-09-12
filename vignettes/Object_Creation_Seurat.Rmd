@@ -53,6 +53,6 @@ We see that their are 14 slots, 10 of which are populated when making the nicheD
 + cell_names: The name of each cell. This will be used if the use wants to filter cells via the function 'Filter'
 + gene_names: The gene names.
 + batch_ID: The batch ID for each cell/spot. This will be used when merging objects.
-+ spot_distance: The mean distance between a cell/spot and its nearest neighbor.This value can be used to inform the choice of sigma.
++ spot_distance: 100. Coordinates are scaled so that the distance between a spot and its nearest neighbor is 100.
 
 </details>
