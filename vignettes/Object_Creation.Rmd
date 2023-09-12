@@ -38,7 +38,7 @@ data("vignette_deconv_mat")
 #make Niche-DE object
 NDE_obj = CreateNicheDEObject(vignette_counts,vignette_coord,
                               vignette_library_matrix,vignette_deconv_mat,
-                              sigma = c(1,400,1000))
+                              sigma = c(1,100,250))
 
 ```
 
@@ -53,11 +53,10 @@ We see that their are 14 slots, 10 of which are populated when making the nicheD
 + num_cells: A #cells/spots by #cell types matrix indicating the estimated number of cells of each cell type in each spot. 
 + effective_niche: A list whose length is equal to the length of sigma. Each element of the list is a matrix of dimension #cells/spots by #cell types that measures how many of each cell type is in a given cell/spot's neighborhood. For more information, please read the manuscript.
 + ref_expr: The average expression profile matrix. The dimension is #cell types by #genes. Each row gives the average expression of each gene for a given cell type based on the reference dataset supplied.
-+ null_expected_expression: The expected expression profile for each cell/spot given its cell type deconvolution and library size. It is of dimension #cells/spots by #genes.
 + cell_names: The name of each cell. This will be used if the use wants to filter cells via the function 'Filter'
 + gene_names: The gene names.
 + batch_ID: The batch ID for each cell/spot. This will be used when merging objects.
-+ spot_distance: The mean distance between a cell/spot and its nearest neighbor.This value can be used to inform the choice of sigma.
++ spot_distance: 100. Coordinates are scaled so that the distance between a spot and its nearest neighbor is 100.
 + scale: The scaling to convert our coordinates back to their original scale
 
 </details>

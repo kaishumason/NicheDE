@@ -249,14 +249,14 @@ matrix is critical.</p>
 <div id="from-raw-data" class="section level1">
 <h1>From Raw Data</h1>
 <p>If you have raw data matrices, the expression profile matrix can be
-creaeted using the function ‘CreateLibraryMatrix’. his function takes in
+created using the function ‘CreateLibraryMatrix’. This function takes in
 2 arguments</p>
 <details>
 <summary>
 Arguments
 </summary>
 <ul>
-<li>seurat data: Single cell rna-seq counts matrix. Dimension should be
+<li>data: Single cell rna-seq counts matrix. Dimension should be
 #cells/spots by #genes
 <ul>
 <li>cell type: Cell type assignment matrix. First column is cell names
@@ -265,10 +265,10 @@ and second column is cell type assignment.</li>
 </ul>
 </details>
 <pre><code>#read in data
-data = readRDS(&#39;liver_met_data.rds&#39;)
-CT = readRDS(&#39;liver_met_CT.rds&#39;)
+data(&#39;liver_met_data&#39;)
+data(&#39;liver_met_CT&#39;)
 #create library matrix
-CreateLibraryMatrix(data,CT)</code></pre>
+CreateLibraryMatrix(liver_met_data,liver_met_CT)</code></pre>
 </div>
 <div id="from-seurat-object" class="section level1">
 <h1>From Seurat object</h1>
@@ -290,9 +290,9 @@ object)’</li>
 </ul>
 </details>
 <pre><code>#read in data
-reference = readRDS(&#39;liver_met_ref.rds&#39;)
+data(&#39;liver_met_ref&#39;)
 #create library matrix
-CreateLibraryMatrixFromSeurat(reference,assay = &#39;RNA&#39;)</code></pre>
+CreateLibraryMatrixFromSeurat(liver_met_ref,assay = &#39;RNA&#39;)</code></pre>
 </div>
 
 

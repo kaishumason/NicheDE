@@ -4,7 +4,7 @@
 \alias{CalculateEffectiveNicheLargeScale}
 \title{CalculateEffectiveNiche}
 \usage{
-CalculateEffectiveNicheLargeScale(object, cutoff = 0.05)
+CalculateEffectiveNicheLargeScale(object, batch_size = 1000, cutoff = 0.05)
 }
 \arguments{
 \item{object}{A niche-DE object}

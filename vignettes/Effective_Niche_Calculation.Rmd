@@ -35,11 +35,25 @@ We can perform effective niche calculations using the function 'CalculateEffecti
 ```
 NDE_obj = CalculateEffectiveNiche(NDE_obj)
 ```
-
-
+## Large Scale Data
+Because calculation of the effective niche requires construction of a distance matrix, data with many cells/spots will cause crashes. To avoid this, we use the function 'CalculateEffectiveNicheLargeScale' which takes in three arguments.
 
 <details>
-  <summary> Suggestions on choice of kernel bandwidth</summary>
+  <summary>Arguments</summary>
+  
++ object: A niche-DE object
++ batch_size: How many cells do we calculate the effective niche for at a time. Default value 1000.
++ cutoff: The minimum kernel similarity allowable. Similarities below this value are truncated to 0. Default value 0.05.
+
+</details>
+```
+NDE_obj = CalculateEffectiveNicheLargeScale(NDE_obj,batch_size = 1000, cutoff = 0.05)
+```
+
+## Suggestions on Choice of Kernel
+
+<details>
+  <summary> Kernel Tutorial bandwidth</summary>
   
 Choosing a reasonable sigma vector is critical to generating robust and interpretable results.Sigma essentially determines what range of neighboring spots contribute towards the effective niche. Small values of sigma ensure that only close neighboring spots are considered while large values of sigma result in effective niches that are smooth across large regions of the tissue.\
 To see what this looks like, I will generate a grid of values and show what spots contribute to the effective niche of the middle spot. The size of the spot corresponds to its relative importance. Below is a plot of the spatial coordinates of the grid with the middle spot colored red.
@@ -128,6 +142,6 @@ ggplot(coord_sigma_small,aes(x,y,size=ifelse(D==0, NA, D),color = red))+geom_poi
 ```
 </details>
 
-Clearly the choice of sigma can affect what niche patterns you will find. For spot data which can contain many cells like Visium, we recommend using a sigma vector that contains a small value, a value equal to the distance between neighboring spots, and a value somewhat larger, say 2-3 times the distance between neighboring spots.
+Clearly the choice of sigma can affect what niche patterns you will find. For spot data which can contain many cells like Visium, we recommend using a sigma vector that contains a small value (e.g. 1), a value equal to the distance between neighboring spots (100), and a value somewhat larger, say 2-3 times the distance between neighboring spots (200-300).
 
 </details>

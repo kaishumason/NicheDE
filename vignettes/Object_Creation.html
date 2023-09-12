@@ -251,7 +251,9 @@ Arguments
 #genes.
 <ul>
 <li>coordinate mat: Coordinate matrix. Dimension should be #cells/spots
-by 2. Make sure that rownames match that of the counts matrix.</li>
+by 2. Make sure that rownames match that of the counts matrix. The
+coordinates are scaled such that the median nearest neighbor distance is
+100.</li>
 <li>library mat: The average expression profile matrix calculated from a
 reference dataset.</li>
 <li>deconv mat: The deconvolution matrix for the spatial dataset. The
@@ -272,7 +274,7 @@ data(&quot;vignette_deconv_mat&quot;)
 #make Niche-DE object
 NDE_obj = CreateNicheDEObject(vignette_counts,vignette_coord,
                               vignette_library_matrix,vignette_deconv_mat,
-                              sigma = c(1,400,1000))
+                              sigma = c(1,100,250))
 </code></pre>
 <details>
 <summary>
@@ -286,7 +288,8 @@ except for the ones prefixed by niche_DE.</p>
 The dimension will be #cells/spots by #genes.Genes are filtered out if
 they do not exist within the scrna-seq reference dataset.</li>
 <li>coord: The spatial coordinates matrix of the spatial transcriptomics
-dataset.</li>
+dataset. It is scaled such that the median nearest neighbor distance is
+100.</li>
 <li>sigma: The kernel bandwidth(s) chosen for calculating the effective
 niche. Recommended values will be discussed shortly.</li>
 <li>num_cells: A #cells/spots by #cell types matrix indicating the
@@ -299,16 +302,15 @@ manuscript.</li>
 <li>ref_expr: The average expression profile matrix. The dimension is
 #cell types by #genes. Each row gives the average expression of each
 gene for a given cell type based on the reference dataset supplied.</li>
-<li>null_expected_expression: The expected expression profile for each
-cell/spot given its cell type deconvolution and library size. It is of
-dimension #cells/spots by #genes.</li>
 <li>cell_names: The name of each cell. This will be used if the use
 wants to filter cells via the function ‘Filter’</li>
 <li>gene_names: The gene names.</li>
 <li>batch_ID: The batch ID for each cell/spot. This will be used when
 merging objects.</li>
-<li>spot_distance: The mean distance between a cell/spot and its nearest
-neighbor.This value can be used to inform the choice of sigma.</li>
+<li>spot_distance: 100. Coordinates are scaled so that the distance
+between a spot and its nearest neighbor is 100.</li>
+<li>scale: The scaling to convert our coordinates back to their original
+scale</li>
 </ul>
 </details>
 

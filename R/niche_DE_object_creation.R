@@ -43,7 +43,7 @@ CreateLibraryMatrix = function(data,cell_type){
   }
   print('Computing average expression profile matrix')
   #get unique cell types
-  CT = unique(cell_type[,2])
+  CT = unique(as.vector(cell_type[,2]))
   n_CT = length(CT)
   L = matrix(NA,n_CT,ncol(data))
   rownames(L) = CT
@@ -51,8 +51,14 @@ CreateLibraryMatrix = function(data,cell_type){
   #iterate over cell types
   for (j in c(1:n_CT)){
     #get cells that belong to this cell type
-    cells = data[which(cell_type[,2]==CT[j]),]
-    L[j,] = L[j,] = apply(cells,2,function(x){mean(x)})
+    cells = which(cell_type[,2]==CT[j])
+    #if there are too many cells, downsample
+    if(length(cells)>1000){
+      print(paste0("Too many cell of type ",CT[j]," downsampling to 1000."))
+      cells = sample(cells,1000,replace = F)
+    }
+    cells = data[cells,]
+    L[j,] = apply(cells,2,function(x){mean(x)})
   }
   print('Average expression matrix computed')
   return(L)
@@ -74,7 +80,7 @@ CreateLibraryMatrixFromSeurat = function(seurat_object,assay){
   #get counts matrix
   data = Matrix::t(sobj_assay@counts)
   #get cell type vector
-  cell_type = Seurat::Idents(seurat_object)
+  cell_type = as.vector(Seurat::Idents(seurat_object))
   if(mean(rownames(data)== names(cell_type))!=1){
     stop('Data rownames and Cell type matrix names do not match')
   }
@@ -88,7 +94,13 @@ CreateLibraryMatrixFromSeurat = function(seurat_object,assay){
   #iterate over cell types
   for (j in c(1:n_CT)){
     #get cells that belong to this cell type
-    cells = data[which(cell_type==CT[j]),]
+    cells = which(cell_type[,2]==CT[j])
+    #if there are too many cells, downsample
+    if(length(cells)>1000){
+      print(paste0("Too many cell of type ",CT[j]," downsampling to 1000."))
+      cells = sample(cells,1000,replace = F)
+    }
+    cells = data[cells,]
     L[j,] = apply(cells,2,function(x){mean(x)})
   }
   print('Average expression profile matrix computed.')
@@ -216,9 +228,9 @@ CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,
     #sample 1000 random points
     inds = sample(c(1:nrow(coordinate_mat)),1000)
     #get distances
-    D = Rfast::dista(xnew = matrix(coordinate_mat[inds,],ncol = 2,byrow = T),x = coordinate_mat,type = "euclidean",trans = T)
+    D = Rfast::dista(xnew = as.matrix(coordinate_mat[inds,],ncol = 2,byrow = T),x = coordinate_mat,type = "euclidean",trans = T)
     #get min distance
-    mdist = apply(D,1,function(x){sort(x,decreasing = F)[3]})
+    mdist = apply(D,1,function(x){sort(x[x>0],decreasing = F)[3]})
     #get median min_dist
     min_dist = median(mdist)
   }
@@ -240,7 +252,7 @@ CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,
 
   object = new(Class = 'Niche_DE',counts = countsM,coord = coordinate_mat,
                sigma = sigma,num_cells = nst,ref_expr = library_mat,#null_expected_expression = EEX,
-               cell_names = rownames(countsM), cell_types = colnames(nst),
+               cell_names = rownames(countsM), cell_types = colnames(deconv_mat),
                gene_names = colnames(countsM),batch_ID = rep(1,nrow(countsM)),
                spot_distance = min_dist,scale = scale)
   A = paste0('Niche-DE object created with ',nrow(object@counts),' observations, ', ncol(object@counts),' genes, ',
@@ -315,6 +327,8 @@ CreateNicheDEObjectFromSeurat = function(seurat_object,assay,library_mat,deconv_
     stop('celltypes of deconvolution matrix and reference expression matrix do not match')
   }
 
+
+
   #make sure that sigma is a vector
   if(length(sigma)>0){
     if((is.vector(sigma) && is.atomic(sigma))==F){
@@ -385,7 +399,7 @@ CreateNicheDEObjectFromSeurat = function(seurat_object,assay,library_mat,deconv_
 
   object = new(Class = 'Niche_DE',counts = countsM,coord = coordinate_mat,
                sigma = sigma,num_cells = nst,ref_expr = library_mat,#null_expected_expression = EEX,
-               cell_names = rownames(countsM),cell_types = colnames(nst),
+               cell_names = rownames(countsM),cell_types = colnames(deconv_mat),
                gene_names = colnames(countsM),batch_ID = rep(1,nrow(countsM)),
                spot_distance = min_dist,scale = scale)
   #make sure that counts_mat and
@@ -535,9 +549,15 @@ CalculateEffectiveNiche = function(object,cutoff = 0.05){
 #' @return A niche-DE object the effective niche calculated.
 #' The effective niche is a list with each entry corresponding to a kernel bandwidth
 #' @export
-CalculateEffectiveNicheLargeScale = function(object,cutoff = 0.05){
+CalculateEffectiveNicheLargeScale = function(object,batch_size = 1000,cutoff = 0.05){
+  EN = matrix(NA,nrow(object@coord),length(object@cell_types))
+  rownames(EN) = rownames(object@coord)
+  colnames(EN) = object@cell_types
+  #initialize effective niche list
   object@effective_niche = vector(mode = "list", length = length(object@sigma))
+  #name each item of the list after the kernel bandwidth being used
   names(object@effective_niche) = object@sigma
+  #ge counter for kernel bandwidth
   counter_sig = 1
   for(sig in object@sigma){
     print(paste0('Calculating effective niche for kernel bandwith ', sig,
@@ -551,21 +571,18 @@ CalculateEffectiveNicheLargeScale = function(object,cutoff = 0.05){
       EN_dataset = matrix(NA,nrow(coord_ID),length(object@cell_types))
       #get number of cells per spot for dataset
       num_cell_ID = object@num_cells[object@batch_ID == ID,]
-
       #get number of cells per batch
       C = nrow(coord_ID)
-      batch_size = 1000
       num_iter = ceiling(C/batch_size)
 
       for(j in c(1:num_iter)){
-        print(j)
+        print("Calculating effective niche for cells ",batch_size*(j-1)+1, " to ",min(batch_size*j,C) )
         #get indices we wanna look at
         inds_left = batch_size*(j-1)+1
         inds_right = min(batch_size*j,C)
         inds = c(inds_left:inds_right)
         #get distance between point and rest
-        D = Rfast::dista(xnew = matrix(coord_ID[inds,],ncol = 2,byrow = T),x = coord_ID,type = "euclidean",trans = T)
-        print(dim(D))
+        D = Rfast::dista(xnew = as.matrix(coord_ID[inds,],ncol = 2,byrow = T),x = coord_ID,type = "euclidean",trans = T)
         #normalize distances
         D = exp(-D^2/sig^2)
         #get effective niche
@@ -573,12 +590,12 @@ CalculateEffectiveNicheLargeScale = function(object,cutoff = 0.05){
       }
       #bind EN of this dataset to EN of other datasets
       if(counter == 0){
-        EN = EN_dataset
+        EN[which(object@batch_ID == ID),] = EN_dataset
         ref_size = mean(rowSums(num_cell_ID))
       } else{
         #scale EN
         scale = ref_size/mean(rowSums(num_cell_ID))
-        EN = rbind(EN,EN_dataset*scale)
+        EN[which(object@batch_ID == ID),] = EN_dataset*scale
       }
       #make counter bigger
       counter = counter + 1
