@@ -21,7 +21,7 @@ library(nicheDE)
 ```
 # Vignette
 Click the link below for a tutorial on using nicheDE\
-[NicheDE Tutorial: All Steps](https://github.com/Kmason23/Niche-DE-Tutorial)
+[NicheDE Tutorial: All Steps]([https://github.com/Kmason23/Niche-DE-Tutorial](https://kmason23.github.io/NicheDE/articles/Tutorial.html))
 
 # Citation
 Kaishu Mason, Anuja Sathe, Paul Hess, Jiazhen Rong, Chi-Yun Wu, Emma Furth, Hanlee P. Ji, Nancy Zhang Niche differential gene expression analysis in spatial transcriptomics data identifies context-dependent cell-cell interactions (Biorxiv 2023:  https://doi.org/10.1101/2023.01.03.522646)
