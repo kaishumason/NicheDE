@@ -1191,6 +1191,7 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
   beta = c()
   for(j in c(1:length(top_genes))){
     tryCatch({
+      print(j)
       #get candidate ligand
       gene = top_genes[j]
       #get what index it belongs to
