@@ -10,7 +10,7 @@ CreateNicheDEObject(
   library_mat,
   deconv_mat,
   sigma,
-  counts = T
+  Int = T
 )
 }
 \arguments{
@@ -24,7 +24,8 @@ CreateNicheDEObject(
 
 \item{sigma}{List of kernel bandwidths to use in calculating the effective niche}
 
-\item{counts}{Boolean of if counts data supplied is integer. Default is true}
+\item{Int}{Boolean of if counts data supplied is integer. Default is true. When performing niche-DE,
+Negative binomial regression is performed if True. Linear regression with a gene specific variance is performed if False.}
 }
 \value{
 A niche-DE object

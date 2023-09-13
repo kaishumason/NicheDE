@@ -18,7 +18,8 @@ Assay <- setClass(
     niche_DE = 'list',
     niche_DE_pval_pos = 'list',
     niche_DE_pval_neg = 'list',
-    scale = 'vector'
+    scale = 'vector',
+    Int = 'logical'
   )
 )
 
@@ -117,17 +118,18 @@ CreateLibraryMatrixFromSeurat = function(seurat_object,assay){
 #' @param library_mat Matrix indicating average expression profile for each cell type in the sample
 #' @param deconv_mat Deconvolution or cell type assignment matrix of data
 #' @param sigma List of kernel bandwidths to use in calculating the effective niche
-#' @param counts Boolean of if counts data supplied is integer. Default is true
+#' @param Int Boolean of if counts data supplied is integer. Default is true. When performing niche-DE,
+#'  Negative binomial regression is performed if True. Linear regression with a gene specific variance is performed if False.
 #' @return A niche-DE object
 #' @export
-CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,sigma,counts = T){
+CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,sigma,Int = T){
   print('Creating Niche-DE object')
   #make sure that counts matrix is provided
   if (missing(x = counts_mat)) {
     stop("Must provide counts matrix")
   }
 
-  if (counts == T & sum(counts_mat%%1)!=0){
+  if (Int == T & sum(counts_mat%%1)!=0){
     stop('counts matrix must contain only integers')
   }
 
@@ -252,7 +254,7 @@ CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,
                sigma = sigma,num_cells = nst,ref_expr = library_mat,#null_expected_expression = EEX,
                cell_names = rownames(countsM), cell_types = colnames(deconv_mat),
                gene_names = colnames(countsM),batch_ID = rep(1,nrow(countsM)),
-               spot_distance = min_dist,scale = scale)
+               spot_distance = min_dist,scale = scale,Int = Int)
   A = paste0('Niche-DE object created with ',nrow(object@counts),' observations, ', ncol(object@counts),' genes, ',
              length(unique(object@batch_ID)), ' batch(es), and ', length(object@cell_types), ' cell types.')
   print(A)
@@ -270,10 +272,11 @@ CreateNicheDEObject = function(counts_mat,coordinate_mat,library_mat,deconv_mat,
 #' @param library_mat Matrix indicating average expression profile for each cell type in the sample
 #' @param deconv_mat Deconvolution or cell type assignment matrix of data
 #' @param sigma List of kernel bandwidths to use in calculating the effective niche
-#' @param counts Boolean of if counts data supplied is integer. Default is true
+#' @param Int Boolean of if counts data supplied is integer. Default is true. When performing niche-DE,
+#'  Negative binomial regression is performed if True. Linear regression with a gene specific variance is performed if False.
 #' @return A niche-DE object
 #' @export
-CreateNicheDEObjectFromSeurat = function(seurat_object,assay,library_mat,deconv_mat,sigma, counts = T){
+CreateNicheDEObjectFromSeurat = function(seurat_object,assay,library_mat,deconv_mat,sigma, Int = T){
   print("Creating Niche-DE object")
   #make sure that counts matrix is provided
   if (missing(x = seurat_object)) {
@@ -283,7 +286,7 @@ CreateNicheDEObjectFromSeurat = function(seurat_object,assay,library_mat,deconv_
   sobj_assay = Seurat::GetAssay(seurat_object,assay)
   counts_mat = Matrix::t(sobj_assay@counts)
   #make sure that counts_mat is integers
-  if (counts ==T & sum(counts_mat%%1)!=0){
+  if (Int ==T & sum(counts_mat%%1)!=0){
     stop('counts matrix must contain only integers')
   }
 
@@ -400,7 +403,7 @@ CreateNicheDEObjectFromSeurat = function(seurat_object,assay,library_mat,deconv_
                sigma = sigma,num_cells = nst,ref_expr = library_mat,#null_expected_expression = EEX,
                cell_names = rownames(countsM),cell_types = colnames(deconv_mat),
                gene_names = colnames(countsM),batch_ID = rep(1,nrow(countsM)),
-               spot_distance = min_dist,scale = scale)
+               spot_distance = min_dist,scale = scale,Int = Int)
   #make sure that counts_mat and
 
   A = paste0('Niche-DE object created with ',nrow(object@counts),' observations, ', ncol(object@counts),' genes, ',
@@ -437,6 +440,9 @@ MergeObjects = function(objects){
     #check if sigma and L match
     if(setequal(objects[[j]]@sigma,reference_obj@sigma)==F){
       stop('all objects being merged must consider the same kernel bandwidths')
+    }
+    if(setequal(objects[[j]]@Int,reference_obj@Int)==F){
+      stop('all counts must all be integer valued(object@Int = T) or all be continuous(object@Int = F)')
     }
     if(mean(objects[[j]]@ref_expr==reference_obj@ref_expr)==F){
       stop('all objects being merged must consider the same kernel bandwidths')
@@ -480,9 +486,11 @@ MergeObjects = function(objects){
                ref_expr = reference_obj@ref_expr,
                cell_names = cell_names, cell_types = colnames(num_cells_merge),
                gene_names = gene_names,batch_ID = batch_ID_merge,
-               spot_distance = 100,scale = scales)
+               spot_distance = 100,scale = scales,Int = reference_obj@Int)
   return(object)
 }
+
+
 
 #' CalculateEffectiveNiche
 #'
@@ -645,6 +653,68 @@ Filter_NDE = function(object,cell_names){
   return(object)
 }
 
+
+
+
+
+
+
+
+
+#' CalculateEffectiveNiche
+#'
+#' This function calculates the effective niche of a niche-DE object
+#'
+#' @param object A niche-DE object
+#' @param cutoff Minimum kernel similarity. Similarities below this value get truncated to 0
+#' @return A niche-DE object the effective niche calculated.
+#' The effective niche is a list with each entry corresponding to a kernel bandwidth
+#' @export
+CalculateEffectiveNiche_new = function(object,cutoff = 0.05){
+  object@effective_niche = vector(mode = "list", length = length(object@sigma))
+  names(object@effective_niche) = object@sigma
+  counter_sig = 1
+  for(sig in object@sigma){
+    print(paste0('Calculating effective niche for kernel bandwith ', sig,
+                 '(',counter_sig,' out of ',length(object@sigma),' values).'))
+    #calculate effective niche for each individual dataset
+    counter = 0
+    for(ID in c(1:length(unique(object@batch_ID)))){
+      #get coordinates for dataset
+      coord_ID = object@coord[object@batch_ID == ID,]
+      #get number of cells per spot for dataset
+      num_cell_ID = object@num_cells[object@batch_ID == ID,]
+      #calculate distance matrix for dataset
+      K = as.matrix(dist(coord_ID,method = "euclidean",diag = TRUE))
+      #transform to get kernel matrix for dataset
+      K = exp(-K^2/sig^2)
+      #truncate values less than cutoff to be 0
+      K[K<cutoff] = 0
+      #calculate effective niche
+      EN_dataset = K%*%num_cell_ID
+      #bind EN of this dataset to EN of other datasets
+      if(counter == 0){
+        EN = EN_dataset
+        ref_size = mean(rowSums(num_cell_ID))
+      } else{
+        #scale EN
+        scale = ref_size/mean(rowSums(num_cell_ID))
+        EN = rbind(EN,EN_dataset*scale)
+      }
+      #make counter bigger
+      counter = counter + 1
+    }
+    #normalize columns of EN
+    EN = apply(EN,2,function(x){(x-mean(x))/sd(x)})
+    EN[is.na(EN)] = 0
+    #EN = apply(EN,2,function(x){x-mean(x)})
+    #add to list of effective niches (one for each sigma)
+    object@effective_niche[[counter_sig]] = EN
+    counter_sig = counter_sig + 1
+  }
+  print('Effective niche calculated')
+  return(object)
+}
 
 
 

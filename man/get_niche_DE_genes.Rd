@@ -17,16 +17,15 @@ get_niche_DE_genes(
 \item{object}{A niche-DE object}
 
 \item{test.level}{At which test.level to return genes
-(gene level, cell type level, interaction level)}
+(gene level ("G"), cell type level("CT"), interaction level("I"))}
 
 \item{index}{The index cell type}
 
 \item{niche}{The niche cell type}
 
-\item{alpha}{The level at which to perform the Benjamini Hochberg correction. Default value = 0.05}
+\item{positive}{Logica indicating whether to return upregulated/positive niche-DE genes(True) or downregulated/negative niche-DE genes(False). Default value is True.}
 
-\item{direction}{Character indicating whether to return genes that are (index,niche)+
-patterns (direction = 'positive') or (index,niche)- (direction = 'negative'). Default value is 'positive'.}
+\item{alpha}{The level at which to perform the Benjamini Hochberg correction. Default value = 0.05}
 }
 \value{
 A vector of genes that are niche significant at the desired FDR,

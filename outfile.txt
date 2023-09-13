@@ -1,0 +1,222 @@
+starting worker pid=24084 on localhost:11486 at 17:05:10.529
+starting worker pid=15792 on localhost:11486 at 17:05:10.698
+starting worker pid=15652 on localhost:11486 at 17:05:10.944
+starting worker pid=18660 on localhost:11486 at 17:05:11.110
+[1] "Gene 11000 out of 21708"
+[1] "Gene 6000 out of 21708"
+[1] "Gene 17000 out of 21708"
+[1] "Gene 18000 out of 21708"
+[1] "Gene 19000 out of 21708"
+[1] "Gene 20000 out of 21708"
+[1] "Gene 21000 out of 21708"
+[1] "Gene 1000 out of 21708"
+[1] "Gene 12000 out of 21708"
+[1] "Gene 7000 out of 21708"
+[1] "Gene 2000 out of 21708"
+[1] "Gene 13000 out of 21708"
+[1] "Gene 8000 out of 21708"
+[1] "Gene 3000 out of 21708"
+[1] "Gene 14000 out of 21708"
+[1] "Gene 9000 out of 21708"
+[1] "Gene 4000 out of 21708"
+[1] "Gene 15000 out of 21708"
+[1] "Gene 10000 out of 21708"
+[1] "Gene 5000 out of 21708"
+[1] "Gene 16000 out of 21708"
+starting worker pid=27256 on localhost:11486 at 17:05:58.403
+starting worker pid=9148 on localhost:11486 at 17:05:58.574
+starting worker pid=19484 on localhost:11486 at 17:05:58.748
+starting worker pid=15644 on localhost:11486 at 17:05:58.920
+Error in unserialize(node$con) : error reading from connection
+Calls: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+In addition: Warning message:
+In .recacheSubclasses(def@className, def, env) :
+  undefined subclass "dgCMatrix" of class "AnyMatrix"; definition not updated
+Execution halted
+Error in unserialize(node$con) : error reading from connection
+Calls: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Error in unserialize(node$con) : error reading from connection
+Calls: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+In addition: In addition: Warning message:
+ze(node$con) : error reading from connection
+Calls: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+In addition: Warning message:
+In .recacheSubclasses(def@className, def, env) :
+ .recacheSubclasses(def@className, def, env) :
+ defined subclass "dgCMatrix" of class "AnyMatrix"; definition not updated
+ undefined subclass "dgCMatrix" of class "AnyMatrix"; definition not updated
+ undefined subclass "dgCMatrix" of class "AnyMatrix"; definition not updated
+Execution halted
+Execution halted
+[1] "Gene 11000 out of 21708"
+[1] "Gene 6000 out of 21708"
+[1] "Gene 17000 out of 21708"
+[1] "Gene 18000 out of 21708"
+[1] "Gene 19000 out of 21708"
+[1] "Gene 20000 out of 21708"
+[1] "Gene 21000 out of 21708"
+[1] "Gene 1000 out of 21708"
+[1] "Gene 12000 out of 21708"
+[1] "Gene 7000 out of 21708"
+[1] "Gene 2000 out of 21708"
+[1] "Gene 13000 out of 21708"
+[1] "Gene 8000 out of 21708"
+[1] "Gene 3000 out of 21708"
+[1] "Gene 14000 out of 21708"
+[1] "Gene 9000 out of 21708"
+[1] "Gene 4000 out of 21708"
+[1] "Gene 15000 out of 21708"
+[1] "Gene 10000 out of 21708"
+[1] "Gene 5000 out of 21708"
+[1] "Gene 16000 out of 21708"
+[1] "Gene 11000 out of 21708"
+[1] "Gene 6000 out of 21708"
+[1] "Gene 17000 out of 21708"
+[1] "Gene 18000 out of 21708"
+[1] "Gene 1000 out of 21708"
+[1] "Gene 19000 out of 21708"
+[1] "Gene 20000 out of 21708"
+[1] "Gene 21000 out of 21708"
+[1] "Gene 12000 out of 21708"
+[1] "Gene 7000 out of 21708"
+[1] "Gene 2000 out of 21708"
+[1] "Gene 13000 out of 21708"
+[1] "Gene 8000 out of 21708"
+[1] "Gene 3000 out of 21708"
+[1] "Gene 14000 out of 21708"
+[1] "Gene 9000 out of 21708"
+[1] "Gene 4000 out of 21708"
+[1] "Gene 15000 out of 21708"
+[1] "Gene 10000 out of 21708"
+[1] "Gene 5000 out of 21708"
+[1] "Gene 16000 out of 21708"
+[1] "Gene 11000 out of 21708"
+[1] "Gene 6000 out of 21708"
+[1] "Gene 1000 out of 21708"
+[1] "Gene 17000 out of 21708"
+[1] "Gene 18000 out of 21708"
+[1] "Gene 19000 out of 21708"
+[1] "Gene 20000 out of 21708"
+[1] "Gene 21000 out of 21708"
+[1] "Gene 12000 out of 21708"
+[1] "Gene 7000 out of 21708"
+[1] "Gene 2000 out of 21708"
+[1] "Gene 13000 out of 21708"
+[1] "Gene 8000 out of 21708"
+[1] "Gene 3000 out of 21708"
+[1] "Gene 14000 out of 21708"
+[1] "Gene 9000 out of 21708"
+[1] "Gene 4000 out of 21708"
+[1] "Gene 15000 out of 21708"
+[1] "Gene 10000 out of 21708"
+[1] "Gene 5000 out of 21708"
+[1] "Gene 16000 out of 21708"
+starting worker pid=24588 on localhost:11486 at 17:16:13.241
+starting worker pid=13512 on localhost:11486 at 17:16:13.495
+starting worker pid=25300 on localhost:11486 at 17:16:13.662
+starting worker pid=24956 on localhost:11486 at 17:16:13.823
+[1] "Gene 11000 out of 21708"
+[1] "Gene 6000 out of 21708"
+[1] "Gene 17000 out of 21708"
+[1] "Gene 18000 out of 21708"
+[1] "Gene 19000 out of 21708"
+[1] "Gene 20000 out of 21708"
+[1] "Gene 21000 out of 21708"
+[1] "Gene 1000 out of 21708"
+[1] "Gene 12000 out of 21708"
+[1] "Gene 7000 out of 21708"
+[1] "Gene 2000 out of 21708"
+[1] "Gene 13000 out of 21708"
+[1] "Gene 8000 out of 21708"
+[1] "Gene 3000 out of 21708"
+[1] "Gene 14000 out of 21708"
+[1] "Gene 9000 out of 21708"
+[1] "Gene 4000 out of 21708"
+[1] "Gene 15000 out of 21708"
+[1] "Gene 10000 out of 21708"
+[1] "Gene 5000 out of 21708"
+[1] "Gene 16000 out of 21708"
+Error in unserialize(node$con) : error reading from connection
+Calls: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+In addition: rialize(node$con) : error reading from connection
+Calls: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Warning messaError in unserialize(node$con) : error reading from connection
+Calls: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Warning message:
+In .recacheSubclasses(def@className, def, env) :
+  undefined subclass "dgCMatrix" of class "AnyMatrix"; definition not updated
+
+  undefined subclass "dgCMatrix" of class "AnyMatrix"; definition not updated
+In .recacheSubclasses(def@className, def, env) :
+ Execution halted
+s "dgCMatrix" of class "AnyMatrix"; definition not updated
+Execution halted
+Execution halted
+Error in unserialize(node$con) : error reading from connection
+Calls: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+In addition: Warning message:
+In .recacheSubclasses(def@className, def, env) :
+  undefined subclass "dgCMatrix" of class "AnyMatrix"; definition not updated
+Execution halted
+[1] "Gene 11000 out of 21708"
+[1] "Gene 6000 out of 21708"
+[1] "Gene 17000 out of 21708"
+[1] "Gene 1000 out of 21708"
+[1] "Gene 18000 out of 21708"
+[1] "Gene 19000 out of 21708"
+[1] "Gene 20000 out of 21708"
+[1] "Gene 21000 out of 21708"
+[1] "Gene 12000 out of 21708"
+[1] "Gene 7000 out of 21708"
+[1] "Gene 2000 out of 21708"
+[1] "Gene 13000 out of 21708"
+[1] "Gene 8000 out of 21708"
+[1] "Gene 3000 out of 21708"
+[1] "Gene 14000 out of 21708"
+[1] "Gene 9000 out of 21708"
+[1] "Gene 4000 out of 21708"
+[1] "Gene 15000 out of 21708"
+[1] "Gene 10000 out of 21708"
+[1] "Gene 5000 out of 21708"
+[1] "Gene 16000 out of 21708"
+[1] "Gene 11000 out of 21708"
+[1] "Gene 6000 out of 21708"
+[1] "Gene 1000 out of 21708"
+[1] "Gene 17000 out of 21708"
+[1] "Gene 18000 out of 21708"
+[1] "Gene 19000 out of 21708"
+[1] "Gene 20000 out of 21708"
+[1] "Gene 21000 out of 21708"
+[1] "Gene 12000 out of 21708"
+[1] "Gene 7000 out of 21708"
+[1] "Gene 2000 out of 21708"
+[1] "Gene 13000 out of 21708"
+[1] "Gene 8000 out of 21708"
+[1] "Gene 3000 out of 21708"
+[1] "Gene 14000 out of 21708"
+[1] "Gene 9000 out of 21708"
+[1] "Gene 4000 out of 21708"
+[1] "Gene 15000 out of 21708"
+[1] "Gene 5000 out of 21708"
+[1] "Gene 10000 out of 21708"
+[1] "Gene 16000 out of 21708"
+Error in unserialize(node$con) : error reading from connection
+Calls: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+In addition: Warning message:
+Warning message:
+In addition: Warning message:
+Error in unserialize(node$con) : error reading from connection
+Calls: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+In addition: Warning message:
+In .recacheSubclasses(def@className, def, env) :In .recacheSubclasses(def@className, def, env) :
+  undefined subclass "dgCMatrix" of class "AnyMatrix"; definition not updated
+In .recacheSubclasses(def@className, def, env) :
+  undefined subclass "dgCMatrix" of class "AnyMatrix"; definition not updated
+
+  undefined subclass "dgCMatrix" of class "AnyMatrix"; definition not updated
+In .recacheSubclasses(def@className, def, env) :Execution halted
+Execution halted
+
+  undefined subclass "dgCMatrix" of class "AnyMatrix"; definition not updated
+Execution halted
+Execution halted

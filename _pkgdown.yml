@@ -43,8 +43,10 @@ reference:
     Functions for Calculating the Effective Niche and Performing Niche-DE
   contents:
   - CalculateEffectiveNiche
+  - CalculateEffectiveNiche_new
   - CalculateEffectiveNicheLargeScale
   - niche_DE
+  - niche_DE_new
 
 - title: "Downstream Analysis"
   desc: >

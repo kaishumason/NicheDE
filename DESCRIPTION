@@ -21,7 +21,7 @@ Imports:
     Matrix,
     Seurat,
     foreach,
-    doParallel,
+    stats,
 	fastDummies,
 	parallel,
 	poolr

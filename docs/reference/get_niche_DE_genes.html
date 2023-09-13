@@ -72,7 +72,7 @@
 
 <dt>test.level</dt>
 <dd><p>At which test.level to return genes
-(gene level, cell type level, interaction level)</p></dd>
+(gene level ("G"), cell type level("CT"), interaction level("I"))</p></dd>
 
 
 <dt>index</dt>
@@ -83,13 +83,12 @@
 <dd><p>The niche cell type</p></dd>
 
 
+<dt>positive</dt>
+<dd><p>Logica indicating whether to return upregulated/positive niche-DE genes(True) or downregulated/negative niche-DE genes(False). Default value is True.</p></dd>
+
+
 <dt>alpha</dt>
 <dd><p>The level at which to perform the Benjamini Hochberg correction. Default value = 0.05</p></dd>
-
-
-<dt>direction</dt>
-<dd><p>Character indicating whether to return genes that are (index,niche)+
-patterns (direction = 'positive') or (index,niche)- (direction = 'negative'). Default value is 'positive'.</p></dd>
 
 </dl></div>
     <div class="section level2">
