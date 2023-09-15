@@ -497,63 +497,6 @@ MergeObjects = function(objects){
 #' This function calculates the effective niche of a niche-DE object
 #'
 #' @param object A niche-DE object
-#' @param cutoff Minimum kernel similarity. Similarities below this value get truncated to 0
-#' @return A niche-DE object the effective niche calculated.
-#' The effective niche is a list with each entry corresponding to a kernel bandwidth
-#' @export
-CalculateEffectiveNiche = function(object,cutoff = 0.05){
-  object@effective_niche = vector(mode = "list", length = length(object@sigma))
-  names(object@effective_niche) = object@sigma
-  counter_sig = 1
-  for(sig in object@sigma){
-    print(paste0('Calculating effective niche for kernel bandwith ', sig,
-                 '(',counter_sig,' out of ',length(object@sigma),' values).'))
-    #calculate effective niche for each individual dataset
-    counter = 0
-    for(ID in c(1:length(unique(object@batch_ID)))){
-      #get coordinates for dataset
-      coord_ID = object@coord[object@batch_ID == ID,]
-      #get number of cells per spot for dataset
-      num_cell_ID = object@num_cells[object@batch_ID == ID,]
-      #calculate distance matrix for dataset
-      K = as.matrix(dist(coord_ID,method = "euclidean",diag = TRUE))
-      #transform to get kernel matrix for dataset
-      K = exp(-K^2/sig^2)
-      #truncate values less than cutoff to be 0
-      K[K<cutoff] = 0
-      #calculate effective niche
-      EN_dataset = K%*%num_cell_ID
-      #bind EN of this dataset to EN of other datasets
-      if(counter == 0){
-        EN = EN_dataset
-        ref_size = mean(rowSums(num_cell_ID))
-      } else{
-        #scale EN
-        scale = ref_size/mean(rowSums(num_cell_ID))
-        EN = rbind(EN,EN_dataset*scale)
-      }
-      #make counter bigger
-      counter = counter + 1
-    }
-    #normalize columns of EN
-    EN = apply(EN,2,function(x){x/mean(x[x>0])})
-    EN[is.na(EN)] = 0
-    EN = apply(EN,2,function(x){x-mean(x)})
-    #add to list of effective niches (one for each sigma)
-    object@effective_niche[[counter_sig]] = EN
-    counter_sig = counter_sig + 1
-  }
-  print('Effective niche calculated')
-  return(object)
-}
-
-
-
-#' CalculateEffectiveNiche
-#'
-#' This function calculates the effective niche of a niche-DE object
-#'
-#' @param object A niche-DE object
 #' @param batch_size Number of cells to calculate the effective niche for at a time
 #' @param cutoff Minimum kernel similarity. Similarities below this value get truncated to 0
 #' @return A niche-DE object the effective niche calculated.
@@ -611,9 +554,8 @@ CalculateEffectiveNicheLargeScale = function(object,batch_size = 1000,cutoff = 0
       counter = counter + 1
     }
     #normalize columns of EN
-    EN = apply(EN,2,function(x){x/mean(x[x>0])})
+    EN = apply(EN,2,function(x){(x-mean(x))/sd(x)})
     EN[is.na(EN)] = 0
-    EN = apply(EN,2,function(x){x-mean(x)})
     #add to list of effective niches (one for each sigma)
     object@effective_niche[[counter_sig]] = EN
     counter_sig = counter_sig + 1
@@ -670,7 +612,7 @@ Filter_NDE = function(object,cell_names){
 #' @return A niche-DE object the effective niche calculated.
 #' The effective niche is a list with each entry corresponding to a kernel bandwidth
 #' @export
-CalculateEffectiveNiche_new = function(object,cutoff = 0.05){
+CalculateEffectiveNiche = function(object,cutoff = 0.05){
   object@effective_niche = vector(mode = "list", length = length(object@sigma))
   names(object@effective_niche) = object@sigma
   counter_sig = 1

@@ -12,7 +12,8 @@ niche_DE(
   gamma = 0.8,
   print = T,
   Int = T,
-  batch = T
+  batch = T,
+  self_EN = F
 )
 }
 \arguments{
@@ -32,9 +33,12 @@ that gene in the index cell. Default value is 0.8 (80th percentile)}
 
 \item{print}{Logical if function should print progress report (kernel, gene #)}
 
-\item{Int}{Logical if data is integer valued. Negative binomial regression is performed if True. Linear regression with a gene specific variance is performed if False.}
+\item{Int}{Logical if data is count data. If True, negative binomial regression is performed.
+Otherwise linear regression with a gene specific variance is applied. Default is True.}
 
-\item{batch}{Logical if indicators correspodning to each batch should be included in the analysis}
+\item{batch}{Logical if an indicator should be included for each batch in the regression. Default is True.}
+
+\item{Self_EN}{Should niche interactions between the same cell types be considered. Default is False.}
 }
 \value{
 A niche-DE object with niche-DE analysis performed

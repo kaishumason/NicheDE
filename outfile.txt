@@ -220,3 +220,94 @@ Execution halted
   undefined subclass "dgCMatrix" of class "AnyMatrix"; definition not updated
 Execution halted
 Execution halted
+starting worker pid=10048 on localhost:11408 at 10:08:56.593
+starting worker pid=15344 on localhost:11408 at 10:08:56.762
+starting worker pid=20312 on localhost:11408 at 10:08:56.926
+starting worker pid=26140 on localhost:11408 at 10:08:57.092
+[1] "Gene 11000 out of 21708"
+[1] "Gene 6000 out of 21708"
+[1] "Gene 17000 out of 21708"
+[1] "Gene 18000 out of 21708"
+[1] "Gene 19000 out of 21708"
+[1] "Gene 20000 out of 21708"
+[1] "Gene 21000 out of 21708"
+[1] "Niche-DE Complete"
+[1] "Gene 1000 out of 21708"
+[1] "Gene 12000 out of 21708"
+[1] "Gene 7000 out of 21708"
+[1] "Gene 2000 out of 21708"
+[1] "Gene 13000 out of 21708"
+[1] "Gene 8000 out of 21708"
+[1] "Gene 3000 out of 21708"
+[1] "Gene 14000 out of 21708"
+[1] "Gene 9000 out of 21708"
+[1] "Gene 4000 out of 21708"
+[1] "Gene 15000 out of 21708"
+[1] "Gene 10000 out of 21708"
+[1] "Gene 5000 out of 21708"
+[1] "Gene 16000 out of 21708"
+starting worker pid=16644 on localhost:11408 at 10:11:12.177
+starting worker pid=28224 on localhost:11408 at 10:11:12.342
+starting worker pid=15208 on localhost:11408 at 10:11:12.507
+starting worker pid=9288 on localhost:11408 at 10:11:12.672
+[1] "Gene 11000 out of 21708"
+[1] "Gene 6000 out of 21708"
+[1] "Gene 17000 out of 21708"
+[1] "Gene 18000 out of 21708"
+[1] "Gene 19000 out of 21708"
+[1] "Gene 20000 out of 21708"
+[1] "Gene 21000 out of 21708"
+[1] "Niche-DE Complete"
+[1] "Gene 1000 out of 21708"
+[1] "Gene 12000 out of 21708"
+[1] "Gene 7000 out of 21708"
+[1] "Gene 2000 out of 21708"
+[1] "Gene 13000 out of 21708"
+[1] "Gene 8000 out of 21708"
+[1] "Gene 3000 out of 21708"
+[1] "Gene 14000 out of 21708"
+[1] "Gene 9000 out of 21708"
+[1] "Gene 4000 out of 21708"
+[1] "Gene 15000 out of 21708"
+[1] "Gene 10000 out of 21708"
+[1] "Gene 5000 out of 21708"
+[1] "Gene 16000 out of 21708"
+Error in unserialize(node$con) : error reading from connection
+Calls: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+In addition: Warning message:
+Error in unserialize(node$con) : error reading from connection
+Calls: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+In .recacheSubclasses(def@className, def, env) :
+ addition: Error in unserialize(node$con) : error reading from connection
+Calls: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Warning messaIn addition: Warning message:
+Execution halted
+In .recacheSubclasses(def@className, def, env) :In .recacheSubclasses(def@className, def, env) :In 
+ cacheSubclasses(def@className, def, env) : undefined subclass "dgCMatrix" of class "AnyMatrix"; definition not updated
+ undefined subclass "dgCMatrix" of class "AnyMatrix"; definition not updated
+ undefined subclass "dgCMatrix" of class "AnyMatrix"; definition not updated
+Execution halted
+Execution halted
+Error in unserialize(node$con) : error reading from connection
+Calls: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+In addition: Warning message:
+In .recacheSubclasses(def@className, def, env) :
+  undefined subclass "dgCMatrix" of class "AnyMatrix"; definition not updated
+Execution halted
+ze(node$con) : error reading from connection
+Calls: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+Error in unserialize(node$con) : error reading from connection
+Calls: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+In addition: ge:
+Warning message:
+In .recacheSubclasses(def@className, def, env) :
+  undefined subclass "dgCMatrix" of class "AnyMatrix"; definition not updated
+Error in unserialize(node$con) : error reading from connection
+Calls: <Anonymous> ... doTryCatch -> recvData -> recvData.SOCKnode -> unserialize
+In addition: bclasses(def@className, def, env) :Warning message:
+
+  undefined subclass "dgCMatrix" of class "AnyMatrix"; definition not updated
+Execution halted
+In .recacheSubclasses(def@className, def, env) :
+  undefined subclass "dgCMatrix" of class "AnyMatrix"; definition not updated
+Execution halted
