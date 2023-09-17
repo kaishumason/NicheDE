@@ -1,5 +1,5 @@
 library(Matrix)
-setClassUnion(name = 'AnyMatrix', members = c("matrix", "dgCMatrix",'data.frame'))
+setClassUnion(name = 'AnyMatrix', members = c("matrix",'data.frame'))
 #set niche-de
 Assay <- setClass(
   Class = 'Niche_DE',
