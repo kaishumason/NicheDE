@@ -1,0 +1,50 @@
+---
+title: "Merging and Filtering Niche-DE Objects"
+output: html_document
+date: '2023-09-18'
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Merging Objects
+
+Merging niche-DE objects is very easy, we simply use the function 'MergeObjects'. This function takes one argument which is a list where each element of the list is an niche-DE object. The kernel bandwidths across all merged objects must match. Additionally, the reference expression matrix for all merged matrices must match. Finally, the integer classification for all merged objects must match (i.e all objects must be integer or all objects must be continuous). Merging objects will erase the effective niche calculation so we recommend merging objects before calculating the effective niche.
+
+```
+#print to see how many observations our niche-DE object currently has
+print(NDE_obj)
+#make a copy
+NDE_obj_copy = NDE_obj
+#merge our niche-DE object with the copy
+NDE_merged = MergeObjects(list(A = NDE_obj,B = NDE_obj_copy))
+#print to see that we have double the observations
+print(NDE_merged)
+```
+We should see that our merged niche-DE object has double the observations and double the batches.
+
+# Filtering Objects
+
+Filtering out observations can be done with the command 'Filter_NDE'. This function takes two arguments
+<details>
+  <summary>Arguments</summary>
+  
++ object: A niche-DE object
++ cell_names: Cell names of observations that should be kept
+</details>
+
+The output of this function is a niche-DE object that only includes the specified cells.
+
+```
+#get first 100 spot names 
+cell_names = NDE_obj@cell_names[1:100]
+#filter to only include these spots
+NDE_obj_filtered = Filter_NDE(NDE_obj,cell_names = cell_names)
+#print to see that our new object only has 100 observations
+print(NDE_obj_filtered)
+```
+We should see that our filtered niche-DE object only has 100 observations. We recommend filtering after calculating the effective niche.
