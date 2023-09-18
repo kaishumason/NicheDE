@@ -54,5 +54,6 @@ We see that their are 14 slots, 10 of which are populated when making the nicheD
 + gene_names: The gene names.
 + batch_ID: The batch ID for each cell/spot. This will be used when merging objects.
 + spot_distance: 100. Coordinates are scaled so that the distance between a spot and its nearest neighbor is 100.
-
++ scale: The scaling to convert our coordinates back to their original scale
++ Int: Is the data count data(True) or continuous (False)?
 </details>
