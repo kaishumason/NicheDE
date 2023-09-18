@@ -31,6 +31,10 @@ This page contains tutorials for using the nicheDE package in R. Each step in th
 
 + [Effective Niche Calculation](Effective_Niche_Calculation.html): A guide on how to calculate the effective niche as well as suggested guidelines on how to choose the kernel bandwidth.
 
++ [Merging and Filtering](Merging_and_Filtering.html): A guide on how to merge multiple niche-DE objects or filter out observations from a niche-DE object.
+
+
+
 ## Performing Niche-DE 
 
 + [Performing Niche-DE](Performing_Niche_DE.html): A guide on how to run niche-DE once you have your niche-DE object.
