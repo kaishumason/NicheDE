@@ -62,7 +62,8 @@
 <span>  gamma <span class="op">=</span> <span class="fl">0.8</span>,</span>
 <span>  print <span class="op">=</span> <span class="cn">T</span>,</span>
 <span>  Int <span class="op">=</span> <span class="cn">T</span>,</span>
-<span>  batch <span class="op">=</span> <span class="cn">T</span></span>
+<span>  batch <span class="op">=</span> <span class="cn">T</span>,</span>
+<span>  self_EN <span class="op">=</span> <span class="cn">F</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -97,11 +98,16 @@ that gene in the index cell. Default value is 0.8 (80th percentile)</p></dd>
 
 
 <dt>Int</dt>
-<dd><p>Logical if data is integer valued. Negative binomial regression is performed if True. Linear regression with a gene specific variance is performed if False.</p></dd>
+<dd><p>Logical if data is count data. If True, negative binomial regression is performed.
+Otherwise linear regression with a gene specific variance is applied. Default is True.</p></dd>
 
 
 <dt>batch</dt>
-<dd><p>Logical if indicators correspodning to each batch should be included in the analysis</p></dd>
+<dd><p>Logical if an indicator should be included for each batch in the regression. Default is True.</p></dd>
+
+
+<dt>Self_EN</dt>
+<dd><p>Should niche interactions between the same cell types be considered. Default is False.</p></dd>
 
 </dl></div>
     <div class="section level2">
