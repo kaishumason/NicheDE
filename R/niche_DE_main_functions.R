@@ -217,7 +217,7 @@ niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T
           if(length(new_null)>0){
             V = V[-new_null,-new_null]
             null = sort(c(null,rest[new_null[new_null <= nvar]]))
-            new_null = new_nul[new_null <= var]
+            new_null = new_null[new_null <= nvar]
           }
           #remove first observation
           V = V[-c(1),-c(1)]

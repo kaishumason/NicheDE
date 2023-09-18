@@ -81,7 +81,7 @@
 <h2 id="running-niche-de">Running Niche-DE<a class="anchor" aria-label="anchor" href="#running-niche-de"></a>
 </h2>
 <p>Once you have set up your niche-DE object, you can run niche-DE using
-the function ‘niche_DE’. This function takes 5 arguments</p>
+the function ‘niche_DE’. This function takes 9 arguments</p>
 <details><summary>
 Arguments
 </summary><ul>
@@ -96,12 +96,22 @@ to be investigated. The default value is 10</li>
 the index cell type in order for the model to investigate niche patterns
 for that gene in the index cell. The default value is 0.8 (80th
 percentile)</li>
+<li>print: Should the progress of niche-DE be tracked? If True, progress
+updates will be tracked in the outfile of the cluster. Default is
+True.</li>
+<li>Int: Logical for if data is count data. If True, a negative binomial
+regression is performed. Otherwise linear regression with a gene
+specific variance is applied. Default is True.</li>
+<li>Batch: Logical if an indicator should be included for each batch in
+the regression. Default is True.</li>
+<li>self_EN: Logical if niche interactions between the same cell types
+should be considered. Default is False.</li>
 </ul></details><pre><code><span><span class="co">#start cluster</span></span>
 <span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">makeCluster</a></span><span class="op">(</span><span class="fl">4</span>,outfile <span class="op">=</span> <span class="st">"outfile.txt"</span><span class="op">)</span></span>
 <span><span class="co">#register cluster</span></span>
 <span><span class="fu">doParallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/doParallel/man/registerDoParallel.html" class="external-link">registerDoParallel</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span></span>
 <span><span class="co">#close cluster</span></span>
-<span><span class="va">NDE_obj</span> <span class="op">=</span> <span class="fu"><a href="../reference/niche_DE.html">niche_DE</a></span><span class="op">(</span><span class="va">NDE_obj</span>,cluster <span class="op">=</span> <span class="va">cl</span><span class="op">)</span></span>
+<span><span class="va">NDE_obj</span> <span class="op">=</span> <span class="fu"><a href="../reference/niche_DE.html">niche_DE</a></span><span class="op">(</span><span class="va">NDE_obj</span>,cluster <span class="op">=</span> <span class="va">cl</span>, M <span class="op">=</span> <span class="fl">10</span>, gamma <span class="op">=</span> <span class="fl">0.8</span>,print <span class="op">=</span> <span class="cn">T</span>, Int <span class="op">=</span> <span class="cn">T</span>, batch <span class="op">=</span> <span class="cn">T</span>,self_EN <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></span>
 <span><span class="co">#close cluster</span></span>
 <span><span class="fu">doParallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/doParallel/man/registerDoParallel.html" class="external-link">stopImplicitCluster</a></span><span class="op">(</span><span class="op">)</span></span></code></pre>
 <details><summary>

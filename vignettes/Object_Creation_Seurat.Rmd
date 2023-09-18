@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 ```
 
 
-Starting with a spatial seurat object, we can make a niche-DE object with the function 'CreateNicheDEObjectFromSeurat'. This function takes in 5 arguments
+Starting with a spatial seurat object, we can make a niche-DE object with the function 'CreateNicheDEObjectFromSeurat'. This function takes in 6 arguments
 <details>
   <summary>Arguments</summary>
   
@@ -24,7 +24,7 @@ Starting with a spatial seurat object, we can make a niche-DE object with the fu
   + library mat: The average expression profile matrix calculated from a reference dataset
   + deconv mat: The deconvolution matrix for the spatial dataset
   + sigma: A list of kernel bandwidths to use for effective niche calculation. They should be chosen with the knowledge that the coordinates are scaled such that the median nearest neighbor distance is 100.
-  
+  + Int: Logical if counts data supplied is integer. When performing niche-DE, Negative binomial regression is performed if True. Linear regression with a gene specific variance is performed if False. Default is true.
   </details>
 
 ```
