@@ -32,6 +32,7 @@ Once you have set up your niche-DE object, you can run niche-DE using the functi
 </details>
 
 
+Note that before running niche-DE, you must create a cluster using the parallel function.
 ```
 #start cluster
 cl <- parallel::makeCluster(4,outfile = "outfile.txt")
