@@ -630,7 +630,7 @@ niche_DE_markers = function(object,index,niche1,niche2,alpha = 0.05){
 
 
   #get marker pvals
-  print(paste0("Performing Contrast test on kernel 1 out of", length(object@sigma)))
+  print(paste0("Performing Contrast test on kernel 1 out of ", length(object@sigma)))
   pval = contrast_post(betas_all,v_cov_all,nulls_all,index_index,c(niche1_index,niche2_index))
   #if multiple kernels do this for all kernels
   if(length(object@sigma)>=2){
@@ -662,11 +662,8 @@ niche_DE_markers = function(object,index,niche1,niche2,alpha = 0.05){
   }
 
   if(length(object@niche_DE)==1){
-    #log_liks[is.infinite(log_liks)] = 0
-    #log_liks[is.infinite(log_liks)] = -1e10
     suppressWarnings({ W = rep(1,length(log_liks))})
   }
-  #W = apply(W,1,function(x){x/sum(x)})
   #bind pvalues and weights
   contrast = cbind(pval,W)
   #apply cauchy rule
@@ -680,7 +677,7 @@ niche_DE_markers = function(object,index,niche1,niche2,alpha = 0.05){
   gene_pval_ = gene_pval[which(gene_pval[,2]<(alpha)),]
   if(nrow(gene_pval_)==0){
     print("No Significant Genes")
-    return(gene_pval)
+    return(gene_pval_)
   }
   colnames(gene_pval_) = c('Genes','Adj.Pvalues')
   rownames(gene_pval_) = c(1:nrow(gene_pval_))
