@@ -38,7 +38,7 @@ Note that before running niche-DE, you must create a cluster using the parallel 
 cl <- parallel::makeCluster(4,outfile = "outfile.txt")
 #register cluster
 doParallel::registerDoParallel(cl)
-#close cluster
+#Perform Niche-DE
 NDE_obj = niche_DE(NDE_obj,cluster = cl,C = 150, M = 10, gamma = 0.8,print = T, Int = T, batch = T,self_EN = F)
 #close cluster
 doParallel::stopImplicitCluster()

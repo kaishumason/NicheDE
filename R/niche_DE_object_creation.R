@@ -81,7 +81,7 @@ CreateLibraryMatrixFromSeurat = function(seurat_object,assay){
   #get counts matrix
   data = Matrix::t(sobj_assay@counts)
   #get cell type vector
-  cell_type = as.vector(Seurat::Idents(seurat_object))
+  cell_type = Seurat::Idents(seurat_object)
   if(mean(rownames(data)== names(cell_type))!=1){
     stop('Data rownames and Cell type matrix names do not match')
   }
@@ -95,10 +95,10 @@ CreateLibraryMatrixFromSeurat = function(seurat_object,assay){
   #iterate over cell types
   for (j in c(1:n_CT)){
     #get cells that belong to this cell type
-    cells = which(cell_type[,2]==CT[j])
+    cells = which(cell_type==CT[j])
     #if there are too many cells, downsample
     if(length(cells)>1000){
-      print(paste0("Too many cell of type ",CT[j]," downsampling to 1000."))
+      print(paste0("Too many cell of type ",CT[j],", downsampling to 1000."))
       cells = sample(cells,1000,replace = F)
     }
     cells = data[cells,]
