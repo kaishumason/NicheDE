@@ -46,6 +46,7 @@ reference:
   - CalculateEffectiveNiche
   - CalculateEffectiveNicheLargeScale
   - niche_DE
+  - niche_DE_no_parallel
 
 - title: "Downstream Analysis"
   desc: >
