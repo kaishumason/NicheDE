@@ -46,13 +46,10 @@ niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T
     }
     if((sum(counts)>constants$C)&(mean(ref_expression<constants$CT_filter)!=1)){
       #get pstg matrix
-      #print(j)
-      #t1 = Sys.time()
       pstg = constants$num_cells%*%as.matrix(diag(ref_expression))/EEJ
       pstg[,ref_expression<constants$CT_filter] = 0
       pstg[pstg<0.05]=0
       #get X
-      #print(1)
       X = matrix(NA,nrow(pstg),n_type^2)
       #get counter
       for(k in c(1:nrow(pstg))){
@@ -67,7 +64,6 @@ niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T
       #gc()
       #get index, niche pairs that are non existent
       null = which(apply(X,2,function(x){sum(x>0,na.rm = T)})<constants$M)
-      #print(length(null))
       X_partial = X
       rest = c(1:ncol(X))
       if(length(null)>0){
@@ -126,8 +122,6 @@ niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T
           X_partial = Matrix::Matrix(X_partial, sparse=TRUE)
           #get variance matrix. Variance is [t(X_partial*W)%*%X_partial]^(-1)
           var_mat = Matrix::t(X_partial*W)%*%X_partial
-          #subset to get covariance of variables or interest
-          #var_mat = var_mat[1:nvar,1:nvar]
           rm("X_partial")
           #gc()
           #if there are degenerate columns, remove them
@@ -157,7 +151,7 @@ niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T
             rm("var_mat")
             #get sd matrix
             tau = sqrt(Matrix::diag(V))
-            #print("3")
+
             V_ = matrix(NA,n_type,n_type)
             if(length(null)==0){
               V_ = matrix(tau,n_type,n_type)
@@ -177,7 +171,6 @@ niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T
             }
             #record test statitistic
             T_ = beta/V_
-
             beta = Matrix::t(beta)
             T_ = Matrix::t(T_)
             #make rownames and column names correspond to cell types
@@ -185,17 +178,12 @@ niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T
             rownames(beta) = paste0("i: ",constants$cell_types)
             colnames(T_) = paste0("n: ",constants$cell_types)
             rownames(T_) = paste0("i: ",constants$cell_types)
-
-
+            #record that niche-de worked for this gene
             valid = 1
-
-
           }
           #end of if statement
         }, #get pval
         error = function(e) {
-          #print(paste0("error,",j))
-          #return (list(T_ = matrix(NA,n_type,n_type),betas = matrix(NA,n_type,n_type), V = 0,nulls = c(1:n_type^2), valid = 0,liks = NA))
           skip_to_next <<- TRUE})
       }
       if(length(null)!=n_type^2 & constants$Int == F){
@@ -210,8 +198,6 @@ niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T
           liks_val = stats::logLik(lm)
           #get vcov mat
           V = (sum_lm$cov.unscaled)*(sum_lm$sigma^2)
-          #remove first observation
-          #V = V[-c(1),-c(1)]
           #see if any bettas have 0 variance
           new_null = which(diag(as.matrix(V))==0)
           if(length(new_null)>0){
@@ -232,7 +218,7 @@ niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T
             num_coef = n_type^2 - length(null)
             coeff_T = sum_lm$coefficients[c(1:(num_coef+1)),3]
             coeff_T[is.na(coeff_T)] = 0
-            #print('getting beta')
+            #initialize beta
             beta = matrix(NA,n_type,n_type)
             T_ = matrix(NA,n_type,n_type)
             if(length(new_null)>0){
@@ -249,7 +235,7 @@ niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T
                 T_[c(1:n_type^2)[-null]] = coeff_T[-c(1)]
               }
             }
-
+            #record test statitistic
             beta = Matrix::t(beta)
             T_ = Matrix::t(T_)
             #make rownames and column names correspond to cell types
@@ -257,18 +243,13 @@ niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T
             rownames(beta) = paste0("i: ",constants$cell_types)
             colnames(T_) = paste0("n: ",constants$cell_types)
             rownames(T_) = paste0("i: ",constants$cell_types)
-
-
-            #record test statitistic
+            #record that niche-DE worked
             valid = 1
-
           }
           #end of if statement
         }, #get pval
         error = function(e) {
           #message(e)
-          #print(paste0("error,"))
-          #return (list(T_ = matrix(NA,n_type,n_type),betas = matrix(NA,n_type,n_type), V = 0,nulls = c(1:n_type^2), valid = 0,liks = NA))
           skip_to_next <<- TRUE})
       }
     }
@@ -276,7 +257,6 @@ niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T
     if(iter == constants$gene_total){
       print("Niche-DE Complete")
     }
-    #print(pryr::memused())
     if(valid == 1){
       A = list(T_stat = T_,betas = beta, Varcov = V,nulls = null, valid = valid,log_likelihood = liks_val)
       rm(list=ls()[! ls() %in% c("A")])
@@ -414,13 +394,10 @@ niche_DE_no_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,Int 
     }
     if((sum(counts)>constants$C)&(mean(ref_expression<constants$CT_filter)!=1)){
       #get pstg matrix
-      #print(j)
-      #t1 = Sys.time()
       pstg = constants$num_cells%*%as.matrix(diag(ref_expression))/EEJ
       pstg[,ref_expression<constants$CT_filter] = 0
       pstg[pstg<0.05]=0
       #get X
-      #print(1)
       X = matrix(NA,nrow(pstg),n_type^2)
       #get counter
       for(k in c(1:nrow(pstg))){
@@ -435,7 +412,6 @@ niche_DE_no_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,Int 
       #gc()
       #get index, niche pairs that are non existent
       null = which(apply(X,2,function(x){sum(x>0,na.rm = T)})<constants$M)
-      #print(length(null))
       X_partial = X
       rest = c(1:ncol(X))
       if(length(null)>0){
@@ -494,8 +470,6 @@ niche_DE_no_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,Int 
           X_partial = Matrix::Matrix(X_partial, sparse=TRUE)
           #get variance matrix. Variance is [t(X_partial*W)%*%X_partial]^(-1)
           var_mat = Matrix::t(X_partial*W)%*%X_partial
-          #subset to get covariance of variables or interest
-          #var_mat = var_mat[1:nvar,1:nvar]
           rm("X_partial")
           #gc()
           #if there are degenerate columns, remove them
@@ -525,7 +499,6 @@ niche_DE_no_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,Int 
             rm("var_mat")
             #get sd matrix
             tau = sqrt(Matrix::diag(V))
-            #print("3")
             V_ = matrix(NA,n_type,n_type)
             if(length(null)==0){
               V_ = matrix(tau,n_type,n_type)
@@ -553,17 +526,12 @@ niche_DE_no_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,Int 
             rownames(beta) = paste0("i: ",constants$cell_types)
             colnames(T_) = paste0("n: ",constants$cell_types)
             rownames(T_) = paste0("i: ",constants$cell_types)
-
-
+            #record that niche-de worked
             valid = 1
-
-
           }
           #end of if statement
         }, #get pval
         error = function(e) {
-          #print(paste0("error,",j))
-          #return (list(T_ = matrix(NA,n_type,n_type),betas = matrix(NA,n_type,n_type), V = 0,nulls = c(1:n_type^2), valid = 0,liks = NA))
           skip_to_next <<- TRUE})
       }
       if(length(null)!=n_type^2 & constants$Int == F){
@@ -578,9 +546,7 @@ niche_DE_no_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,Int 
           liks_val = stats::logLik(lm)
           #get vcov mat
           V = (sum_lm$cov.unscaled)*(sum_lm$sigma^2)
-          #remove first observation
-          #V = V[-c(1),-c(1)]
-          #see if any bettas have 0 variance
+          #see if any betas have 0 variance
           new_null = which(diag(as.matrix(V))==0)
           if(length(new_null)>0){
             V = V[-new_null,-new_null]
@@ -596,11 +562,11 @@ niche_DE_no_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,Int 
             #get coefficients
             coeff = lm$coefficients[1:(nvar+1)]
             coeff[is.na(coeff)] = 0
-            #get number of true coefficents
+            #get number of true coefficients
             num_coef = n_type^2 - length(null)
             coeff_T = sum_lm$coefficients[c(1:(num_coef+1)),3]
             coeff_T[is.na(coeff_T)] = 0
-            #print('getting beta')
+            #get beta vector
             beta = matrix(NA,n_type,n_type)
             T_ = matrix(NA,n_type,n_type)
             if(length(new_null)>0){
@@ -617,7 +583,7 @@ niche_DE_no_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,Int 
                 T_[c(1:n_type^2)[-null]] = coeff_T[-c(1)]
               }
             }
-
+            #record test statistic
             beta = Matrix::t(beta)
             T_ = Matrix::t(T_)
             #make rownames and column names correspond to cell types
@@ -625,18 +591,12 @@ niche_DE_no_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,Int 
             rownames(beta) = paste0("i: ",constants$cell_types)
             colnames(T_) = paste0("n: ",constants$cell_types)
             rownames(T_) = paste0("i: ",constants$cell_types)
-
-
-            #record test statitistic
+            #record that niche-DE worked
             valid = 1
-
           }
           #end of if statement
         }, #get pval
         error = function(e) {
-          #message(e)
-          #print(paste0("error,"))
-          #return (list(T_ = matrix(NA,n_type,n_type),betas = matrix(NA,n_type,n_type), V = 0,nulls = c(1:n_type^2), valid = 0,liks = NA))
           skip_to_next <<- TRUE})
       }
     }
@@ -644,7 +604,6 @@ niche_DE_no_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,Int 
     if(iter == constants$gene_total){
       print("Niche-DE Complete")
     }
-    #print(pryr::memused())
     if(valid == 1){
       A = list(T_stat = T_,betas = beta, Varcov = V,nulls = null, valid = valid,log_likelihood = liks_val)
       rm(list=ls()[! ls() %in% c("A")])
@@ -697,7 +656,6 @@ niche_DE_no_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,Int 
     #save valid matrix
     valid[,counter] = unlist(lapply(results, function(result) result$valid))
     #save object
-    #object@niche_DE[[counter]] = list(T_stat = T_stat,beta = betas,var_cov = var_cov,nulls = nulls,log_lik = liks)
     object@niche_DE[[counter]] = results
     counter = counter + 1
     #remove everything but what's needed
@@ -705,8 +663,6 @@ niche_DE_no_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,Int 
     rm(list=ls()[! ls() %in% c("object","counter","nb_lik","niche_DE_core","C","M","gamma","valid","cores","Int","batch","print","nicheDE","self_EN")])
     gc()
   }
-  #close cluster
-  #doParallel::stopImplicitCluster()
   #get column sums of counts matrix to see how many genes pass filtering
   A = rowSums(valid)
   #get number of genes that pass filtering
@@ -949,13 +905,11 @@ niche_DE_markers = function(object,index,niche1,niche2,alpha = 0.05){
   print(paste0('Finding Niche-DE marker genes in index cell type ',index,' with niche cell type ',niche1,
                ' relative to niche cell type ',niche2,'. BH procedure performed at level ',alpha,'.'))
 
-
   #get beta array
   betas_all = lapply(object@niche_DE[[1]], function(result) result$betas)
   #get variance covariance array
   v_cov_all = lapply(object@niche_DE[[1]], function(result) result$Varcov)
   nulls_all = lapply(object@niche_DE[[1]], function(result) result$nulls)
-  #nulls_all = object@niche_DE[[1]]$nulls
   #get index for index and niche cell types
   index_index = which(colnames(object@num_cells)==index)
   niche1_index = which(colnames(object@num_cells)==niche1)
@@ -982,9 +936,6 @@ niche_DE_markers = function(object,index,niche1,niche2,alpha = 0.05){
               '. Results may be unreliable.')
     }
   }
-
-
-
 
   #get marker pvals
   print(paste0("Performing Contrast test on kernel 1 out of ", length(object@sigma)))
@@ -1030,7 +981,6 @@ niche_DE_markers = function(object,index,niche1,niche2,alpha = 0.05){
   #bind genes and their pvalue
   gene_pval = data.frame(object@gene_names,contrast_phoch)
   #filter to only those that reject
-  #gene_pval_ = gene_pval[which(gene_pval[,2]<(alpha/2)),]
   gene_pval_ = gene_pval[which(gene_pval[,2]<(alpha)),]
   if(nrow(gene_pval_)==0){
     print("No Significant Genes")
@@ -1297,7 +1247,6 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
     #get gene/ligand name
     #match to top_DE list
     ID = which(names(top_DE)==j)
-    #print(ID)
     #get downstream genes
     LR_pairs[which(LR_pairs[,1]==j),3] = top_DE[[ID]]
   }
@@ -1455,7 +1404,6 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
   top_scores= pear_cor[top_index]
   #get top candidate ligands
   top_genes = colnames(ligand_target_matrix)[top_index]
-  #print(top_genes)
 
   #################### test candidate ligands
   print(paste0('Testing candidate ligands for sufficient expression in cell type ',ligand_cell))
@@ -1480,16 +1428,12 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
       #get number of cells per spot
       nst = object@num_cells
       nst = nst[niche_index,]
-      #print(dim(nst))
       nst[,which(L[,index_gene] < CT_filter)] = 0
       #run regression of ligand expression on number of cells per spot
       #get average expression of ligand
       lambda_niche = mean(Y[nst[,niche]==1])
-      #print(niche)
-      #print(lambda_niche)
       #get alpha quantile of niche cell type
       lambda_rest = quantile(object@ref_expr[niche,],alpha_2)
-      #print(lambda_rest)
       #get test statistic
       Test_stat = lambda_niche-lambda_rest
       #normalize so that null distribution is standard normal
@@ -1499,13 +1443,11 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
 
     } #get pval
     , error = function(e) {
-      #print(paste0("error",j))
       skip_to_next <<- TRUE})
   }
   #adjust pvalues and get confirmed ligands
   pvalues = p.adjust(pvalues,method = 'BH')
   ligands = top_genes[which(pvalues<alpha)]
-  #print(ligands)
   #get candidate receptor
   rec_ind = which(lr_mat[,1]%in% ligands & lr_mat[,2]%in% colnames(L))
   lr_mat = lr_mat[rec_ind,]
@@ -1528,8 +1470,7 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
       #get data
       data = object@counts
       Y = data[,which(colnames(L)==gene)]
-      #which spots to look at
-      #niche_index = which(kernel_materials[[top_index]]$EN[,niche]>0)
+      #get which spots to look at for evaluating confirmed receptors
       niche_index = which(object@effective_niche[[top_index]][,niche]>min(object@effective_niche[[top_index]][,niche]))
       #filter based on spots to look at
       Y = Y[niche_index]
@@ -1550,12 +1491,10 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
   }
   #adjust pvalues
   pvalues = p.adjust(pvalues,method = "BH")
-  #print(pvalues)
   rec_mat = cbind(lr_mat,pvalues)
   #name matrix columns
   colnames(rec_mat) = c('ligand','receptor','receptor_pval')
   LR_pairs = rec_mat[,c(1,2,3)]
-  #print(dim(LR_pairs))
   #extract the confirmed ligands and receptors
   if(length(LR_pairs)==0){
     stop('no ligand-receptor pairs to report')

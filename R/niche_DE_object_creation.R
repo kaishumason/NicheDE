@@ -366,7 +366,6 @@ CreateNicheDEObjectFromSeurat = function(seurat_object,assay,library_mat,deconv_
   colnames(countsM) = colnames(counts_mat)[sim_gene]
   rownames(countsM) = rownames(counts_mat)
   #get library size of each spot
-  #print(dim(countsM))
   Lib_spot = rowSums(countsM)
   #make matrix sparse
   countsM = Matrix::Matrix(counts_mat[,sim_gene], sparse=TRUE)

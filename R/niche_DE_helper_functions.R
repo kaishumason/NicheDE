@@ -110,8 +110,7 @@ celltype_level_fisher = function(p,varcov){
     varcov = poolr::mvnconv(varcov, target = "m2lp",side  = 1, cov2cor = F)
   }
   for(iter in c(1:ncol(p))){
-    #print(iter)
-    #get jth column. This corrsponds to pvalue for CT j
+    #get jth column. This corresponds to pvalue for CT j
     p_CT = p[,iter]
     #make p_CT only those that are non NA
     p_CT = p_CT[is.na(p_CT)==F]
@@ -151,7 +150,6 @@ contrast_post = function(betas_all,V_cov_all,nulls_all,index,niche){
   #pgt is index type by niche type by gene
   p = matrix(NA,ngene,1)
   rownames(p) = dimnames(betas_all)[[3]]
-  #print('start')
   for(j in c(1:ngene)){
     if(j%%5000 == 0){
       print(paste0('gene #',j,' out of ', ngene))
@@ -185,8 +183,6 @@ contrast_post = function(betas_all,V_cov_all,nulls_all,index,niche){
         #test statistic
         T_stat = betas[index,niche[1]] - betas[index,niche[2]]
         T_stat = T_stat/(sqrt(var_contrast))
-        #print(T_stat)
-        #print('getting pvalue')
         p_stat = 1-pnorm(T_stat)
         p[j,] = p_stat} #get pval
         , error = function(e) {
@@ -263,14 +259,12 @@ get_niche_DE_pval_fisher = function(object,pos = T){
   #iterate over sigmas
   print("Computing Gene Level Pvalues")
   for(k in c(1:length(T_stat_list))){
-    #print("making T_stats")
     if(k > length(object@sigma)){
       gene_p[,k] = gene_p[,1]
     }else{
       #convert array to a list
       #T_stats = lapply(seq(dim(T_stat_list[[k]])[3]), function(x) T_stat_list[[k]][ , , x])
       T_stats = T_stat_list[[k]]
-      #print("making pvalues")
       #get varcov list
       varcovs = lapply(object@niche_DE[[k]], function(result) result$Varcov)
       #iterate over genes
@@ -300,7 +294,6 @@ get_niche_DE_pval_fisher = function(object,pos = T){
     if(k > length(object@sigma)){
       CT_p[[k]] = CT_p[[1]]
     }else{
-      #print("making T_stats")
       T_stats = T_stat_list[[k]]
       #get varcov list
       varcovs = lapply(object@niche_DE[[k]], function(result) result$Varcov)
@@ -429,15 +422,12 @@ get_niche_DE_pval_raw = function(object,pos = T){
   #iterate over sigmas
   print("Computing Gene Level Pvalues")
   for(k in c(1:length(T_stat_list))){
-    #print(k)
-    #print("making T_stats")
     if(k > length(object@sigma)){
       gene_p[,k] = gene_p[,1]
     }else{
       #convert array to a list
       #T_stats = lapply(seq(dim(T_stat_list[[k]])[3]), function(x) T_stat_list[[k]][ , , x])
       T_stats = T_stat_list[[k]]
-      #print("making pvalues")
       #get varcov list
       varcovs = lapply(object@niche_DE[[k]], function(result) result$Varcov)
       #iterate over genes
@@ -467,7 +457,6 @@ get_niche_DE_pval_raw = function(object,pos = T){
     if(k > length(object@sigma)){
       CT_p[[k]] = CT_p[[1]]
     }else{
-      #print("making T_stats")
       T_stats = T_stat_list[[k]]
       #get varcov list
       varcovs = lapply(object@niche_DE[[k]], function(result) result$Varcov)
