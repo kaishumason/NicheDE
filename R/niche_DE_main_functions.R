@@ -252,7 +252,8 @@ niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T
         }, #get pval
         error = function(e) {
           #message(e)
-          skip_to_next <<- TRUE})
+          #skip_to_next <<- TRUE
+          })
       }
     }
 
@@ -353,6 +354,7 @@ niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T
         results = c(results,results_chunk)
       }
       rm(counts_chunk, envir = temp_env)
+      gc()
       chunk_counter = chunk_counter + 1
     }
 
@@ -571,7 +573,8 @@ niche_DE_no_parallel = function(object,C = 150,M = 10,gamma = 0.8,print = T,Int 
           #end of if statement
         }, #get pval
         error = function(e) {
-          skip_to_next <<- TRUE})
+          #skip_to_next <<- TRUE
+          })
       }
       if(length(null)!=n_type^2 & constants$Int == F){
         tryCatch({
