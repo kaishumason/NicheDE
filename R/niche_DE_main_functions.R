@@ -273,6 +273,12 @@ niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T
     }
 
   }
+  #memory cleaning function
+  cleanup_memory <- function() {
+    # Your memory cleanup tasks go here
+    gc()  # Garbage collection to free up memory
+  }
+
   #starting Message
   print(paste0('Starting Niche-DE analysis with parameters C = ',C,', M = ',M,', gamma = ', gamma,'.'))
   #initialize list output
@@ -357,7 +363,11 @@ niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T
       gc()
       chunk_counter = chunk_counter + 1
     }
-
+    #cleanup memory
+    # Remove 'counts_chunk' from each worker
+    clusterEvalQ(cluster, rm(counts_chunk))
+    # Use clusterEvalQ to apply the cleanup_memory function on each worker
+    clusterEvalQ(cluster, cleanup_memory)
     #make names of results the gene names
     names(results) = object@gene_names
     #save valid matrix
