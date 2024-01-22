@@ -17,10 +17,12 @@
 #' Otherwise linear regression with a gene specific variance is applied. Default is True.
 #' @param batch Logical if an indicator should be included for each batch in the regression. Default is True.
 #' @param Self_EN Should niche interactions between the same cell types be considered. Default is False.
+#' @param G Number of gigabytes each core should hold. If the counts matrix is bigger than G,
+#' it is split into multiple chunks such that the size of each chunk is less than G gigabytes.
 #' @return A niche-DE object with niche-DE analysis performed
 #' @export
 #' @importFrom foreach %dopar%
-niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T,batch = T,self_EN = F){
+niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T,batch = T,self_EN = F,G = 1){
   #use core niche-DE function and nb_lik function
   nb_lik = function(x,mu,disp){
     #returns negative log likelihood: Var = mu + mu^2/size
@@ -309,24 +311,61 @@ niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T
     temp_env$niche_DE_core = niche_DE_core
     temp_env$counts = counts
     #export variables to cluster
-    parallel::clusterExport(cluster, varlist = c("constant_param","ngene","niche_DE_core","counts"), envir = temp_env)
+    #parallel::clusterExport(cluster, varlist = c("constant_param","ngene","niche_DE_core","counts"), envir = temp_env)
     #perofrm in parallel over environment
-    results <- parallel::parApply(cl = cluster,counts,2,function(x){
-      iter = x[length(x)]
-      x = x[-length(x)]
-      niche_DE_core(counts = x,constants = constant_param,iter)
-    })
+    #results <- parallel::parApply(cl = cluster,counts,2,function(x){
+      #iter = x[length(x)]
+      #x = x[-length(x)]
+      #niche_DE_core(counts = x,constants = constant_param,iter)
+    #})
 
+    #get estimate for number of GB the counts matrix takes up
+    data_size = 8*prod(dim(counts))/1e9
+    #get number fo chunks (i.e how many times we need to split the matrix up so that each chunk is of size Ggb)
+    nchunks = ceiling(data_size/G)
+    print(paste0("Splitting Data into ", nchunks, " chunks in order to avoid memory overload"))
+    #split column indices into nchunks
+    chunk_size = ceiling(ncol(counts)/nchunks)
+    # Create a grouping vector based on the indices
+    grouping <- rep(1:nchunks, each = chunk_size, length.out = ncol(counts))
+    #get list of which indices belong to which chunk
+    index_chunks = split(1:ncol(counts), grouping)
+
+    #run niche-DE over chunks
+    chunk_counter = 1
+    for(I in c(1:length(index_chunks))){
+      print(paste0("Evaluating chunk ", I," out of ", nchunks))
+      #make data chunk
+      counts_chunk = counts[,index_chunks[[I]]]
+      temp_env$counts_chunk = counts_chunk
+      #export variables to cluster
+      parallel::clusterExport(cluster, varlist = c("constant_param","ngene","niche_DE_core","counts_chunk"), envir = temp_env)
+      #perform in parallel over environment
+      results_chunk <- parallel::parApply(cl = cluster,counts_chunk,2,function(x){
+        iter = x[length(x)]
+        x = x[-length(x)]
+        niche_DE_core(counts = x,constants = constant_param,iter)
+      })
+      #combine results across chunks
+      if(chunk_counter == 1){
+        results = results_chunk
+      }else{
+        results = c(results,results_chunk)
+      }
+      rm(counts_chunk, envir = temp_env)
+      chunk_counter = chunk_counter + 1
+    }
+
+    #make names of results the gene names
     names(results) = object@gene_names
     #save valid matrix
     valid[,counter] = unlist(lapply(results, function(result) result$valid))
     #save object
-    #object@niche_DE[[counter]] = list(T_stat = T_stat,beta = betas,var_cov = var_cov,nulls = nulls,log_lik = liks)
     object@niche_DE[[counter]] = results
     counter = counter + 1
     #remove everything but what's needed
     print("Cleaning disk for next iteration")
-    rm(list=ls()[! ls() %in% c("object","counter","nb_lik","niche_DE_core","C","M","gamma","valid","cores","Int","batch","print","cluster","nicheDE","self_EN")])
+    rm(list=ls()[! ls() %in% c("object","counter","nb_lik","niche_DE_core","C","M","gamma","valid","cores","Int","batch","print","cluster","nicheDE","self_EN","G")])
     gc()
   }
   #close cluster
