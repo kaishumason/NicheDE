@@ -323,7 +323,7 @@ niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T
     data_size = 8*prod(dim(counts))/1e9
     #get number fo chunks (i.e how many times we need to split the matrix up so that each chunk is of size Ggb)
     nchunks = ceiling(data_size/G)
-    print(paste0("Splitting Data into ", nchunks, " chunks in order to avoid memory overload"))
+    print(paste0("Splitting Data into ", nchunks, " chunks in order to avoid memory overload. Each chunk is less than ",G, " gigabytes."))
     #split column indices into nchunks
     chunk_size = ceiling(ncol(counts)/nchunks)
     # Create a grouping vector based on the indices
