@@ -22,7 +22,7 @@ Imports:
     Seurat,
     foreach,
     stats,
-	fastDummies,
-	parallel,
-	poolr
+	  fastDummies,
+	  parallel,
+	  poolr
 URL: https://kmason23.github.io/NicheDE/
