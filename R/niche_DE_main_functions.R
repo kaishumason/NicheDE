@@ -247,6 +247,7 @@ niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T
             rownames(T_) = paste0("i: ",constants$cell_types)
             #record that niche-DE worked
             valid = 1
+            print(pryr::mem_used())
           }
           #end of if statement
         }, #get pval
@@ -276,6 +277,7 @@ niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T
   #memory cleaning function
   cleanup_memory <- function() {
     # Your memory cleanup tasks go here
+    rm(list = list())
     gc()  # Garbage collection to free up memory
   }
 
@@ -337,7 +339,9 @@ niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T
     grouping <- rep(1:nchunks, each = chunk_size, length.out = ncol(counts))
     #get list of which indices belong to which chunk
     index_chunks = split(1:ncol(counts), grouping)
-
+    print(object.size(constant_param)/1e9)
+    print(object.size(as.matrix(counts))/1e9)
+    print(pryr::mem_used())
     #run niche-DE over chunks
     chunk_counter = 1
     for(I in c(1:length(index_chunks))){
@@ -346,7 +350,7 @@ niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T
       counts_chunk = counts[,index_chunks[[I]]]
       temp_env$counts_chunk = counts_chunk
       #export variables to cluster
-      parallel::clusterExport(cluster, varlist = c("constant_param","ngene","niche_DE_core","counts_chunk"), envir = temp_env)
+      parallel::clusterExport(cluster, varlist = c("constant_param","ngene","niche_DE_core","counts_chunk","cleanup_memory"), envir = temp_env)
       #perform in parallel over environment
       results_chunk <- parallel::parApply(cl = cluster,counts_chunk,2,function(x){
         iter = x[length(x)]
@@ -367,7 +371,7 @@ niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T
     # Remove 'counts_chunk' from each worker
     clusterEvalQ(cluster, rm(counts_chunk))
     # Use clusterEvalQ to apply the cleanup_memory function on each worker
-    clusterEvalQ(cluster, cleanup_memory())
+    clusterEvalQ(cluster,cleanup_memory())
     #make names of results the gene names
     names(results) = object@gene_names
     #save valid matrix
@@ -377,7 +381,7 @@ niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T
     counter = counter + 1
     #remove everything but what's needed
     print("Cleaning disk for next iteration")
-    rm(list=ls()[! ls() %in% c("object","counter","nb_lik","niche_DE_core","C","M","gamma","valid","cores","Int","batch","print","cluster","nicheDE","self_EN","G")])
+    rm(list=ls()[! ls() %in% c("object","counter","nb_lik","niche_DE_core","C","M","gamma","valid","cores","Int","batch","print","cluster","nicheDE","self_EN","G","cleanup_memory")])
     gc()
   }
   #close cluster
