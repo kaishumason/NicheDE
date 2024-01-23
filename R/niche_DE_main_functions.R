@@ -247,7 +247,6 @@ niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T
             rownames(T_) = paste0("i: ",constants$cell_types)
             #record that niche-DE worked
             valid = 1
-            print(pryr::mem_used())
           }
           #end of if statement
         }, #get pval
@@ -339,9 +338,6 @@ niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T
     grouping <- rep(1:nchunks, each = chunk_size, length.out = ncol(counts))
     #get list of which indices belong to which chunk
     index_chunks = split(1:ncol(counts), grouping)
-    print(object.size(constant_param)/1e9)
-    print(object.size(as.matrix(counts))/1e9)
-    print(pryr::mem_used())
     #run niche-DE over chunks
     chunk_counter = 1
     for(I in c(1:length(index_chunks))){
