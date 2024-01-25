@@ -56,14 +56,16 @@
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">niche_DE</span><span class="op">(</span></span>
 <span>  <span class="va">object</span>,</span>
-<span>  <span class="va">cluster</span>,</span>
+<span>  <span class="va">num_cores</span>,</span>
+<span>  <span class="va">outfile</span>,</span>
 <span>  C <span class="op">=</span> <span class="fl">150</span>,</span>
 <span>  M <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  gamma <span class="op">=</span> <span class="fl">0.8</span>,</span>
 <span>  print <span class="op">=</span> <span class="cn">T</span>,</span>
 <span>  Int <span class="op">=</span> <span class="cn">T</span>,</span>
 <span>  batch <span class="op">=</span> <span class="cn">T</span>,</span>
-<span>  self_EN <span class="op">=</span> <span class="cn">F</span></span>
+<span>  self_EN <span class="op">=</span> <span class="cn">F</span>,</span>
+<span>  G <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -73,8 +75,12 @@
 <dd><p>A niche-DE object</p></dd>
 
 
-<dt>cluster</dt>
-<dd><p>Cluster to perform parallel computations on</p></dd>
+<dt>num_cores</dt>
+<dd><p>The number of cores to parallelize on</p></dd>
+
+
+<dt>outfile</dt>
+<dd><p>The file path to write progress on</p></dd>
 
 
 <dt>C</dt>
@@ -104,6 +110,11 @@ Otherwise linear regression with a gene specific variance is applied. Default is
 
 <dt>batch</dt>
 <dd><p>Logical if an indicator should be included for each batch in the regression. Default is True.</p></dd>
+
+
+<dt>G</dt>
+<dd><p>Number of gigabytes each core should hold. If the counts matrix is bigger than G,
+it is split into multiple chunks such that the size of each chunk is less than G gigabytes.</p></dd>
 
 
 <dt>Self_EN</dt>
