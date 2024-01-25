@@ -6,20 +6,24 @@
 \usage{
 niche_DE(
   object,
-  cluster,
+  num_cores,
+  outfile,
   C = 150,
   M = 10,
   gamma = 0.8,
   print = T,
   Int = T,
   batch = T,
-  self_EN = F
+  self_EN = F,
+  G = 1
 )
 }
 \arguments{
 \item{object}{A niche-DE object}
 
-\item{cluster}{Cluster to perform parallel computations on}
+\item{num_cores}{The number of cores to parallelize on}
+
+\item{outfile}{The file path to write progress on}
 
 \item{C}{Minimum total expression of a gene needed for the model to run. Default value is 150.}
 
@@ -37,6 +41,9 @@ that gene in the index cell. Default value is 0.8 (80th percentile)}
 Otherwise linear regression with a gene specific variance is applied. Default is True.}
 
 \item{batch}{Logical if an indicator should be included for each batch in the regression. Default is True.}
+
+\item{G}{Number of gigabytes each core should hold. If the counts matrix is bigger than G,
+it is split into multiple chunks such that the size of each chunk is less than G gigabytes.}
 
 \item{Self_EN}{Should niche interactions between the same cell types be considered. Default is False.}
 }

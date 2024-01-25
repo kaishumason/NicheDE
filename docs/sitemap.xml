@@ -4,6 +4,9 @@
     <loc>https://kmason23.github.io/NicheDE/404.html</loc>
   </url>
   <url>
+    <loc>https://kmason23.github.io/NicheDE/LICENSE-text.html</loc>
+  </url>
+  <url>
     <loc>https://kmason23.github.io/NicheDE/articles/Average_Expression_Profile_Calculation.html</loc>
   </url>
   <url>
@@ -14,9 +17,6 @@
   </url>
   <url>
     <loc>https://kmason23.github.io/NicheDE/articles/Getting_Niche_DE_Genes.html</loc>
-  </url>
-  <url>
-    <loc>https://kmason23.github.io/NicheDE/articles/index.html</loc>
   </url>
   <url>
     <loc>https://kmason23.github.io/NicheDE/articles/Installation.html</loc>
@@ -41,6 +41,9 @@
   </url>
   <url>
     <loc>https://kmason23.github.io/NicheDE/articles/Tutorial.html</loc>
+  </url>
+  <url>
+    <loc>https://kmason23.github.io/NicheDE/articles/index.html</loc>
   </url>
   <url>
     <loc>https://kmason23.github.io/NicheDE/authors.html</loc>
@@ -70,13 +73,13 @@
     <loc>https://kmason23.github.io/NicheDE/reference/Filter_NDE.html</loc>
   </url>
   <url>
+    <loc>https://kmason23.github.io/NicheDE/reference/MergeObjects.html</loc>
+  </url>
+  <url>
     <loc>https://kmason23.github.io/NicheDE/reference/get_niche_DE_genes.html</loc>
   </url>
   <url>
     <loc>https://kmason23.github.io/NicheDE/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>https://kmason23.github.io/NicheDE/reference/MergeObjects.html</loc>
   </url>
   <url>
     <loc>https://kmason23.github.io/NicheDE/reference/niche_DE.html</loc>

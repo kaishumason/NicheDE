@@ -14,14 +14,15 @@ knitr::opts_chunk$set(
 )
 ```
 # Running Niche-DE
-Once you have set up your niche-DE object, you can run niche-DE using the function 'niche_DE'. This function takes 9 arguments
+Once you have set up your niche-DE object, you can run niche-DE using the function 'niche_DE'. This function takes 11 arguments
 
 <details>
   <summary>Arguments</summary>
   
 
 + object: A niche-DE object
-+ cluster: The cluster to perform parallel computations on
++ num_cores: The number of cores to use when performing parallelization
++ outfile: The file path to the txt on which workers will write status reports on
 + C: The minimum total expression of a gene across observations needed for the niche-DE model to run. The default value is 150.
 + M: Minimum number of spots containing the index cell type with the niche cell type in its effective niche for (index,niche) niche patterns to be investigated. The default value is 10
 + Gamma: Percentile a gene needs to be with respect to expression in the index cell type in order for the model to investigate niche patterns for that gene in the index cell. The default value is 0.8 (80th percentile)
@@ -29,19 +30,15 @@ Once you have set up your niche-DE object, you can run niche-DE using the functi
 + Int: Logical for if data is count data. If True, a negative binomial regression is performed. Otherwise linear regression with a gene specific variance is applied. Default is True.
 + Batch: Logical if an indicator should be included for each batch in the regression. Default is True. 
 + self_EN: Logical if niche interactions between the same cell types should be considered. Default is False.
++ G: Number of gigabytes each core should hold. If the counts matrix is bigger than G gigabytes, it is split into multiple chunks such that the size of each chunk is less than G gigabytes.
 </details>
 
 
 Note that before running niche-DE, you must create a cluster using the parallel function.
 ```
 #start cluster
-cl <- parallel::makeCluster(4,outfile = "outfile.txt")
-#register cluster
-doParallel::registerDoParallel(cl)
 #Perform Niche-DE
-NDE_obj = niche_DE(NDE_obj,cluster = cl,C = 150, M = 10, gamma = 0.8,print = T, Int = T, batch = T,self_EN = F)
-#close cluster
-doParallel::stopImplicitCluster()
+NDE_obj = niche_DE(NDE_obj,num_cores = 4,outfile = "",C = 150, M = 10, gamma = 0.8,print = T, Int = T, batch = T,self_EN = F,G = 1)
 ```
 
 <details>

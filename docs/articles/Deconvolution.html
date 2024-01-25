@@ -8,8 +8,8 @@
 <meta name="description" content="nicheDE">
 <title>Deconvolution • nicheDE</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.2.2/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.2.2/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
+<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Deconvolution">
 <meta property="og:description" content="nicheDE">
@@ -88,7 +88,7 @@ reference object</p>
 Step 1: Reading in a Reference Dataset
 </summary><pre><code><span><span class="co">###Step 0: Packages</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">spacexr</span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://Matrix.R-forge.R-project.org/" class="external-link">Matrix</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://Matrix.R-forge.R-project.org" class="external-link">Matrix</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span> </span>
 <span><span class="co">##download spacexr is not installed</span></span>
 <span><span class="co">#library(devtools)</span></span>
@@ -98,13 +98,13 @@ Step 1: Reading in a Reference Dataset
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"liver_met_ref"</span><span class="op">)</span></span>
 <span><span class="va">refr</span> <span class="op">=</span> <span class="va">liver_met_ref</span></span>
 <span><span class="co">#get cell types of reference dataset</span></span>
-<span><span class="va">cell_types</span> <span class="op">=</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/Idents.html" class="external-link">Idents</a></span><span class="op">(</span><span class="va">refr</span><span class="op">)</span></span>
+<span><span class="va">cell_types</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/SeuratObject/man/Idents.html" class="external-link">Idents</a></span><span class="op">(</span><span class="va">refr</span><span class="op">)</span></span>
 <span><span class="co">#drop levels </span></span>
 <span><span class="va">cell_types</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/droplevels.html" class="external-link">droplevels</a></span><span class="op">(</span><span class="va">cell_types</span><span class="op">)</span></span>
 <span><span class="co">#get raw data matrix</span></span>
 <span><span class="va">count_raw</span> <span class="op">&lt;-</span> <span class="va">refr</span><span class="op">@</span><span class="va">assays</span><span class="op">$</span><span class="va">RNA</span><span class="op">@</span><span class="va">counts</span></span>
 <span><span class="co"># make reference dataset</span></span>
-<span><span class="va">reference</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/spacexr/man/Reference.html" class="external-link">Reference</a></span><span class="op">(</span><span class="va">count_raw</span>, cell_types <span class="op">=</span> <span class="va">cell_types</span><span class="op">)</span></span></code></pre>
+<span><span class="va">reference</span> <span class="op">&lt;-</span> <span class="fu">Reference</span><span class="op">(</span><span class="va">count_raw</span>, cell_types <span class="op">=</span> <span class="va">cell_types</span><span class="op">)</span></span></code></pre>
 </details>
 The second step is to read in the spatial data.
 <details><summary>
@@ -124,9 +124,9 @@ Step 2: Reading in Spatial Data
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">counts</span><span class="op">)</span> <span class="op">=</span> <span class="va">genes</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">counts</span><span class="op">)</span> <span class="op">=</span> <span class="va">spots</span></span>
 <span><span class="co">#get coordinate matrix</span></span>
-<span><span class="va">coord</span> <span class="op">=</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/GetTissueCoordinates.html" class="external-link">GetTissueCoordinates</a></span><span class="op">(</span><span class="va">seurat_object</span><span class="op">)</span></span>
+<span><span class="va">coord</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/SeuratObject/man/GetTissueCoordinates.html" class="external-link">GetTissueCoordinates</a></span><span class="op">(</span><span class="va">seurat_object</span><span class="op">)</span></span>
 <span><span class="co">#make spatial puck</span></span>
-<span><span class="va">puck</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/spacexr/man/SpatialRNA.html" class="external-link">SpatialRNA</a></span><span class="op">(</span><span class="va">coord</span>, <span class="va">counts</span><span class="op">)</span></span></code></pre>
+<span><span class="va">puck</span> <span class="op">&lt;-</span> <span class="fu">SpatialRNA</span><span class="op">(</span><span class="va">coord</span>, <span class="va">counts</span><span class="op">)</span></span></code></pre>
 </details><p>The third step is to create an RCTD object and perform RCTD. Here we
 set the max number of cell types in a spot to be 4. Please refer to the
 documentation for information on other parameters</p>
@@ -135,9 +135,9 @@ Step 3: Creating an RCTD Object
 </summary><pre><code><span><span class="co">###STEP 3: create an RCTD object</span></span>
 <span><span class="co">#create an RCTD object. Here we set the max number of cell types in a spot to be 4.</span></span>
 <span><span class="co">#see documentation for other parameter choices</span></span>
-<span><span class="va">myRCTD</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/spacexr/man/create.RCTD.html" class="external-link">create.RCTD</a></span><span class="op">(</span><span class="va">puck</span>, <span class="va">reference</span>, max_cores <span class="op">=</span> <span class="fl">1</span>, UMI_min <span class="op">=</span> <span class="fl">0</span>,MAX_MULTI_TYPES <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
+<span><span class="va">myRCTD</span> <span class="op">&lt;-</span> <span class="fu">create.RCTD</span><span class="op">(</span><span class="va">puck</span>, <span class="va">reference</span>, max_cores <span class="op">=</span> <span class="fl">1</span>, UMI_min <span class="op">=</span> <span class="fl">0</span>,MAX_MULTI_TYPES <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
 <span><span class="co">#Run RCTD</span></span>
-<span><span class="va">myRCTD</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/spacexr/man/run.RCTD.html" class="external-link">run.RCTD</a></span><span class="op">(</span><span class="va">myRCTD</span>, doublet_mode <span class="op">=</span> <span class="st">"multi"</span><span class="op">)</span></span></code></pre>
+<span><span class="va">myRCTD</span> <span class="op">&lt;-</span> <span class="fu">run.RCTD</span><span class="op">(</span><span class="va">myRCTD</span>, doublet_mode <span class="op">=</span> <span class="st">"multi"</span><span class="op">)</span></span></code></pre>
 </details><p>The fourth step is to reformat your RCTD output into a matrix. This
 matrix will be of dimension #spots by #cell types. Each row will contain
 the deconvolution estimate for the corresponding spot.</p>
