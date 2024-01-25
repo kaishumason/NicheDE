@@ -273,12 +273,6 @@ niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T
     }
 
   }
-  #memory cleaning function
-  cleanup_memory <- function() {
-    # Your memory cleanup tasks go here
-    rm(list = list())
-    gc()  # Garbage collection to free up memory
-  }
 
   #starting Message
   print(paste0('Starting Niche-DE analysis with parameters C = ',C,', M = ',M,', gamma = ', gamma,'.'))
@@ -346,7 +340,7 @@ niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T
       counts_chunk = counts[,index_chunks[[I]]]
       temp_env$counts_chunk = counts_chunk
       #export variables to cluster
-      parallel::clusterExport(cluster, varlist = c("constant_param","ngene","niche_DE_core","counts_chunk","cleanup_memory"), envir = temp_env)
+      parallel::clusterExport(cluster, varlist = c("constant_param","ngene","niche_DE_core","counts_chunk"), envir = temp_env)
       #perform in parallel over environment
       results_chunk <- parallel::parApply(cl = cluster,counts_chunk,2,function(x){
         iter = x[length(x)]
@@ -363,11 +357,6 @@ niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T
       gc()
       chunk_counter = chunk_counter + 1
     }
-    #cleanup memory
-    # Remove 'counts_chunk' from each worker
-    clusterEvalQ(cluster, rm(counts_chunk))
-    # Use clusterEvalQ to apply the cleanup_memory function on each worker
-    clusterEvalQ(cluster,cleanup_memory())
     #make names of results the gene names
     names(results) = object@gene_names
     #save valid matrix
@@ -377,7 +366,7 @@ niche_DE = function(object,cluster, C = 150,M = 10,gamma = 0.8,print = T,Int = T
     counter = counter + 1
     #remove everything but what's needed
     print("Cleaning disk for next iteration")
-    rm(list=ls()[! ls() %in% c("object","counter","nb_lik","niche_DE_core","C","M","gamma","valid","cores","Int","batch","print","cluster","nicheDE","self_EN","G","cleanup_memory")])
+    rm(list=ls()[! ls() %in% c("object","counter","nb_lik","niche_DE_core","C","M","gamma","valid","cores","Int","batch","print","cluster","nicheDE","self_EN","G")])
     gc()
   }
   #close cluster
