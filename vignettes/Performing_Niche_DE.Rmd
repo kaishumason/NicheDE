@@ -34,10 +34,15 @@ Once you have set up your niche-DE object, you can run niche-DE using the functi
 </details>
 
 
-Note that before running niche-DE, you must create a cluster using the parallel function.
 ```
 #Perform Niche-DE
 NDE_obj = niche_DE(NDE_obj,num_cores = 4,outfile = "",C = 150, M = 10, gamma = 0.8,print = T, Int = T, batch = T,self_EN = F,G = 1)
+```
+For some smaller datasets, it may be faster to not parallelize at all. You can use the "niche_DE_no_parallel" function in this case. It takes the same arguments sans num_cores,outfile, and G. 
+
+```
+#Perform Niche-DE
+NDE_obj = niche_DE_no_parallel(NDE_obj,C = 150, M = 10, gamma = 0.8,print = T, Int = T, batch = T,self_EN = F)
 ```
 
 <details>
