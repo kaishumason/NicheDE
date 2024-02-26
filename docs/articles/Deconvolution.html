@@ -104,7 +104,7 @@ Step 1: Reading in a Reference Dataset
 <span><span class="co">#get raw data matrix</span></span>
 <span><span class="va">count_raw</span> <span class="op">&lt;-</span> <span class="va">refr</span><span class="op">@</span><span class="va">assays</span><span class="op">$</span><span class="va">RNA</span><span class="op">@</span><span class="va">counts</span></span>
 <span><span class="co"># make reference dataset</span></span>
-<span><span class="va">reference</span> <span class="op">&lt;-</span> <span class="fu">Reference</span><span class="op">(</span><span class="va">count_raw</span>, cell_types <span class="op">=</span> <span class="va">cell_types</span><span class="op">)</span></span></code></pre>
+<span><span class="va">reference</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/spacexr/man/Reference.html" class="external-link">Reference</a></span><span class="op">(</span><span class="va">count_raw</span>, cell_types <span class="op">=</span> <span class="va">cell_types</span><span class="op">)</span></span></code></pre>
 </details>
 The second step is to read in the spatial data.
 <details><summary>
@@ -126,7 +126,7 @@ Step 2: Reading in Spatial Data
 <span><span class="co">#get coordinate matrix</span></span>
 <span><span class="va">coord</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/SeuratObject/man/GetTissueCoordinates.html" class="external-link">GetTissueCoordinates</a></span><span class="op">(</span><span class="va">seurat_object</span><span class="op">)</span></span>
 <span><span class="co">#make spatial puck</span></span>
-<span><span class="va">puck</span> <span class="op">&lt;-</span> <span class="fu">SpatialRNA</span><span class="op">(</span><span class="va">coord</span>, <span class="va">counts</span><span class="op">)</span></span></code></pre>
+<span><span class="va">puck</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/spacexr/man/SpatialRNA.html" class="external-link">SpatialRNA</a></span><span class="op">(</span><span class="va">coord</span>, <span class="va">counts</span><span class="op">)</span></span></code></pre>
 </details><p>The third step is to create an RCTD object and perform RCTD. Here we
 set the max number of cell types in a spot to be 4. Please refer to the
 documentation for information on other parameters</p>
@@ -135,9 +135,9 @@ Step 3: Creating an RCTD Object
 </summary><pre><code><span><span class="co">###STEP 3: create an RCTD object</span></span>
 <span><span class="co">#create an RCTD object. Here we set the max number of cell types in a spot to be 4.</span></span>
 <span><span class="co">#see documentation for other parameter choices</span></span>
-<span><span class="va">myRCTD</span> <span class="op">&lt;-</span> <span class="fu">create.RCTD</span><span class="op">(</span><span class="va">puck</span>, <span class="va">reference</span>, max_cores <span class="op">=</span> <span class="fl">1</span>, UMI_min <span class="op">=</span> <span class="fl">0</span>,MAX_MULTI_TYPES <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
+<span><span class="va">myRCTD</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/spacexr/man/create.RCTD.html" class="external-link">create.RCTD</a></span><span class="op">(</span><span class="va">puck</span>, <span class="va">reference</span>, max_cores <span class="op">=</span> <span class="fl">1</span>, UMI_min <span class="op">=</span> <span class="fl">0</span>,MAX_MULTI_TYPES <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
 <span><span class="co">#Run RCTD</span></span>
-<span><span class="va">myRCTD</span> <span class="op">&lt;-</span> <span class="fu">run.RCTD</span><span class="op">(</span><span class="va">myRCTD</span>, doublet_mode <span class="op">=</span> <span class="st">"multi"</span><span class="op">)</span></span></code></pre>
+<span><span class="va">myRCTD</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/spacexr/man/run.RCTD.html" class="external-link">run.RCTD</a></span><span class="op">(</span><span class="va">myRCTD</span>, doublet_mode <span class="op">=</span> <span class="st">"multi"</span><span class="op">)</span></span></code></pre>
 </details><p>The fourth step is to reformat your RCTD output into a matrix. This
 matrix will be of dimension #spots by #cell types. Each row will contain
 the deconvolution estimate for the corresponding spot.</p>
@@ -146,6 +146,17 @@ Step 4: Making a Deconvolution Matrix
 </summary><pre><code><span><span class="co">###Step 4: Reformat results into a matrix </span></span>
 <span><span class="co">#get unique cell types</span></span>
 <span><span class="va">CT</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">cell_types</span><span class="op">)</span></span>
+<span><span class="co">#get library size for each cell type </span></span>
+<span><span class="va">lib_sizes</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">NA</span>,<span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">CT</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#get cell specific library sizes and cell type </span></span>
+<span><span class="va">cell_libs</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/Matrix/man/colSums.html" class="external-link">colSums</a></span><span class="op">(</span><span class="va">refr</span><span class="op">)</span></span>
+<span><span class="co">#get cell types of cells from reference </span></span>
+<span><span class="va">cell_ct</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/SeuratObject/man/Idents.html" class="external-link">Idents</a></span><span class="op">(</span><span class="va">refr</span><span class="op">)</span></span>
+<span><span class="co">#iterate over each cell type </span></span>
+<span><span class="kw">for</span><span class="op">(</span><span class="va">j</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">CT</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
+<span>  <span class="va">ct</span> <span class="op">=</span> <span class="va">CT</span><span class="op">[</span><span class="va">j</span><span class="op">]</span></span>
+<span>  <span class="va">lib_sizes</span><span class="op">[</span><span class="va">j</span><span class="op">]</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">cell_libs</span><span class="op">[</span><span class="va">cell_ct</span><span class="op">==</span><span class="va">ct</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
 <span><span class="co">#initialize the deconvolution matrix </span></span>
 <span><span class="va">deconv_est</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">coord</span><span class="op">)</span>,<span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">CT</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#Column names will be cell types</span></span>
@@ -160,6 +171,10 @@ Step 4: Making a Deconvolution Matrix
 <span>  <span class="va">deconv_est</span><span class="op">[</span><span class="va">j</span>,<span class="va">fills</span><span class="op">]</span> <span class="op">=</span> <span class="va">myRCTD</span><span class="op">@</span><span class="va">results</span><span class="op">[[</span><span class="va">j</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">sub_weights</span></span>
 <span>  <span class="co">#normalize so that rows sum to 1</span></span>
 <span>  <span class="va">deconv_est</span><span class="op">[</span><span class="va">j</span>,<span class="op">]</span> <span class="op">=</span> <span class="va">deconv_est</span><span class="op">[</span><span class="va">j</span>,<span class="op">]</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">deconv_est</span><span class="op">[</span><span class="va">j</span>,<span class="op">]</span><span class="op">)</span></span>
+<span>  <span class="co">#normalize by cell weight (Thanks to Istvan Kleijn)</span></span>
+<span>  <span class="va">spot_lib</span> <span class="op">=</span> <span class="va">deconv_est</span><span class="op">[</span><span class="va">j</span>,<span class="op">]</span><span class="op">*</span><span class="fl">1</span><span class="op">/</span><span class="va">lib_sizes</span></span>
+<span>  <span class="co">#renormalize by cell type normalized weights</span></span>
+<span>  <span class="va">deconv_est</span><span class="op">[</span><span class="va">j</span>,<span class="op">]</span> <span class="op">=</span> <span class="va">spot_lib</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">spot_lib</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="co">#final output</span></span>
 <span><span class="va">deconv_est</span></span></code></pre>

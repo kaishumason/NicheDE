@@ -95,6 +95,17 @@ The fourth step is to reformat your RCTD output into a matrix. This matrix will 
 ###Step 4: Reformat results into a matrix 
 #get unique cell types
 CT = unique(cell_types)
+#get library size for each cell type 
+lib_sizes = rep(NA,length(CT))
+#get cell specific library sizes and cell type 
+cell_libs = colSums(refr)
+#get cell types of cells from reference 
+cell_ct = Idents(refr)
+#iterate over each cell type 
+for(j in c(1:length(CT))){
+  ct = CT[j]
+  lib_sizes[j] = mean(cell_libs[cell_ct==ct])
+}
 #initialize the deconvolution matrix 
 deconv_est = matrix(0,nrow(coord),length(CT))
 #Column names will be cell types
@@ -109,6 +120,10 @@ for(j in c(1:length(myRCTD@results))){
   deconv_est[j,fills] = myRCTD@results[[j]]$sub_weights
   #normalize so that rows sum to 1
   deconv_est[j,] = deconv_est[j,]/sum(deconv_est[j,])
+  #normalize by cell weight (Thanks to Istvan Kleijn)
+  spot_lib = deconv_est[j,]*1/lib_sizes
+  #renormalize by cell type normalized weights
+  deconv_est[j,] = spot_lib/sum(spot_lib)
 }
 #final output
 deconv_est
