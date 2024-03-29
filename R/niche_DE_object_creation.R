@@ -517,6 +517,7 @@ CalculateEffectiveNicheLargeScale = function(object,batch_size = 1000,cutoff = 0
     #calculate effective niche for each individual dataset
     counter = 0
     for(ID in c(1:length(unique(object@batch_ID)))){
+      print(paste0("Calculating effective niche for batch ",ID))
       #get coordinates for dataset
       coord_ID = object@coord[object@batch_ID == ID,]
       #initialize effective niche dataset
@@ -533,12 +534,21 @@ CalculateEffectiveNicheLargeScale = function(object,batch_size = 1000,cutoff = 0
         inds_left = batch_size*(j-1)+1
         inds_right = min(batch_size*j,C)
         inds = c(inds_left:inds_right)
+
+        #get range of x and y values
+        x_range = range(coord_ID[inds,1])
+        y_range = range(coord_ID[inds,2])
+        #filter out cells based on distance
+        x_range = c(x_range[1] - sig*sqrt(-log(cutoff)) , x_range[2] + sig*sqrt(-log(cutoff)))
+        y_range = c(y_range[1] - sig*sqrt(-log(cutoff)) , y_range[2] + sig*sqrt(-log(cutoff)))
+        #if x or y coordiante is out of this range, cannot have similarity greater than cutoff
+        cand = which(spatstat.utils::inside.range(coord_ID[,1],x_range) & spatstat.utils::inside.range(coord_ID[,2],y_range))
         #get distance between point and rest
-        D = Rfast::dista(xnew = as.matrix(coord_ID[inds,],ncol = 2,byrow = T),x = coord_ID,type = "euclidean",trans = T)
+        D = Rfast::dista(xnew = as.matrix(coord_ID[inds,],ncol = 2,byrow = T),x = coord_ID[cand,],type = "euclidean",trans = T)
         #normalize distances
         D = exp(-D^2/sig^2)
         #get effective niche
-        EN_dataset[inds,] = D%*%num_cell_ID
+        EN_dataset[inds,] = D%*%num_cell_ID[cand,]
       }
       #bind EN of this dataset to EN of other datasets
       if(counter == 0){
