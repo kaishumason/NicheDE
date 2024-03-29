@@ -474,6 +474,7 @@ MergeObjects = function(objects){
     #rename cells/spots
     rownames(counts_merge) = c(1:nrow(counts_merge))
     rownames(coord_merge) = c(1:nrow(coord_merge))
+    rownames(num_cells_merge) = c(1:nrow(num_cells_merge))
 
     cell_names = rownames(counts_merge)
     gene_names = colnames(counts_merge)
@@ -519,7 +520,7 @@ CalculateEffectiveNicheLargeScale = function(object,batch_size = 1000,cutoff = 0
     for(ID in c(1:length(unique(object@batch_ID)))){
       print(paste0("Calculating effective niche for batch ",ID))
       #get coordinates for dataset
-      coord_ID = object@coord[object@batch_ID == ID,]
+      coord_ID = object@coord[which(object@batch_ID == ID),]
       #initialize effective niche dataset
       EN_dataset = matrix(NA,nrow(coord_ID),length(object@cell_types))
       #get number of cells per spot for dataset
