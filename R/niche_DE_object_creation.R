@@ -564,7 +564,7 @@ CalculateEffectiveNicheLargeScale = function(object,batch_size = 1000,cutoff = 0
       counter = counter + 1
     }
     #normalize columns of EN
-    EN = apply(EN,2,function(x){(x-mean(x))/sd(x)})
+    EN = apply(EN,2,function(x){(x-mean(x,na.rm = T))/sd(x,na.rm =T)})
     EN[is.na(EN)] = 0
     #add to list of effective niches (one for each sigma)
     object@effective_niche[[counter_sig]] = EN
