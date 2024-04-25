@@ -1,5 +1,5 @@
 pandoc: 3.1.11
-pkgdown: 2.0.7
+pkgdown: 2.0.9
 pkgdown_sha: ~
 articles:
   Average_Expression_Profile_Calculation: Average_Expression_Profile_Calculation.html
@@ -10,11 +10,11 @@ articles:
   Ligand_Receptor_Analysis: Ligand_Receptor_Analysis.html
   Marker_Genes: Marker_Genes.html
   Merging_and_Filtering: Merging_and_Filtering.html
-  Object_Creation: Object_Creation.html
   Object_Creation_Seurat: Object_Creation_Seurat.html
+  Object_Creation: Object_Creation.html
   Performing_Niche_DE: Performing_Niche_DE.html
   Tutorial: Tutorial.html
-last_built: 2024-03-29T16:40Z
+last_built: 2024-04-25T19:38Z
 urls:
   reference: https://kmason23.github.io/NicheDE/reference
   article: https://kmason23.github.io/NicheDE/articles
