@@ -499,6 +499,7 @@ MergeObjects = function(objects){
 #' @param object A niche-DE object
 #' @param batch_size Number of cells to calculate the effective niche for at a time
 #' @param cutoff Minimum kernel similarity. Similarities below this value get truncated to 0
+#' @param standardize A logical indicator for if the effective niche should be z-normalized by column
 #' @return A niche-DE object the effective niche calculated.
 #' The effective niche is a list with each entry corresponding to a kernel bandwidth
 #' @export
