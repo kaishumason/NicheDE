@@ -502,7 +502,7 @@ MergeObjects = function(objects){
 #' @return A niche-DE object the effective niche calculated.
 #' The effective niche is a list with each entry corresponding to a kernel bandwidth
 #' @export
-CalculateEffectiveNicheLargeScale = function(object,batch_size = 1000,cutoff = 0.05){
+CalculateEffectiveNicheLargeScale = function(object,batch_size = 1000,cutoff = 0.05,standardize = TRUE){
   EN = matrix(NA,nrow(object@coord),length(object@cell_types))
   rownames(EN) = rownames(object@coord)
   colnames(EN) = object@cell_types
@@ -529,27 +529,51 @@ CalculateEffectiveNicheLargeScale = function(object,batch_size = 1000,cutoff = 0
       C = nrow(coord_ID)
       num_iter = ceiling(C/batch_size)
 
-      for(j in c(1:num_iter)){
-        print(paste0("Calculating effective niche for cells ",batch_size*(j-1)+1, " to ",min(batch_size*j,C) ))
-        #get indices we wanna look at
-        inds_left = batch_size*(j-1)+1
-        inds_right = min(batch_size*j,C)
-        inds = c(inds_left:inds_right)
+      print("Separating Tissue Into Spatially Local Regions")
+      square_side = ceiling(sqrt(num_iter))
 
-        #get range of x and y values
-        x_range = range(coord_ID[inds,1])
-        y_range = range(coord_ID[inds,2])
-        #filter out cells based on distance
-        x_range = c(x_range[1] - sig*sqrt(-log(cutoff)) , x_range[2] + sig*sqrt(-log(cutoff)))
-        y_range = c(y_range[1] - sig*sqrt(-log(cutoff)) , y_range[2] + sig*sqrt(-log(cutoff)))
-        #if x or y coordiante is out of this range, cannot have similarity greater than cutoff
-        cand = which(spatstat.utils::inside.range(coord_ID[,1],x_range) & spatstat.utils::inside.range(coord_ID[,2],y_range))
-        #get distance between point and rest
-        D = Rfast::dista(xnew = as.matrix(coord_ID[inds,],ncol = 2,byrow = T),x = coord_ID[cand,],type = "euclidean",trans = T)
-        #normalize distances
-        D = exp(-D^2/sig^2)
-        #get effective niche
-        EN_dataset[inds,] = D%*%num_cell_ID[cand,]
+      #aggregate all cells that belong to same radius
+      x_range = range(coord_ID[,1])
+      y_range = range(coord_ID[,2])
+
+      x_length = x_range[2] - x_range[1]
+      y_length = y_range[2] - y_range[1]
+
+      x_bins = seq(x_range[1],x_range[2]  + x_length/(2*square_side),length.out = square_side)
+      y_bins = seq(y_range[1],y_range[2] + y_length/(2*square_side),length.out = square_side)
+      #x_bins = seq(x_range[1],x_range[2],length.out = square_side)
+      #y_bins = seq(y_range[1],y_range[2],length.out = square_side)
+
+      x_bin_index <- findInterval(coord_ID[,1], x_bins)
+      y_bin_index <- findInterval(coord_ID[,2], y_bins)
+      for (j in c(1:square_side)) {
+        for(k in c(1:square_side)){
+          inds = which(x_bin_index == j & y_bin_index == k)
+          Ncell = length(inds)
+          if(Ncell == 0){
+            next
+          }
+          print(paste0("Calculating effective niche for cells ",
+                       cell_counter + 1, " to ", cell_counter + Ncell))
+
+          x_range = range(coord_ID[inds, 1])
+          y_range = range(coord_ID[inds, 2])
+          x_range = c(x_range[1] - sig * sqrt(-log(cutoff)),
+                      x_range[2] + sig * sqrt(-log(cutoff)))
+          y_range = c(y_range[1] - sig * sqrt(-log(cutoff)),
+                      y_range[2] + sig * sqrt(-log(cutoff)))
+          cand = which(spatstat.utils::inside.range(coord_ID[,
+                                                             1], x_range) & spatstat.utils::inside.range(coord_ID[,
+                                                                                                                  2], y_range))
+          D = Rfast::dista(xnew = coord_ID[inds,
+                                           ,drop = FALSE], x = coord_ID[cand,
+                                                                        ,drop = FALSE], type = "euclidean", trans = T)
+          D = exp(-D^2/sig^2)
+          D[D<cutoff] = 0
+          EN_dataset[inds, ] = D %*% num_cell_ID[cand,
+          ]
+          cell_counter = cell_counter + Ncell
+        }
       }
       #bind EN of this dataset to EN of other datasets
       if(counter == 0){
@@ -564,7 +588,9 @@ CalculateEffectiveNicheLargeScale = function(object,batch_size = 1000,cutoff = 0
       counter = counter + 1
     }
     #normalize columns of EN
-    EN = apply(EN,2,function(x){(x-mean(x,na.rm = T))/sd(x,na.rm =T)})
+    if(standardize == T){
+      EN = apply(EN,2,function(x){(x-mean(x,na.rm = T))/sd(x,na.rm =T)})
+    }
     EN[is.na(EN)] = 0
     #add to list of effective niches (one for each sigma)
     object@effective_niche[[counter_sig]] = EN
@@ -573,6 +599,9 @@ CalculateEffectiveNicheLargeScale = function(object,batch_size = 1000,cutoff = 0
   print('Effective niche calculated')
   return(object)
 }
+
+
+
 
 
 
