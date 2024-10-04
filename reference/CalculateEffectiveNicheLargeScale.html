@@ -38,7 +38,12 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">CalculateEffectiveNicheLargeScale</span><span class="op">(</span><span class="va">object</span>, batch_size <span class="op">=</span> <span class="fl">1000</span>, cutoff <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">CalculateEffectiveNicheLargeScale</span><span class="op">(</span></span>
+<span>  <span class="va">object</span>,</span>
+<span>  batch_size <span class="op">=</span> <span class="fl">1000</span>,</span>
+<span>  cutoff <span class="op">=</span> <span class="fl">0.05</span>,</span>
+<span>  standardize <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -55,6 +60,10 @@
 
 <dt id="arg-cutoff">cutoff<a class="anchor" aria-label="anchor" href="#arg-cutoff"></a></dt>
 <dd><p>Minimum kernel similarity. Similarities below this value get truncated to 0</p></dd>
+
+
+<dt id="arg-standardize">standardize<a class="anchor" aria-label="anchor" href="#arg-standardize"></a></dt>
+<dd><p>A logical indicator for if the effective niche should be z-normalized by column</p></dd>
 
 </dl></div>
     <div class="section level2">
