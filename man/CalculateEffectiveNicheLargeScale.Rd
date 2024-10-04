@@ -4,7 +4,12 @@
 \alias{CalculateEffectiveNicheLargeScale}
 \title{CalculateEffectiveNiche}
 \usage{
-CalculateEffectiveNicheLargeScale(object, batch_size = 1000, cutoff = 0.05)
+CalculateEffectiveNicheLargeScale(
+  object,
+  batch_size = 1000,
+  cutoff = 0.05,
+  standardize = TRUE
+)
 }
 \arguments{
 \item{object}{A niche-DE object}
@@ -12,6 +17,8 @@ CalculateEffectiveNicheLargeScale(object, batch_size = 1000, cutoff = 0.05)
 \item{batch_size}{Number of cells to calculate the effective niche for at a time}
 
 \item{cutoff}{Minimum kernel similarity. Similarities below this value get truncated to 0}
+
+\item{standardize}{A logical indicator for if the effective niche should be z-normalized by column}
 }
 \value{
 A niche-DE object the effective niche calculated.
