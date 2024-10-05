@@ -547,6 +547,7 @@ CalculateEffectiveNicheLargeScale = function(object,batch_size = 1000,cutoff = 0
 
       x_bin_index <- findInterval(coord_ID[,1], x_bins)
       y_bin_index <- findInterval(coord_ID[,2], y_bins)
+      cell_counter = 0
       for (j in c(1:square_side)) {
         for(k in c(1:square_side)){
           inds = which(x_bin_index == j & y_bin_index == k)
