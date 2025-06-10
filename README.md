@@ -16,8 +16,8 @@ options(timeout=9999999)
 devtools::install_github("kaishumason/NicheDE") # install
 library(nicheDE)
 ```
-# Vignette
-Click the link below for a tutorial on using nicheDE\
+# Tutorials
+Click the link below for tutorials on using nicheDE\
 [NicheDE Tutorial: All Steps](https://kaishumason.github.io/NicheDE/articles/Tutorial.html)
 
 # Citation
