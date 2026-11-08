@@ -1,0 +1,102 @@
+# Performing Niche-DE
+
+## Running Niche-DE
+
+Once you have set up your niche-DE object, you can run niche-DE using
+the function ‘niche_DE’. This function takes 11 arguments
+
+Arguments
+
+- object: A niche-DE object
+- num_cores: The number of cores to use when performing parallelization
+- outfile: The file path to the txt on which workers will write status
+  reports on
+- C: The minimum total expression of a gene across observations needed
+  for the niche-DE model to run. The default value is 150.
+- M: Minimum number of spots containing the index cell type with the
+  niche cell type in its effective niche for (index,niche) niche
+  patterns to be investigated. The default value is 10
+- Gamma: Percentile a gene needs to be with respect to expression in the
+  index cell type in order for the model to investigate niche patterns
+  for that gene in the index cell. The default value is 0.8 (80th
+  percentile)
+- print: Should the progress of niche-DE be tracked? If True, progress
+  updates will be tracked in the outfile of the cluster. Default is
+  True.
+- Int: Logical for if data is count data. If True, a negative binomial
+  regression is performed. Otherwise linear regression with a gene
+  specific variance is applied. Default is True.
+- Batch: Logical if an indicator should be included for each batch in
+  the regression. Default is True.
+- self_EN: Logical if niche interactions between the same cell types
+  should be considered. Default is False.
+- G: Number of gigabytes each core should hold. If the counts matrix is
+  bigger than G gigabytes, it is split into multiple chunks such that
+  the size of each chunk is less than G gigabytes.
+
+&nbsp;
+
+    #Perform Niche-DE
+    NDE_obj = niche_DE(NDE_obj,num_cores = 4,outfile = "",C = 150, M = 10, gamma = 0.8,print = T, Int = T, batch = T,self_EN = F,G = 1)
+
+For some smaller datasets, it may be faster to not parallelize at all.
+You can use the “niche_DE_no_parallel” function in this case. It takes
+the same arguments sans num_cores,outfile, and G.
+
+    #Perform Niche-DE
+    NDE_obj = niche_DE_no_parallel(NDE_obj,C = 150, M = 10, gamma = 0.8,print = T, Int = T, batch = T,self_EN = F)
+
+What does the output look like?
+
+After running niche-DE, the ‘niche-DE’ slot in your niche-DE object will
+be populated. It will be a list with length equal to the length of
+sigma. Each item of that list will have an entry corresponding to each
+gene. Each entry is a list with 4 items. For a given gene k.
+
+- T-stat: A matrix of dimension \#cell types by \#cell types. Index
+  (i,j) represents the T_statistic corresponding to the hypothesis test
+  of testing whether gene k is an (index cell type i, niche cell type j)
+  niche gene.
+- Beta: A matrix of dimension \#cell types by \#cell types. Index (i,j)
+  represents the beta coefficient corresponding to the niche effect of
+  niche cell type j on index cell type i for gene
+- nulls: Which coefficients are null (no niche-DE effect computed) for
+  gene k.
+- var-cov: A matrix of dimension (#non nulls) by (#non nulls) . The
+  matrix gives the variance covariance matrix of the beta coefficients
+  of the niche-DE model for gene k.To save memory, this matrix is upper
+  triangular.
+- log-lik: The log-likelihood of the niche-DE model for gene k.
+
+Note that each item in the niche-DE list is named based on an element of
+sigma and the T-stat,beta,var-cov,log-lik items for that list are based
+on an effective niche calculated using a kernel bandwidth equal to that
+element of sigma. Additionally, the following two slots in your niche-DE
+object will be populated
+
+- Niche-DE-pval-pos: Pvalues for testing if a gene is an (index,niche)+
+  niche gene. This is a list with length equal to the length of sigma.
+  Each sublist contains 3 items.
+  - gene-level: A list of gene level pvalues. It is a vector with length
+    equal to the number of genes.
+  - cell-type-level: A matrix of dimension \#genes by \#cell types which
+    gives cell type level pvalues.Index (i,j) gives a pvalue
+    corresponding to whether gene i is a niche gene for index cell type
+    j.
+  - interaction-level: An array of dimension \#cell types by \#cell
+    types by \#genes which gives interaction level pvalues. Index
+    (i,j,k) gives a pvalue corresponding to whether gene k is an (index
+    cell type i, niche cell type j)+ niche gene.
+- Niche-DE-pval-neg: Pvalues for testing if a gene is an (index,niche)-
+  niche gene. This is a list with length equal to the length of sigma.
+  Each sublist contains 3 items.
+  - gene-level: A list of gene level pvalues. It is a vector with length
+    equal to the number of genes.
+  - cell-type-level: A matrix of dimension \#genes by \#cell types which
+    gives cell type level pvalues.Index (i,j) gives a pvalue
+    corresponding to whether gene i is a niche gene for index cell type
+    j.
+  - interaction-level: An array of dimension \#cell types by \#cell
+    types by \#genes which gives interaction level pvalues. Index
+    (i,j,k) gives a pvalue corresponding to whether gene k is an (index
+    cell type i, niche cell type j)- niche gene.

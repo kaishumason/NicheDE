@@ -1,0 +1,64 @@
+# Getting Niche-DE Genes
+
+## Extract Niche-DE Genes For a Specific (Index,Niche) Pair
+
+After calculating pvalues, we can find which genes are $`(index,niche)`$
+niche genes at varying resolutions and FDR control levels. The function
+to do so is called ‘get_niche_DE_genes’ and contains 6 arguments
+
+Arguments
+
+- object: A niche-DE object
+- test.level: The resolution at which to return genes. There are three
+  choices for test.level;gene level (‘G’), cell type level (‘CT’), and
+  interaction level (‘I’).
+- index: The index cell type of interest
+- niche: The niche cell type of interest
+- positive: Boolean of whether to return positive/upregulated niche-DE
+  genes (True) or negative/downweighted niche-DE genes (False). Default
+  value is True.
+- alpha: The level at which to perform the benjamini-hochberg procedure
+  at each resolution level. Default value is 0.05.  
+
+Below, we find interaction level (fibroblast,tumor)+ niche genes.
+
+    DE_genes = get_niche_DE_genes(NDE_obj,'I',index='stromal',niche = 'tumor_epithelial',positive = T,alpha = 0.05)
+    head(DE_genes)
+
+The output is a matrix of genes and their corresponding pvalues at the
+resolution specified.
+
+Interpretting Your Results
+
+Assume that the direction parameter is set to ‘positive’. The
+interpretation of your output will differ based on the resolution
+chosen.
+
+- Test.level = gene: Genes outputted show some sign of being a niche
+  gene for some $`(index,niche)`$ pair.
+
+- Test.level = cell type: Genes outputted are significantly niche up or
+  down regulated in the index cell. The niche cell type is unknown.
+
+- Test.level = interaction: Genes outputted are significantly
+  upregulated in the index cell type when in the presence of the niche
+  cell type. If ‘pos’ = ‘False’ then Genes outputted are significantly
+  downregulated in the index cell type when in the presence of the niche
+  cell type.
+
+## Pathway Enrichement Analysis With Your Niche Genes
+
+Interaction level $`(index,niche)+`$ and $`(index,niche)-`$ genes can be
+input into a pathway enrichment analysis to determine what processes are
+being up and downregulated in the index cell type when in the presence
+of the niche cell type. Here we perform pathway enrichment analysis of
+(fibroblast,tumor)+ genes using the enrichR package.
+
+    #Load enichr package
+    library(enrichR)
+    #get fibroblast tumor niche genes
+    fibro_tum_pos = get_niche_DE_genes(NDE_obj,'I',index='stromal',niche = 'tumor_epithelial',positive = T,alpha = 0.05)
+    #run pathway enrichment analysis
+    fibro_tum_processes = enrichr(fibro_tum_pos[,1],databases = 'Reactome_2016')
+    #View processes in a table
+    View(fibro_tum_processes$Reactome_2016)

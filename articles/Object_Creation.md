@@ -1,0 +1,74 @@
+# Object creation From Raw Data
+
+Starting with a spatial seurat object, we can make a niche-DE object
+with the function ‘CreateNicheDEObjectFrom Seurat’. This function takes
+in 6 arguments
+
+Arguments
+
+- counts mat: A counts matrix. The dimension should be \#cells/spots by
+  \#genes.
+  - coordinate mat: Coordinate matrix. Dimension should be \#cells/spots
+    by 2. Make sure that rownames match that of the counts matrix. The
+    coordinates are scaled such that the median nearest neighbor
+    distance is 100.
+  - library mat: The average expression profile matrix calculated from a
+    reference dataset.
+  - deconv mat: The deconvolution matrix for the spatial dataset. The
+    dimension should be \#spots/cells by \#cell types
+  - sigma: A list of kernel bandwidths to use for effective niche
+    calculation
+  - Int: Logical if counts data supplied is integer. When performing
+    niche-DE, Negative binomial regression is performed if True. Linear
+    regression with a gene specific variance is performed if False.
+    Default is true.
+
+&nbsp;
+
+    #load counts matrix
+    data("vignette_counts")
+    #load coordinate matrix
+    data("vignette_coord")
+    #load expression profile matrix
+    data("vignette_library_matrix")
+    #load deconvolution matrix
+    data("vignette_deconv_mat")
+    #make Niche-DE object
+    NDE_obj = CreateNicheDEObject(vignette_counts,vignette_coord,
+                                  vignette_library_matrix,vignette_deconv_mat,
+                                  sigma = c(1,100,250))
+
+What’s in the object?
+
+We see that their are 14 slots, 10 of which are populated when making
+the nicheDE object. Here we will explain what each slot should contain,
+except for the ones prefixed by niche_DE.
+
+- counts: The RNA count data of the spatial transcriptomics dataset. The
+  dimension will be \#cells/spots by \#genes.Genes are filtered out if
+  they do not exist within the scrna-seq reference dataset.
+- coord: The spatial coordinates matrix of the spatial transcriptomics
+  dataset. It is scaled such that the median nearest neighbor distance
+  is 100.
+- sigma: The kernel bandwidth(s) chosen for calculating the effective
+  niche. Recommended values will be discussed shortly.
+- num_cells: A \#cells/spots by \#cell types matrix indicating the
+  estimated number of cells of each cell type in each spot.
+- effective_niche: A list whose length is equal to the length of sigma.
+  Each element of the list is a matrix of dimension \#cells/spots by
+  \#cell types that measures how many of each cell type is in a given
+  cell/spot’s neighborhood. For more information, please read the
+  manuscript.
+- ref_expr: The average expression profile matrix. The dimension is
+  \#cell types by \#genes. Each row gives the average expression of each
+  gene for a given cell type based on the reference dataset supplied.
+- cell_names: The name of each cell. This will be used if the use wants
+  to filter cells via the function ‘Filter’
+- gene_names: The gene names.
+- batch_ID: The batch ID for each cell/spot. This will be used when
+  merging objects.
+- spot_distance: 100. Coordinates are scaled so that the distance
+  between a spot and its nearest neighbor is 100.
+- scale: The scaling to convert our coordinates back to their original
+  scale
+- Int: Is the data count data(True) or continuous (False)?

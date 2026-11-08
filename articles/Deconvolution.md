@@ -1,0 +1,120 @@
+# Deconvolution
+
+## Deconvolution using RCTD
+
+Here we show how to perform cell type deconvolution using RCTD (Robust
+Cell Type Decomposition).  
+The first step is to read in the reference dataset and create a
+reference object
+
+Step 1: Reading in a Reference Dataset
+
+    ###Step 0: Packages
+    library(spacexr)
+    library(Matrix)
+    library(Seurat) 
+    ##download spacexr is not installed
+    #library(devtools)
+    #devtools::install_github("dmcable/spacexr", build_vignettes = FALSE)
+    ###STEP 1: Read in reference dataset
+    #Read in reference
+    data("liver_met_ref")
+    refr = liver_met_ref
+    #get cell types of reference dataset
+    cell_types = Idents(refr)
+    #drop levels 
+    cell_types = droplevels(cell_types)
+    #get raw data matrix
+    count_raw <- refr@assays$RNA@counts
+    # make reference dataset
+    reference <- Reference(count_raw, cell_types = cell_types)
+
+The second step is to read in the spatial data.
+
+Step 2: Reading in Spatial Data
+
+    ###STEP 2: Read in spatial data
+    #Read in seurat data. In practice, use seurat function to read in data
+    data("liver_met_seurat_object")
+    seurat_object = liver_met_seurat_object
+    #get counts matrix 
+    counts = seurat_object@assays$Spatial@counts
+    #save gene and cell names for later
+    genes = colnames(counts)
+    spots = rownames(counts)
+    #reformat counts matrix to sparse matrix 
+    counts = as(counts,'sparseMatrix')
+    #name column and row names
+    colnames(counts) = genes
+    rownames(counts) = spots
+    #get coordinate matrix
+    coord = GetTissueCoordinates(seurat_object)
+    #make spatial puck
+    puck <- SpatialRNA(coord, counts)
+
+The third step is to create an RCTD object and perform RCTD. Here we set
+the max number of cell types in a spot to be 4. Please refer to the
+documentation for information on other parameters
+
+Step 3: Creating an RCTD Object
+
+    ###STEP 3: create an RCTD object
+    #create an RCTD object. Here we set the max number of cell types in a spot to be 4.
+    #see documentation for other parameter choices
+    myRCTD <- create.RCTD(puck, reference, max_cores = 1, UMI_min = 0,MAX_MULTI_TYPES = 4)
+    #Run RCTD
+    myRCTD <- run.RCTD(myRCTD, doublet_mode = "multi")
+
+The fourth step is to reformat your RCTD output into a matrix. This
+matrix will be of dimension \#spots by \#cell types. Each row will
+contain the deconvolution estimate for the corresponding spot.
+
+Step 4: Making a Deconvolution Matrix
+
+    ###Step 4: Reformat results into a matrix 
+    #get unique cell types
+    CT = unique(cell_types)
+    #get library size for each cell type 
+    lib_sizes = rep(NA,length(CT))
+    #get cell specific library sizes and cell type 
+    cell_libs = colSums(refr)
+    #get cell types of cells from reference 
+    cell_ct = Idents(refr)
+    #iterate over each cell type 
+    for(j in c(1:length(CT))){
+      ct = CT[j]
+      lib_sizes[j] = mean(cell_libs[cell_ct==ct])
+    }
+    #initialize the deconvolution matrix 
+    deconv_est = matrix(0,nrow(coord),length(CT))
+    #Column names will be cell types
+    colnames(deconv_est) = CT
+    #rownames will be spot names
+    rownames(deconv_est) = rownames(coord)
+    #iterate over deconvolution results 
+    for(j in c(1:length(myRCTD@results))){
+      #match cell types found to index of unique cell type vector
+      fills = match(myRCTD@results[[j]]$cell_type_list,CT)
+      #fill in matrix 
+      deconv_est[j,fills] = myRCTD@results[[j]]$sub_weights
+      #normalize so that rows sum to 1
+      deconv_est[j,] = deconv_est[j,]/sum(deconv_est[j,])
+      #normalize by cell weight (Thanks to Istvan Kleijn)
+      spot_lib = deconv_est[j,]*1/lib_sizes
+      #renormalize by cell type normalized weights
+      deconv_est[j,] = spot_lib/sum(spot_lib)
+    }
+    #final output
+    deconv_est
+
+For more information, visit the
+[spacexr](https://github.com/dmcable/spacexr) github page.
+
+## Single Cell Data
+
+If your data is of the single cell resolution, then the deconvolution
+matrix is a dummy variable matrix. See [this
+link](https://www.geeksforgeeks.org/dummy-variables-in-r-programming/)
+for a tutorial on how to make dummy variable matrices. Note that your
+deconvolution matrix and your average expression profile matrix must
+have the cell types in the same order.
