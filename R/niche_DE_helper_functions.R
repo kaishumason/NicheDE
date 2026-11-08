@@ -217,6 +217,19 @@ check_colloc = function(object,index,niche){
   return(colloc)
 }
 
+#Poisson regression of a gene's counts on the number of cells of each type.
+#Returns the coefficient and p-value of cell type ct. Both are NA if the coefficient
+#could not be estimated (glm reports an aliased coefficient as NA and omits its row
+#from the coefficient table, so rows must be looked up by name and not by position).
+poisson_celltype_test = function(Y,nst,ct){
+  check = suppressWarnings({glm(Y~nst,family = 'poisson')})
+  beta = coef(check)[ct+1]
+  if(is.na(beta)){
+    return(c(NA_real_,NA_real_))
+  }
+  c(unname(beta),summary(check)$coefficients[names(beta),4])
+}
+
 #need to edit to get postive and negative
 
 

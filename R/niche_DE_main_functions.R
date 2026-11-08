@@ -1134,7 +1134,7 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
   #filter ligands
   cand_lig = colnames(L)[which(L[niche,]>CT_filter[niche])]
   filter = which(colnames(ligand_target_matrix)%in% cand_lig)
-  ligand_target_matrix = ligand_target_matrix[,filter]
+  ligand_target_matrix = ligand_target_matrix[,filter,drop = FALSE]
 
   print('Calculating ligand potential scores')
   #get ligand potential scores
@@ -1145,7 +1145,7 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
   top_DE = vector(mode = "list", length = ncol(ligand_target_matrix))
   names(top_DE) = colnames(ligand_target_matrix)
   #iterate over potential ligands
-  for(j in c(1:ncol(ligand_target_matrix))){
+  for(j in seq_len(ncol(ligand_target_matrix))){
     ligand = colnames(ligand_target_matrix)[j]
     if(ligand%in% colnames(L)){
       #get which index we need to query for best kernel
@@ -1163,11 +1163,11 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
       #filter to only include genes found in data
       filter = which(rownames(ligand_vec)%in% genes)
       #filter
-      ligand_vec = ligand_vec[filter,]
+      ligand_vec = ligand_vec[filter,,drop = FALSE]
       filter = which(genes%in%rownames(ligand_vec))
       sig = sig[filter]
       genes = genes[filter]
-      ligand_vec = ligand_vec[genes,]
+      ligand_vec = ligand_vec[genes,,drop = FALSE]
       ligand_vec[,j] = scale(ligand_vec[,j])
       #get top K downstream genes
       top_cors = order(ligand_vec[,j],decreasing = T)[1:K]
@@ -1183,7 +1183,9 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
   #get scaled ligand-potential scores
   pear_cor = pear_cor/sqrt(score_norm)
   #get top candidate ligands
-  top_index = which(pear_cor>=max(1.64,sort(pear_cor,decreasing = T)[M]))
+  #M can exceed the number of scored ligands (e.g. on targeted gene panels)
+  scores_sorted = sort(pear_cor,decreasing = T)
+  top_index = which(pear_cor>=max(1.64,scores_sorted[min(M,length(scores_sorted))]))
   top_scores= pear_cor[top_index]
   #get top candidate ligands
   top_genes = colnames(ligand_target_matrix)[top_index]
@@ -1192,9 +1194,10 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
   }
   #################### test candidate ligands
   print(paste0('Testing candidate ligands for sufficient expression in cell type ',ligand_cell))
-  pvalues = c()
-  beta = c()
-  for(j in c(1:length(top_genes))){
+  #results are stored by position so that a failed test stays NA and cannot shift later results
+  pvalues = rep(NA_real_,length(top_genes))
+  beta = rep(NA_real_,length(top_genes))
+  for(j in seq_along(top_genes)){
     tryCatch({
       #get candidate ligand
       gene = top_genes[j]
@@ -1215,20 +1218,15 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
       nst = nst[niche_index,]
       nst[,which(L[,index_gene] < CT_filter)] = 0
       #run regression of ligand expression on number of cells per spot
-      if(L[niche,index_gene] < CT_filter[niche]){
-        beta = c(beta,NA)
-        pvalues = c(pvalues,NA)
-      }else{
-        check = suppressWarnings({glm(Y~nst,family = 'poisson')})
-        bad_ind = which(is.na(coef(check)))
-        num_bad = sum(bad_ind<(niche+1))
-        beta = c(beta,coef(check)[niche+1])
-        pvalues = c(pvalues,summary(check)$coefficients[(niche+1-num_bad),4])
+      if(L[niche,index_gene] >= CT_filter[niche]){
+        fit = poisson_celltype_test(Y,nst,niche)
+        beta[j] = fit[1]
+        pvalues[j] = fit[2]
       }
 
     } #get pval
     , error = function(e) {
-      skip_to_next <<- TRUE})
+      warning('Could not test ligand ',gene,': ',conditionMessage(e),call. = FALSE)})
   }
   #adjust pvalues and get confirmed ligands
   pvalues = p.adjust(pvalues,method = 'BH')
@@ -1236,15 +1234,17 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
 
   #get candidate receptor
   rec_ind = which(lr_mat[,1]%in% ligands & lr_mat[,2]%in% colnames(L))
-  lr_mat = lr_mat[rec_ind,]
+  lr_mat = lr_mat[rec_ind,,drop = FALSE]
+  if(nrow(lr_mat)==0){
+    stop('no ligand-receptor pairs to report: no confirmed ligand has a receptor in the data')
+  }
   receptors = lr_mat[,2]
   #run regression to see if receptor is expressed by index cell type
-  pvalues = c()
-  beta = c()
-  gene_name = c()
+  pvalues = rep(NA_real_,length(receptors))
+  beta = rep(NA_real_,length(receptors))
   #iterate over all receptors
   print(paste0('Testing candidate receptors for sufficient expression in cell type ',receptor_cell))
-  for(j in c(1:length(receptors))){
+  for(j in seq_along(receptors)){
     tryCatch({
       #get receptor
       gene = receptors[j]
@@ -1262,36 +1262,32 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
       #filter based on spots to look at
       Y = Y[niche_index]
       nst = object@num_cells[niche_index,]
-      nst[,which(L[,index_lig] < CT_filter)] = 0
+      #the expression filter applies to the gene being modeled, which here is the receptor
+      index_rec = which(colnames(L)==gene)
+      nst[,which(L[,index_rec] < CT_filter)] = 0
       #run regression
-      if(L[index,index_lig] < CT_filter[index]){
-        beta = c(beta,NA)
-        pvalues = c(pvalues,NA)
-      }else{
-        check = suppressWarnings({glm(Y~nst,family = 'poisson')})
-        bad_ind = which(is.na(coef(check)))
-        num_bad = sum(bad_ind<(index+1))
-        beta = c(beta,coef(check)[index+1])
-        pvalues = c(pvalues,summary(check)$coefficients[(index+1-num_bad),4])
+      if(L[index,index_rec] >= CT_filter[index]){
+        fit = poisson_celltype_test(Y,nst,index)
+        beta[j] = fit[1]
+        pvalues[j] = fit[2]
       }
     }
     , error = function(e) {
-      print(paste0("error",j))
-      skip_to_next <<- TRUE})
+      warning('Could not test receptor ',gene,' for ligand ',lig,': ',conditionMessage(e),call. = FALSE)})
   }
   #adjust pvalues
   pvalues = p.adjust(pvalues,method = "BH")
   rec_mat = cbind(lr_mat,beta,pvalues)
   #look at those with postive beta values
-  rec_mat = rec_mat[as.numeric(rec_mat[,3])>0,]
+  rec_mat = rec_mat[which(as.numeric(rec_mat[,3])>0),,drop = FALSE]
   #name matrix columns
   colnames(rec_mat) = c('ligand','receptor','receptor_beta','receptor_pval')
-  LR_pairs = rec_mat[,c(1,2,4)]
+  LR_pairs = rec_mat[,c(1,2,4),drop = FALSE]
   #extract the confirmed ligands and receptors
-  if(length(LR_pairs)==0){
+  LR_pairs = LR_pairs[which(as.numeric(LR_pairs[,3])<alpha),,drop = FALSE]
+  if(nrow(LR_pairs)==0){
     stop('no ligand-receptor pairs to report')
   }
-  LR_pairs = LR_pairs[which(as.numeric(LR_pairs[,3])<alpha),c(1:3)]
   for(j in unique(LR_pairs[,1])){
     #get gene/ligand name
     #match to top_DE list
@@ -1301,7 +1297,7 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
   }
 
   colnames(LR_pairs) = c('ligand','receptor','top_downstream_niche_DE_genes')
-  rownames(LR_pairs) = c(1:nrow(LR_pairs))
+  rownames(LR_pairs) = seq_len(nrow(LR_pairs))
 
   print(paste0('Returning ligand receptor table between ligand expressing cell type ',ligand_cell,
                ' and receptor expressing cell type ',receptor_cell,'.'))
@@ -1398,7 +1394,7 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
   #filter ligands
   cand_lig = colnames(L)[which(L[niche,]>CT_filter[niche])]
   filter = which(colnames(ligand_target_matrix)%in% cand_lig)
-  ligand_target_matrix = ligand_target_matrix[,filter]
+  ligand_target_matrix = ligand_target_matrix[,filter,drop = FALSE]
 
   print('Calculating ligand potential scores')
   #get ligand potential scores
@@ -1410,7 +1406,7 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
   names(top_DE) = colnames(ligand_target_matrix)
 
   #iterate over potential ligands
-  for(j in c(1:ncol(ligand_target_matrix))){
+  for(j in seq_len(ncol(ligand_target_matrix))){
     ligand = colnames(ligand_target_matrix)[j]
     if(ligand%in% colnames(L)){
       #get which index we need to query for best kernel
@@ -1428,11 +1424,11 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
       #filter to only include genes found in data
       filter = which(rownames(ligand_vec)%in% genes)
       #filter
-      ligand_vec = ligand_vec[filter,]
+      ligand_vec = ligand_vec[filter,,drop = FALSE]
       filter = which(genes%in%rownames(ligand_vec))
       sig = sig[filter]
       genes = genes[filter]
-      ligand_vec = ligand_vec[genes,]
+      ligand_vec = ligand_vec[genes,,drop = FALSE]
       ligand_vec[,j] = scale(ligand_vec[,j])
       #get top K downstreamm genes
       top_cors = order(ligand_vec[,j],decreasing = T)[1:K]
@@ -1449,16 +1445,22 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
   #get scaled ligand-potential scores
   pear_cor = pear_cor/sqrt(score_norm)
   #get top candidate ligands
-  top_index = which(pear_cor>=max(1.64,sort(pear_cor,decreasing = T)[M]))
+  #M can exceed the number of scored ligands (e.g. on targeted gene panels)
+  scores_sorted = sort(pear_cor,decreasing = T)
+  top_index = which(pear_cor>=max(1.64,scores_sorted[min(M,length(scores_sorted))]))
   top_scores= pear_cor[top_index]
   #get top candidate ligands
   top_genes = colnames(ligand_target_matrix)[top_index]
+  if(length(top_genes)==0){
+    stop('No candidate ligands')
+  }
 
   #################### test candidate ligands
   print(paste0('Testing candidate ligands for sufficient expression in cell type ',ligand_cell))
-  pvalues = c()
-  beta = c()
-  for(j in c(1:length(top_genes))){
+  #results are stored by position so that a failed test stays NA and cannot shift later results
+  pvalues = rep(NA_real_,length(top_genes))
+  beta = rep(NA_real_,length(top_genes))
+  for(j in seq_along(top_genes)){
     tryCatch({
       #get candidate ligand
       gene = top_genes[j]
@@ -1487,27 +1489,28 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
       Test_stat = lambda_niche-lambda_rest
       #normalize so that null distribution is standard normal
       Test_stat = Test_stat/sqrt(lambda_niche/sum(nst[,niche]==1))
-      #append pvalues
-      pvalues = c(pvalues,1-pnorm(Test_stat))
+      #store pvalue
+      pvalues[j] = 1-pnorm(Test_stat)
 
     } #get pval
     , error = function(e) {
-      skip_to_next <<- TRUE})
+      warning('Could not test ligand ',gene,': ',conditionMessage(e),call. = FALSE)})
   }
   #adjust pvalues and get confirmed ligands
   pvalues = p.adjust(pvalues,method = 'BH')
   ligands = top_genes[which(pvalues<alpha)]
   #get candidate receptor
   rec_ind = which(lr_mat[,1]%in% ligands & lr_mat[,2]%in% colnames(L))
-  lr_mat = lr_mat[rec_ind,]
+  lr_mat = lr_mat[rec_ind,,drop = FALSE]
+  if(nrow(lr_mat)==0){
+    stop('no ligand-receptor pairs to report: no confirmed ligand has a receptor in the data')
+  }
   receptors = lr_mat[,2]
   #run regression to see if receptor is expressed by index cell type
-  pvalues = c()
-  beta = c()
-  gene_name = c()
+  pvalues = rep(NA_real_,length(receptors))
   #iterate over all receptors
   print(paste0('Testing candidate receptors for sufficient expression in cell type ',receptor_cell))
-  for(j in c(1:length(receptors))){
+  for(j in seq_along(receptors)){
     tryCatch({
       #get receptor
       gene = receptors[j]
@@ -1526,29 +1529,30 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
       #get number of cells per spot
       nst = object@num_cells
       nst = nst[niche_index,]
-      nst[,which(L[,index_lig] < CT_filter)] = 0
+      #the expression filter applies to the gene being modeled, which here is the receptor
+      index_rec = which(colnames(L)==gene)
+      nst[,which(L[,index_rec] < CT_filter)] = 0
       #run regression
       lambda_niche = mean(Y[nst[,index]==1])
       lambda_rest = quantile(object@ref_expr[index,],alpha_2)
       Test_stat = lambda_niche-lambda_rest
       Test_stat = Test_stat/sqrt(lambda_niche/sum(nst[,index]==1))
-      pvalues = c(pvalues,1-pnorm(Test_stat))
+      pvalues[j] = 1-pnorm(Test_stat)
     }
     , error = function(e) {
-      print(paste0("error",j))
-      skip_to_next <<- TRUE})
+      warning('Could not test receptor ',gene,' for ligand ',lig,': ',conditionMessage(e),call. = FALSE)})
   }
   #adjust pvalues
   pvalues = p.adjust(pvalues,method = "BH")
   rec_mat = cbind(lr_mat,pvalues)
   #name matrix columns
   colnames(rec_mat) = c('ligand','receptor','receptor_pval')
-  LR_pairs = rec_mat[,c(1,2,3)]
+  LR_pairs = rec_mat[,c(1,2,3),drop = FALSE]
   #extract the confirmed ligands and receptors
-  if(length(LR_pairs)==0){
+  LR_pairs = LR_pairs[which(as.numeric(LR_pairs[,3])<alpha),,drop = FALSE]
+  if(nrow(LR_pairs)==0){
     stop('no ligand-receptor pairs to report')
   }
-  LR_pairs = LR_pairs[which(as.numeric(LR_pairs[,3])<alpha),c(1:3)]
   for(j in unique(LR_pairs[,1])){
     #match to top_DE list
     ID = which(names(top_DE)==j)
@@ -1557,7 +1561,7 @@ niche_LR_cell = function(object,ligand_cell,receptor_cell,ligand_target_matrix,
   }
 
   colnames(LR_pairs) = c('ligand','receptor','top_downstream_niche_DE_genes')
-  rownames(LR_pairs) = c(1:nrow(LR_pairs))
+  rownames(LR_pairs) = seq_len(nrow(LR_pairs))
   print(paste0('Returning ligand receptor table between ligand expressing cell type ',ligand_cell,
                ' and receptor expressing cell type ',receptor_cell,'.'))
 
