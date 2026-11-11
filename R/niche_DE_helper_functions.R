@@ -230,6 +230,54 @@ poisson_celltype_test = function(Y,nst,ct){
   c(unname(beta),summary(check)$coefficients[names(beta),4])
 }
 
+#lapply(X,FUN) on num_cores cores. With num_cores = 1 this is lapply.
+#On macOS and Linux the workers are forked (mclapply), so they share the large inputs
+#with the main process and nothing is copied up front. Windows cannot fork, so there a
+#PSOCK cluster is used and each worker receives its own copy of FUN's environment.
+#Matrix is loaded before any worker starts: without it the dgCMatrix counts cannot be
+#subset, and Matrix loaded inside one forked worker is not loaded in the others.
+#With mclapply, the element for a worker that failed is a "try-error" or NULL.
+par_lapply = function(X,FUN,num_cores){
+  if(num_cores == 1 || length(X) <= 1){
+    return(lapply(X,FUN))
+  }
+  loadNamespace('Matrix')
+  if(.Platform$OS.type == 'windows'){
+    cl = parallel::makeCluster(min(num_cores,length(X)))
+    on.exit(parallel::stopCluster(cl),add = TRUE)
+    parallel::clusterEvalQ(cl,{
+      loadNamespace('Matrix')
+      loadNamespace('nicheDE')
+      NULL
+    })
+    return(parallel::parLapply(cl,X,FUN))
+  }
+  parallel::mclapply(X,FUN,mc.cores = num_cores)
+}
+
+#Collects the list(beta, pvalue, error) returned for each test into vectors as long as
+#the input, so that a failed test stays NA in its own position. A worker that returned
+#a "try-error" or nothing is recorded as an error.
+collect_results = function(res){
+  n = length(res)
+  beta = rep(NA_real_,n)
+  pvalues = rep(NA_real_,n)
+  error = rep(NA_character_,n)
+  for(i in seq_len(n)){
+    r = res[[i]]
+    if(is.list(r)){
+      beta[i] = r$beta
+      pvalues[i] = r$pvalue
+      error[i] = r$error
+    }else if(inherits(r,'try-error')){
+      error[i] = conditionMessage(attr(r,'condition'))
+    }else{
+      error[i] = 'parallel worker returned no result'
+    }
+  }
+  list(beta = beta,pvalues = pvalues,error = error)
+}
+
 #need to edit to get postive and negative
 
 

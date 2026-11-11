@@ -13,7 +13,8 @@ niche_LR_spot(
   K = 25,
   M = 50,
   alpha = 0.05,
-  truncation_value = 3
+  truncation_value = 3,
+  num_cores = 1
 )
 }
 \arguments{
@@ -38,6 +39,10 @@ ligand potential score. Default value is 25.}
 \item{alpha}{The level at which to perform the Benjamini Hochberg correction. Default value is 0.05.}
 
 \item{truncation_value}{The value at which to truncate T statistics. Default value is 3.}
+
+\item{num_cores}{The number of cores to parallelize the ligand potential scores and the
+ligand and receptor tests on. Default value is 1 (no parallelization). Uses forked
+processes on macOS and Linux and a PSOCK cluster on Windows.}
 }
 \value{
 A list of ligand-receptor pairs that are found to be expressed by the
