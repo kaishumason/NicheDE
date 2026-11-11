@@ -1065,10 +1065,22 @@ niche_DE_markers = function(object,index,niche1,niche2,alpha = 0.05){
 #' @param M The maximum number of ligands that can pass initial filtering. Default value is 50.
 #' @param alpha The level at which to perform the Benjamini Hochberg correction. Default value is 0.05.
 #' @param truncation_value The value at which to truncate T statistics. Default value is 3.
+#' @param num_cores The number of cores to parallelize the ligand potential scores and the
+#' ligand and receptor tests on. Default value is 1 (no parallelization). Uses forked
+#' processes on macOS and Linux and a PSOCK cluster on Windows.
 #' @return A list of ligand-receptor pairs that are found to be expressed by the
 #' specified cell type
 #' @export
-niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,lr_mat,K = 25,M = 50,alpha = 0.05,truncation_value = 3){
+niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,lr_mat,K = 25,M = 50,alpha = 0.05,truncation_value = 3,num_cores = 1){
+  ## see github issue 16 regarding first-ligand failures when Matrix hasnt been loaded:
+  require(Matrix)
+
+  ## sanity check num_cores argument
+  num_cores = as.integer(num_cores)
+  if(length(num_cores) != 1 || is.na(num_cores) || num_cores < 1){
+    stop('num_cores must be a single positive integer')
+  }
+  
   #The ligand expressing cell should be the niche cell
   niche = which(colnames(object@num_cells)==ligand_cell)
   #The receptor expressing cell should be the index cell
@@ -1137,15 +1149,10 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
   ligand_target_matrix = ligand_target_matrix[,filter,drop = FALSE]
 
   print('Calculating ligand potential scores')
-  #get ligand potential scores
-  pear_cor = rep(NA,ncol(ligand_target_matrix))
-  score_norm = rep(NA,ncol(ligand_target_matrix))
-
-  #save top niche-DE genes
-  top_DE = vector(mode = "list", length = ncol(ligand_target_matrix))
-  names(top_DE) = colnames(ligand_target_matrix)
-  #iterate over potential ligands
-  for(j in seq_len(ncol(ligand_target_matrix))){
+  #get the ligand potential score of ligand j. Ligands are scored independently, so
+  #this runs in parallel over ligands
+  ligand_score = function(j){
+    out = list(pear_cor = NA_real_,score_norm = NA_real_,top_DE = NULL)
     ligand = colnames(ligand_target_matrix)[j]
     if(ligand%in% colnames(L)){
       #get which index we need to query for best kernel
@@ -1159,27 +1166,40 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
       genes = genes[filter]
       sig = sig[filter]
       #get ligand_potential scores by summing up T_statistics weighted by scaled niche-net scores
-      ligand_vec = ligand_target_matrix
+      #only column j is used, so take that column rather than copying the whole matrix
+      ligand_vec = ligand_target_matrix[,j]
+      names(ligand_vec) = rownames(ligand_target_matrix)
       #filter to only include genes found in data
-      filter = which(rownames(ligand_vec)%in% genes)
+      filter = which(names(ligand_vec)%in% genes)
       #filter
-      ligand_vec = ligand_vec[filter,,drop = FALSE]
-      filter = which(genes%in%rownames(ligand_vec))
+      ligand_vec = ligand_vec[filter]
+      filter = which(genes%in%names(ligand_vec))
       sig = sig[filter]
       genes = genes[filter]
-      ligand_vec = ligand_vec[genes,,drop = FALSE]
-      ligand_vec[,j] = scale(ligand_vec[,j])
+      ligand_vec = ligand_vec[genes]
+      ligand_vec[] = scale(ligand_vec)
       #get top K downstream genes
-      top_cors = order(ligand_vec[,j],decreasing = T)[1:K]
+      top_cors = order(ligand_vec,decreasing = T)[1:K]
       #get weights based on scaled niche-net scores
-      weight = ligand_vec[top_cors,j]/mean(ligand_vec[top_cors,j])
+      weight = ligand_vec[top_cors]/mean(ligand_vec[top_cors])
       ##calculate ligand potential scores
-      pear_cor[j] = sum(sig[top_cors]*weight)
-      top_DE[[j]] = paste((rownames(ligand_vec)[top_cors])[order(sig[top_cors]*weight,decreasing = T)[1:5]],collapse = ',')
+      out$pear_cor = sum(sig[top_cors]*weight)
+      out$top_DE = paste((names(ligand_vec)[top_cors])[order(sig[top_cors]*weight,decreasing = T)[1:5]],collapse = ',')
       #get normalizing constant
-      score_norm[j] = sum(weight^2)
+      out$score_norm = sum(weight^2)
     }
+    out
   }
+  scores = par_lapply(seq_len(ncol(ligand_target_matrix)),ligand_score,num_cores)
+  failed = which(!vapply(scores,is.list,logical(1)))
+  if(length(failed) > 0){
+    stop('Ligand potential scoring failed for: ',paste(colnames(ligand_target_matrix)[failed],collapse = ', '))
+  }
+  pear_cor = vapply(scores,function(s) s$pear_cor,numeric(1))
+  score_norm = vapply(scores,function(s) s$score_norm,numeric(1))
+  #save top niche-DE genes
+  top_DE = lapply(scores,function(s) s$top_DE)
+  names(top_DE) = colnames(ligand_target_matrix)
   #get scaled ligand-potential scores
   pear_cor = pear_cor/sqrt(score_norm)
   #get top candidate ligands
@@ -1194,11 +1214,11 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
   }
   #################### test candidate ligands
   print(paste0('Testing candidate ligands for sufficient expression in cell type ',ligand_cell))
-  #results are stored by position so that a failed test stays NA and cannot shift later results
-  pvalues = rep(NA_real_,length(top_genes))
-  beta = rep(NA_real_,length(top_genes))
-  for(j in seq_along(top_genes)){
+  #test candidate ligand j. Returns its coefficient and p-value, or the error message if
+  #the test failed. Ligands are tested independently, so this runs in parallel over ligands
+  test_ligand = function(j){
     tryCatch({
+      out = list(beta = NA_real_,pvalue = NA_real_,error = NA_character_)
       #get candidate ligand
       gene = top_genes[j]
       #get what index it belongs to
@@ -1220,13 +1240,21 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
       #run regression of ligand expression on number of cells per spot
       if(L[niche,index_gene] >= CT_filter[niche]){
         fit = poisson_celltype_test(Y,nst,niche)
-        beta[j] = fit[1]
-        pvalues[j] = fit[2]
+        out$beta = fit[1]
+        out$pvalue = fit[2]
       }
-
+      out
     } #get pval
     , error = function(e) {
-      warning('Could not test ligand ',gene,': ',conditionMessage(e),call. = FALSE)})
+      list(beta = NA_real_,pvalue = NA_real_,error = conditionMessage(e))})
+  }
+  #results are stored by position so that a failed test stays NA and cannot shift later results
+  lig_res = collect_results(par_lapply(seq_along(top_genes),test_ligand,num_cores))
+  pvalues = lig_res$pvalues
+  beta = lig_res$beta
+  #warnings raised inside forked workers are not passed back, so failed tests are reported here
+  for(j in which(!is.na(lig_res$error))){
+    warning('Could not test ligand ',top_genes[j],': ',lig_res$error[j],call. = FALSE)
   }
   #adjust pvalues and get confirmed ligands
   pvalues = p.adjust(pvalues,method = 'BH')
@@ -1240,12 +1268,12 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
   }
   receptors = lr_mat[,2]
   #run regression to see if receptor is expressed by index cell type
-  pvalues = rep(NA_real_,length(receptors))
-  beta = rep(NA_real_,length(receptors))
-  #iterate over all receptors
   print(paste0('Testing candidate receptors for sufficient expression in cell type ',receptor_cell))
-  for(j in seq_along(receptors)){
+  #test the receptor of pair j. Returns its coefficient and p-value, or the error message
+  #if the test failed. Pairs are tested independently, so this runs in parallel over pairs
+  test_receptor = function(j){
     tryCatch({
+      out = list(beta = NA_real_,pvalue = NA_real_,error = NA_character_)
       #get receptor
       gene = receptors[j]
       #get corresponding ligand
@@ -1268,12 +1296,21 @@ niche_LR_spot = function(object,ligand_cell,receptor_cell,ligand_target_matrix,l
       #run regression
       if(L[index,index_rec] >= CT_filter[index]){
         fit = poisson_celltype_test(Y,nst,index)
-        beta[j] = fit[1]
-        pvalues[j] = fit[2]
+        out$beta = fit[1]
+        out$pvalue = fit[2]
       }
+      out
     }
     , error = function(e) {
-      warning('Could not test receptor ',gene,' for ligand ',lig,': ',conditionMessage(e),call. = FALSE)})
+      list(beta = NA_real_,pvalue = NA_real_,error = conditionMessage(e))})
+  }
+  #results are stored by position so that a failed test stays NA and cannot shift later results
+  rec_res = collect_results(par_lapply(seq_along(receptors),test_receptor,num_cores))
+  pvalues = rec_res$pvalues
+  beta = rec_res$beta
+  #warnings raised inside forked workers are not passed back, so failed tests are reported here
+  for(j in which(!is.na(rec_res$error))){
+    warning('Could not test receptor ',receptors[j],' for ligand ',lr_mat[j,1],': ',rec_res$error[j],call. = FALSE)
   }
   #adjust pvalues
   pvalues = p.adjust(pvalues,method = "BH")
